@@ -1,0 +1,10 @@
+[submodule "zlib"]
+	path = thirdparty/zlib
+	url = https://github.com/madler/zlib.git
+	branch = master
+[submodule "libpng"]
+	path = thirdparty/libpng
+	url = https://github.com/glennrp/libpng.git
+[submodule "optparse"]
+	path = thirdparty/optparse
+	url = https://github.com/skeeto/optparse.git
