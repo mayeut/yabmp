@@ -27,13 +27,19 @@
 
 int yabmp_printinfo(FILE* outstream, yabmp* bmp_reader, int quiet)
 {
-	yabmp_uint32 l_width, l_height, l_compression;
+	yabmp_uint32 l_width, l_height, l_compression, l_x_res, l_y_res;
 	unsigned int l_bpp, l_scan_direction, l_color_mask;
 	unsigned int l_blue_bits, l_green_bits, l_red_bits, l_alpha_bits;
 
 	if (yabmp_get_dimensions(bmp_reader, &l_width, &l_height) != YABMP_OK) {
 		if (!quiet) {
 			fprintf(stderr, "yabmp_get_dimensions failed.");
+		}
+		return 1;
+	}
+	if (yabmp_get_pixels_per_meter(bmp_reader, &l_x_res, &l_y_res) != YABMP_OK) {
+		if (!quiet) {
+			fprintf(stderr, "yabmp_get_pixels_per_meter failed.");
 		}
 		return 1;
 	}
@@ -68,7 +74,11 @@ int yabmp_printinfo(FILE* outstream, yabmp* bmp_reader, int quiet)
 		return 1;
 	}
 		
-	fprintf(outstream, "Dimensions (WxH): %" YABMP_PRIu32 "x%" YABMP_PRIu32 "\nBits Per Pixel: %u\n", l_width, l_height, l_bpp);
+	fprintf(outstream, "Dimensions (WxH): %" YABMP_PRIu32 "x%" YABMP_PRIu32 "\n", l_width, l_height);
+	if ((l_x_res != 0U) || (l_y_res != 0U)) {
+		fprintf(outstream, "Pixels Per Meter (XxY): %" YABMP_PRIu32 "x%" YABMP_PRIu32 "\n", l_x_res, l_y_res);
+	}
+	fprintf(outstream, "Bits Per Pixel: %u\n", l_bpp);
 	fprintf(outstream, "Bits Per Channel: B%u.G%u.R%u.A%u\n", l_blue_bits, l_green_bits, l_red_bits, l_alpha_bits);
 	fputs("Color mask: ", outstream);
 	if ((l_color_mask & YABMP_COLOR_MASK_PALETTE) != 0U) {

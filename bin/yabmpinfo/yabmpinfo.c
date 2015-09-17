@@ -83,6 +83,7 @@ int main(int argc, char* argv[])
 		{ 0 }
 	};
 	int result = EXIT_SUCCESS;
+	int has_multiple_files = 0;
 	struct optparse optparse;
 	int option;
 	struct {
@@ -123,7 +124,7 @@ int main(int argc, char* argv[])
 		output = NULL;
 	}
 	
-	if ((output != NULL) && !strcmp(output, "-")) {
+	if ((output != NULL) && (strcmp(output, "-") != 0)) {
 		outStream = fopen(output, "wt");
 		if (outStream == NULL) {
 			if (!flags.quiet) {
@@ -154,16 +155,25 @@ int main(int argc, char* argv[])
 		goto BADEND;
 	}
 	
+	/* Check for multiple files */
+	{
+		struct optparse optparsecpy;
+		memcpy(&optparsecpy, &optparse, sizeof(optparse));
+		if (optparse_arg(&optparsecpy) != NULL) {
+			has_multiple_files = 1;
+		}
+	}
+	
 	do
 	{
 		yabmp* l_reader;
-		
-		if (last_input != NULL) {
-			fputc('\n', outStream);
+		if (has_multiple_files) {
+			if (last_input != NULL) {
+				fputc('\n', outStream);
+			}
+			last_input = input;
+			fprintf(outStream, "%s:\n", input);
 		}
-		last_input = input;
-		
-		fprintf(outStream, "%s:\n", input);
 		l_reader = NULL;
 		if (yabmp_create_reader(&l_reader, NULL, flags.quiet ? NULL : print_error, flags.quiet ? NULL : print_warning, NULL, NULL, NULL) != YABMP_OK) {
 			result = 1;

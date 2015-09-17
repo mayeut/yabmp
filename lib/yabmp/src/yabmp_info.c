@@ -52,16 +52,41 @@ YABMP_API(yabmp_status, yabmp_get_dimensions, (const yabmp* instance, yabmp_uint
 		yabmp_send_warning(instance, "NULL width.");
 	}
 	if (height != NULL) {
-		if (info->core.height < 0) {
-			*height = (yabmp_uint32)-info->core.height;
+		if (info->core.height & 0x80000000U) { /* height is negative 2's complement */
+			*height = (info->core.height ^ 0xFFFFFFFFU) + 1U;
 		} else {
-			*height = (yabmp_uint32)info->core.height;
+			*height = info->core.height;
 		}
 	} else {
 		yabmp_send_warning(instance, "NULL height.");
 	}
 	return YABMP_OK;
 }
+YABMP_API(yabmp_status, yabmp_get_pixels_per_meter, (const yabmp* instance, yabmp_uint32* x, yabmp_uint32* y))
+{
+	const yabmp_info* info = NULL;
+	
+	YABMP_CHECK_INSTANCE(instance);
+	
+	info = &instance->info;
+	
+	if ((x == NULL) && (y == NULL)) {
+		yabmp_send_error(instance, "NULL x and NULL y.");
+		return YABMP_ERR_INVALID_ARGS;
+	}
+	if (x != NULL) {
+		*x = info->v1.resXppm;
+	} else {
+		yabmp_send_warning(instance, "NULL x.");
+	}
+	if (y != NULL) {
+		*y = info->v1.resYppm;
+	} else {
+		yabmp_send_warning(instance, "NULL y.");
+	}
+	return YABMP_OK;
+}
+
 YABMP_API(yabmp_status, yabmp_get_bpp, (const yabmp* instance, yabmp_uint16* bpp))
 {
 	const yabmp_info* info = NULL;
@@ -106,7 +131,7 @@ YABMP_API(yabmp_status, yabmp_get_scan_direction, (const yabmp* instance, yabmp_
 		yabmp_send_error(instance, "NULL info or NULL colorMask.");
 		return YABMP_ERR_INVALID_ARGS;
 	}
-	if (info->core.height < 0) {
+	if (info->core.height & 0x80000000U) { /* height is negative 2's complement */
 		*scan_direction = YABMP_SCAN_TOP_DOWN;
 	} else {
 		*scan_direction = YABMP_SCAN_BOTTOM_UP;

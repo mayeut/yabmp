@@ -10,6 +10,8 @@ set(YABMP_LIBRARY_NAME yabmp)
 
 project(YABMP VERSION 1.0.0 LANGUAGES C)
 
+enable_testing()
+
 set(PACKAGE_VERSION "${YABMP_VERSION_MAJOR}.${YABMP_VERSION_MINOR}.${YABMP_VERSION_PATCH}")
 
 set(YABMP_LIBRARY_PROPERTIES
@@ -76,4 +78,8 @@ add_subdirectory(thirdparty)
 #-----------------------------------------------------------------------------
 # Build Applications
 add_subdirectory(bin)
+
+#-----------------------------------------------------------------------------
+# Add tests
+add_subdirectory(tests)
 

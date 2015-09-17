@@ -97,8 +97,8 @@ YABMP_API(yabmp_status, yabmp_set_input_file, (
 		
 YABMP_API(yabmp_status, yabmp_read_info, (yabmp* reader));
 YABMP_API(yabmp_status, yabmp_read_row, (yabmp* reader, void* row, size_t row_size));
-
 YABMP_API(yabmp_status, yabmp_get_dimensions, (const yabmp* instance, yabmp_uint32* width, yabmp_uint32* height));
+YABMP_API(yabmp_status, yabmp_get_pixels_per_meter, (const yabmp* instance, yabmp_uint32* x, yabmp_uint32* y));
 YABMP_API(yabmp_status, yabmp_get_bpp, (const yabmp* instance, unsigned int* bpp));
 YABMP_API(yabmp_status, yabmp_get_color_mask, (const yabmp* instance, unsigned int* color_mask));
 YABMP_API(yabmp_status, yabmp_get_compression, (const yabmp* instance, yabmp_uint32* compression));
