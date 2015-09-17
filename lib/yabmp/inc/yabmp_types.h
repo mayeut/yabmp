@@ -39,7 +39,7 @@ typedef unsigned char yabmp_uint8;
 #if UINT_MAX == 65535
 typedef unsigned int yabmp_uint16;
 #elif USHRT_MAX == 65535
-typedef unsigned int yabmp_uint16;
+typedef unsigned short yabmp_uint16;
 #else
 #	error "yabmp requires 16 bit unsigned integer"
 #endif

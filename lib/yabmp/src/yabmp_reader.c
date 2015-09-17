@@ -487,7 +487,6 @@ static yabmp_status yabmp_setup_read(yabmp* reader)
 	}
 	
 	/* TODO no LUT for 8bpp ?? */
-	
 	if (reader->transforms & (YABMP_TRANSFORM_EXPAND | YABMP_TRANSFORM_GRAYSCALE)) {
 		reader->row8u = yabmp_malloc(reader, reader->input_step_bytes);
 		if (reader->row8u == NULL) {
@@ -541,6 +540,9 @@ YABMP_API(yabmp_status, yabmp_read_row, (yabmp* reader, void* row, size_t row_si
 		if (reader->info.core.bpp == 1U) {
 			yabmp_pal1_to_bgr24(reader, reader->row8u, row);
 		}
+		else if (reader->info.core.bpp == 2U) {
+			yabmp_pal2_to_bgr24(reader, reader->row8u, row);
+		}
 		else if (reader->info.core.bpp == 4U) {
 			yabmp_pal4_to_bgr24(reader, reader->row8u, row);
 		}
@@ -583,6 +585,9 @@ YABMP_API(yabmp_status, yabmp_read_row, (yabmp* reader, void* row, size_t row_si
 		YABMP_SIMPLE_CHECK(yabmp_stream_read(reader, reader->row8u, reader->input_step_bytes));
 		if (reader->info.core.bpp == 1U) {
 			yabmp_pal1_to_y8(reader, reader->row8u, row);
+		}
+		else if (reader->info.core.bpp == 2U) {
+			yabmp_pal2_to_y8(reader, reader->row8u, row);
 		}
 		else if (reader->info.core.bpp == 4U) {
 			yabmp_pal4_to_y8(reader, reader->row8u, row);

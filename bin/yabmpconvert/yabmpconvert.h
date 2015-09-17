@@ -29,10 +29,13 @@
 
 typedef struct
 {
-	const char* inputFile;
-	const char* outputFile;
-	int expandPalette;
-	int keepGrayPalette;
+	const char* input_file;
+	const char* output_file;
+	unsigned int version:1;
+	unsigned int help:1;
+	unsigned int quiet:1;
+	unsigned int expand_palette:1;
+	unsigned int keep_gray_palette:1;
 } yabmpconvert_parameters;
 
 int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader);

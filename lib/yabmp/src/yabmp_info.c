@@ -87,7 +87,7 @@ YABMP_API(yabmp_status, yabmp_get_pixels_per_meter, (const yabmp* instance, yabm
 	return YABMP_OK;
 }
 
-YABMP_API(yabmp_status, yabmp_get_bpp, (const yabmp* instance, yabmp_uint16* bpp))
+YABMP_API(yabmp_status, yabmp_get_bpp, (const yabmp* instance, unsigned int* bpp))
 {
 	const yabmp_info* info = NULL;
 	

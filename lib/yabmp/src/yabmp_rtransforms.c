@@ -439,6 +439,67 @@ YABMP_IAPI(void, yabmp_pal1_to_bgr24, (const yabmp* instance, const yabmp_uint8*
 	}
 }
 
+YABMP_IAPI(void, yabmp_pal2_to_bgr24, (const yabmp* instance, const yabmp_uint8* pSrc, yabmp_uint8* pDst ))
+{
+	yabmp_uint32 x, l_width;
+	
+	assert(instance != NULL);
+	assert(pSrc != NULL);
+	assert(pDst != NULL);
+	
+	l_width = (yabmp_uint32)instance->info.core.width;
+	
+	for(x = 0U; x < l_width / 4U; ++x)
+	{
+		yabmp_uint8 l_value = pSrc[x];
+		yabmp_uint8 l_current;
+		
+		l_current = (l_value >> 6) & 0x03;
+		pDst[12*x+0] = instance->info.lutB[l_current];
+		pDst[12*x+1] = instance->info.lutG[l_current];
+		pDst[12*x+2] = instance->info.lutR[l_current];
+		
+		l_current = (l_value >> 4) & 0x03;
+		pDst[12*x+3] = instance->info.lutB[l_current];
+		pDst[12*x+4] = instance->info.lutG[l_current];
+		pDst[12*x+5] = instance->info.lutR[l_current];
+		
+		l_current = (l_value >> 2) & 0x03;
+		pDst[12*x+6] = instance->info.lutB[l_current];
+		pDst[12*x+7] = instance->info.lutG[l_current];
+		pDst[12*x+8] = instance->info.lutR[l_current];
+		
+		l_current = (l_value >> 0) & 0x03;
+		pDst[12*x+9] = instance->info.lutB[l_current];
+		pDst[12*x+10] = instance->info.lutG[l_current];
+		pDst[12*x+11] = instance->info.lutR[l_current];
+	}
+	
+	if (l_width & 3U) {
+		yabmp_uint8 l_value = pSrc[x];
+		yabmp_uint8 l_current;
+		int l_remaining = (int)l_width & 3U;
+		
+		l_current = (l_value >> 6) & 0x03;
+		pDst[12*x+0] = instance->info.lutB[l_current];
+		pDst[12*x+1] = instance->info.lutG[l_current];
+		pDst[12*x+2] = instance->info.lutR[l_current];
+		
+		if (l_remaining > 1) {
+			l_current = (l_value >> 4) & 0x03;
+			pDst[12*x+3] = instance->info.lutB[l_current];
+			pDst[12*x+4] = instance->info.lutG[l_current];
+			pDst[12*x+5] = instance->info.lutR[l_current];
+		}
+		if (l_remaining > 2) {
+			l_current = (l_value >> 2) & 0x03;
+			pDst[12*x+6] = instance->info.lutB[l_current];
+			pDst[12*x+7] = instance->info.lutG[l_current];
+			pDst[12*x+8] = instance->info.lutR[l_current];
+		}
+	}
+}
+
 YABMP_IAPI(void, yabmp_pal4_to_bgr24, (const yabmp* instance, const yabmp_uint8* pSrc, yabmp_uint8* pDst ))
 {
 	yabmp_uint32 x, l_width;
@@ -565,6 +626,53 @@ YABMP_IAPI(void, yabmp_pal1_to_y8, (const yabmp* instance, const yabmp_uint8* pS
 		if (l_remaining > 6) {
 			l_current = (l_value >> 1) & 0x01;
 			pDst[8*x+6] = instance->info.lutB[l_current];
+		}
+	}
+}
+
+YABMP_IAPI(void, yabmp_pal2_to_y8, (const yabmp* instance, const yabmp_uint8* pSrc, yabmp_uint8* pDst ))
+{
+	yabmp_uint32 x, l_width;
+	
+	assert(instance != NULL);
+	assert(pSrc != NULL);
+	assert(pDst != NULL);
+	
+	l_width = (yabmp_uint32)instance->info.core.width;
+	
+	for(x = 0U; x < l_width / 4U; ++x)
+	{
+		yabmp_uint8 l_value = pSrc[x];
+		yabmp_uint8 l_current;
+		
+		l_current = (l_value >> 6) & 0x03;
+		pDst[4*x+0] = instance->info.lutB[l_current];
+		
+		l_current = (l_value >> 4) & 0x03;
+		pDst[4*x+1] = instance->info.lutB[l_current];
+		
+		l_current = (l_value >> 2) & 0x03;
+		pDst[4*x+2] = instance->info.lutB[l_current];
+		
+		l_current = (l_value >> 0) & 0x03;
+		pDst[4*x+3] = instance->info.lutB[l_current];
+	}
+	
+	if (l_width & 3U) {
+		yabmp_uint8 l_value = pSrc[x];
+		yabmp_uint8 l_current;
+		int l_remaining = (int)l_width & 3U;
+		
+		l_current = (l_value >> 6) & 0x03;
+		pDst[4*x+0] = instance->info.lutB[l_current];
+		
+		if (l_remaining > 1) {
+			l_current = (l_value >> 4) & 0x03;
+			pDst[4*x+1] = instance->info.lutB[l_current];
+		}
+		if (l_remaining > 2) {
+			l_current = (l_value >> 2) & 0x03;
+			pDst[4*x+2] = instance->info.lutB[l_current];
 		}
 	}
 }

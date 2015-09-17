@@ -63,7 +63,8 @@ static const char* get_appname(const char* app)
 }
 static void print_usage(FILE* stream, const char* app)
 {
-	fprintf(stream,
+	fprintf(
+		stream,
 		"usage:\n"
 		"%s -h|--help : this help message\n"
 		"%s -v|--version : print version\n"
@@ -197,6 +198,10 @@ FREE_INSTANCE:
 		}
 	} while ((input = optparse_arg(&optparse)) != NULL);
 BADEND:
+	if ((outStream != stdout) && (outStream != NULL)) {
+		fclose(outStream);
+	}
+	
 	return result;
 #if 0
 	static void* custom_malloc(void* context, size_t size)
