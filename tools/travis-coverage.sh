@@ -27,7 +27,7 @@ for FILE in ${FILES}; do
 	# This is a big hack...
 	SOURCE=$(find ../ -type f -name "${FILENAME}" -print0)
 	if [ -f "${SOURCE}" ]; then
-		gcov ${SOURCE} --object-file ${FILE} -o ${TARGETDIR}/${FILENAME}.gcov
+		( cd ${TARGETDIR} && gcov ${SOURCE} --object-file ${FILE} )
 	fi
 done
 
