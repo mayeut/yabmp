@@ -111,6 +111,9 @@ YABMP_API(void, yabmp_destroy_reader, (yabmp** reader))
 		if (l_reader->rle_row != NULL) {
 			yabmp_free(l_reader, l_reader->rle_row);
 		}
+		if (l_reader->input_row != NULL) {
+			yabmp_free(l_reader, l_reader->input_row);
+		}
 		
 		if (l_reader->close_fn != NULL) {
 			l_reader->close_fn(l_reader->stream_context);

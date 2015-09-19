@@ -45,5 +45,4 @@ install:
 script:
   - cmake -G "Unix Makefiles" -DYABMP_BUILD_PNG:BOOL=YES -DCMAKE_BUILD_TYPE=${YABMP_BUILD_TYPE} ..
   - make
-  - make -j 2 test
-
+  - ctest --output-on-failure
