@@ -224,7 +224,7 @@ FREE_INSTANCE:
 			if (allocation_current < allocation_max) {
 				break;
 			}
-			allocation_max = allocation_current + 1U;
+			allocation_max++;
 			if (allocation_max == 0xFFFFFFFFU) {
 				if (!params.quiet) {
 					fprintf(stderr, "Reached maximum number of allocations\n");

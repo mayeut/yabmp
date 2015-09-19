@@ -36,7 +36,7 @@ YABMP_IAPI(void*, yabmp_malloc, (const yabmp* instance, size_t size))
 	assert(instance != NULL);
 	
 	if (size != 0U) {
-		if (instance->free_fn != NULL) {
+		if (instance->malloc_fn != NULL) {
 			l_result = instance->malloc_fn(instance->alloc_context, size);
 		} else {
 			l_result = malloc(size);
