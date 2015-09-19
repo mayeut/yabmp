@@ -47,15 +47,15 @@ static void print_yabmp_warning(void* context, const char* message)
 }
 
 /* this is a mode to detect potential leak with correct tools, unchecked allocations, allocator misuse (unmatching malloc/free) */
-static size_t allocation_max = 0U;
-static size_t allocation_current = 0U;
+static yabmp_uint32 allocation_max = 0U;
+static yabmp_uint32 allocation_current = 0U;
 
 static void* custom_malloc(void* context, size_t size)
 {
 	yabmp_uint8* buffer;
 	(void)context;
 	
-	allocation_current += size;
+	allocation_current++;
 	if (allocation_current > allocation_max) {
 		return NULL;
 	}
@@ -225,6 +225,12 @@ FREE_INSTANCE:
 				break;
 			}
 			allocation_max = allocation_current + 1U;
+			if (allocation_max == 0xFFFFFFFFU) {
+				if (!params.quiet) {
+					fprintf(stderr, "Reached maximum number of allocations\n");
+					break;
+				}
+			}
 			allocation_current = 0U;
 			continue;
 		}
