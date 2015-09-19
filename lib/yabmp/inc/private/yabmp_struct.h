@@ -87,6 +87,10 @@ struct yabmp_struct
 	
 	yabmp_uint32 transformed_row_bytes; /* transformed row size in bytes */
 	
+	yabmp_uint8* rle_row;
+	yabmp_uint32 rle_skip_x;
+	yabmp_uint32 rle_skip_y;
+	
 	union {
 		yabmp_uint8*  row8u;
 		yabmp_uint16* row16u;

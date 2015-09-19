@@ -57,6 +57,7 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader)
 	yabmp_uint32 l_png_color_mask;
 	int l_png_has_sBIT = 0;
 	unsigned int blue_bits, green_bits, red_bits, alpha_bits;
+	int l_need_full_image = 0;
 		
 	png_structp l_png_writer = NULL;
 	png_infop l_png_info = NULL;
@@ -164,10 +165,18 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader)
 	switch (l_scan_direction)
 	{
 		case YABMP_SCAN_BOTTOM_UP:
-			/* TODO check supported */
-			if (yabmp_set_invert_scan_direction(bmp_reader) != YABMP_OK) {
-				goto BADEND;
+			switch (l_compression) {
+				case YABMP_COMPRESSION_NONE:
+				case YABMP_COMPRESSION_BITFIELDS:
+					if (yabmp_set_invert_scan_direction(bmp_reader) != YABMP_OK) {
+						goto BADEND;
+					}
+					break;
+				default:
+					l_need_full_image = 1;
+					break;
 			}
+			
 			break;
 		case YABMP_SCAN_TOP_DOWN:
 			break;
@@ -248,16 +257,43 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader)
 	
 	// Now deal with the image
 	l_buffer_size = png_get_rowbytes(l_png_writer, l_png_info);
-	l_buffer = malloc(l_buffer_size);
+	if (l_need_full_image) {
+		/* TODO check overflow */
+		l_buffer = malloc(l_buffer_size * (size_t)l_height);
+	}
+	else {
+		l_buffer = malloc(l_buffer_size);
+	}
 	if (l_buffer == NULL) {
 		fprintf(stderr, "ERROR: can't allocate buffer for 1 line\n");
 		goto BADEND;
 	}
-	for (i = 0; i < l_height; ++i) {
-		if (yabmp_read_row(bmp_reader, l_buffer, l_buffer_size) != YABMP_OK) {
-			goto BADEND;
+	if (l_need_full_image) {
+		union
+		{
+			void* buffer;
+			uint8_t* buffer8u;
+		} l_current_row;
+		
+		l_current_row.buffer = l_buffer;
+		for (i = 0; i < l_height; ++i) {
+			if (yabmp_read_row(bmp_reader, l_current_row.buffer, l_buffer_size) != YABMP_OK) {
+				goto BADEND;
+			}
+			l_current_row.buffer8u += l_buffer_size;
 		}
-		png_write_row(l_png_writer, l_buffer);
+		for (i = 0; i < l_height; ++i) {
+			l_current_row.buffer8u -= l_buffer_size;
+			png_write_row(l_png_writer, l_current_row.buffer);
+		}
+	}
+	else {
+		for (i = 0; i < l_height; ++i) {
+			if (yabmp_read_row(bmp_reader, l_buffer, l_buffer_size) != YABMP_OK) {
+				goto BADEND;
+			}
+			png_write_row(l_png_writer, l_buffer);
+		}
 	}
 	free(l_buffer);
 	l_buffer = NULL;
