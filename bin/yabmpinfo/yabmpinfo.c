@@ -205,16 +205,6 @@ BADEND:
 	
 	return result;
 #if 0
-	static void* custom_malloc(void* context, size_t size)
-	{
-		(void)context;
-		return malloc(size);
-	}
-	static void custom_free(void* context, void* ptr)
-	{
-		(void)context;
-		free(ptr);
-	}
 	/* test args error for yabmp_create_reader */
 	{
 		yabmp* l_reader = NULL;

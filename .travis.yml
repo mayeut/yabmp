@@ -51,6 +51,7 @@ script:
   - cmake -G "Unix Makefiles" -DYABMP_BUILD_PNG:BOOL=YES -DCMAKE_BUILD_TYPE=${YABMP_BUILD_TYPE} ..
   - make
   - ctest --output-on-failure
+  - YABMP_USE_CUSTOM_MALLOC=1 ctest --output-on-failure
   
 after_success:
   - if [ "${LDFLAGS}" == "-coverage" ]; then ../tools/travis-coverage.sh ; fi

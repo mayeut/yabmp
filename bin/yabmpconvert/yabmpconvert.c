@@ -46,6 +46,37 @@ static void print_yabmp_warning(void* context, const char* message)
 	fprintf(stderr, "YABMP WARNING: %s\n", message);
 }
 
+/* this is a mode to detect potential leak with correct tools, unchecked allocations, allocator misuse (unmatching malloc/free) */
+static size_t allocation_max = 0U;
+static size_t allocation_current = 0U;
+
+static void* custom_malloc(void* context, size_t size)
+{
+	yabmp_uint8* buffer;
+	(void)context;
+	
+	allocation_current += size;
+	if (allocation_current > allocation_max) {
+		return NULL;
+	}
+	buffer = malloc(size+16);
+	if (buffer != NULL) {
+		buffer += 16;
+	}
+	return buffer;
+}
+static void custom_free(void* context, void* ptr)
+{
+	yabmp_uint8* buffer = ptr;
+	(void)context;
+	
+	if (buffer != NULL) {
+		buffer -= 16;
+	}
+	
+	free(buffer);
+}
+
 static const char* get_appname(const char* app)
 {
 	const char* l_firstResult = NULL;
@@ -95,11 +126,22 @@ int main(int argc, char* argv[])
 		{ "quiet",          'q', OPTPARSE_NONE },
 		{ 0 }
 	};
-	
+	const char* use_custom_malloc = NULL;
 	int result = EXIT_SUCCESS;
 	yabmpconvert_parameters params;
 	struct optparse optparse;
 	int option;
+	
+	/* env options */
+	use_custom_malloc = getenv("YABMP_USE_CUSTOM_MALLOC");
+	if (use_custom_malloc != NULL) {
+		if (use_custom_malloc[0] == '\0') {
+			use_custom_malloc = NULL;
+		}
+		else if ((use_custom_malloc[0] == '0') && (use_custom_malloc[1] == '\0')) {
+			use_custom_malloc = NULL;
+		}
+	}
 	
 	memset(&params, 0, sizeof(params));
 	optparse_init(&optparse, argv);
@@ -154,10 +196,15 @@ int main(int argc, char* argv[])
 		}
 	}
 	
+	if ((use_custom_malloc != NULL) && !params.quiet) {
+		fprintf(stderr, "Using custom allocation\n");
+	}
+	
+	for (;;)
 	{
 		yabmp* l_bmp_reader = NULL;
 		
-		if (yabmp_create_reader(&l_bmp_reader, NULL, params.quiet ? NULL : print_yabmp_error, params.quiet ? NULL : print_yabmp_warning, NULL, NULL, NULL) != YABMP_OK) {
+		if (yabmp_create_reader(&l_bmp_reader, NULL, params.quiet ? NULL : print_yabmp_error, params.quiet ? NULL : print_yabmp_warning, NULL, (use_custom_malloc != NULL) ? custom_malloc : NULL, (use_custom_malloc != NULL) ? custom_free : NULL) != YABMP_OK) {
 			result = EXIT_FAILURE;
 			goto FREE_INSTANCE;
 		}
@@ -173,6 +220,15 @@ int main(int argc, char* argv[])
 		result = convert_topng(&params, l_bmp_reader);
 FREE_INSTANCE:
 		yabmp_destroy_reader(&l_bmp_reader);
+		if ((use_custom_malloc != NULL) && (result != 0)) {
+			if (allocation_current < allocation_max) {
+				break;
+			}
+			allocation_max = allocation_current + 1U;
+			allocation_current = 0U;
+			continue;
+		}
+		break;
 	}
 	
 BADEND:
