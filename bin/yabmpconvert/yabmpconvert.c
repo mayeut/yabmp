@@ -52,12 +52,12 @@ static const char* get_appname(const char* app)
 	const char* l_secondResult = NULL;
 	
 	l_firstResult = strrchr(app, '/');
-	l_secondResult = strrchr(app, '\\');
+	if (l_firstResult == NULL) {
+		l_firstResult = app;
+	}
+	l_secondResult = strrchr(l_firstResult, '\\');
 	
 	if(l_firstResult == NULL) {
-		l_firstResult = l_secondResult;
-	}
-	if ((ptrdiff_t)(l_secondResult - l_firstResult) > 0) {
 		l_firstResult = l_secondResult;
 	}
 	if (l_firstResult == NULL) {
@@ -65,6 +65,7 @@ static const char* get_appname(const char* app)
 	}
 	return l_firstResult + 1;
 }
+
 static void print_usage(FILE* stream, const char* app)
 {
 	fprintf(

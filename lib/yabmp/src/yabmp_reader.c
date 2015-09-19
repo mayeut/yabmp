@@ -940,7 +940,10 @@ YABMP_API(yabmp_status, yabmp_read_row, (yabmp* reader, void* row, size_t row_si
 	}
 	
 	if (reader->transforms & YABMP_TRANSFORM_SCAN_ORDER) {
-		YABMP_SIMPLE_CHECK(yabmp_stream_seek(reader, reader->stream_offset - 2U * reader->input_step_bytes));
+		if (reader->stream_offset >= 2U * reader->input_step_bytes) {
+			/* not last line to read */
+			YABMP_SIMPLE_CHECK(yabmp_stream_seek(reader, reader->stream_offset - 2U * reader->input_step_bytes));
+		}
 	}
 	reader->status |= YABMP_STATUS_HAS_LINES;
 	

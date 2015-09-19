@@ -1,0 +1,48 @@
+language: c
+os:
+  - linux
+  - osx
+compiler:
+  - gcc
+  - clang
+env:
+  - YABMP_BUILD_TYPE=Release YABMP_BUILD_PNG=NO CFLAGS="-m64"
+  - YABMP_BUILD_TYPE=Release YABMP_BUILD_PNG=YES CFLAGS="-arch x86_64"
+  - YABMP_BUILD_TYPE=Release YABMP_BUILD_PNG=NO CFLAGS="-m32 -march=i386"
+  - YABMP_BUILD_TYPE=Release YABMP_BUILD_PNG=YES CFLAGS="-arch i386"
+  - YABMP_BUILD_TYPE=Debug   YABMP_BUILD_PNG=NO CFLAGS="-m64 -O1 -g -fsanitize=address -fno-omit-frame-pointer"
+  
+matrix:
+  exclude:
+    - os: osx
+      compiler: gcc
+    - os: osx
+      env: YABMP_BUILD_TYPE=Release YABMP_BUILD_PNG=NO CFLAGS="-m64"
+    - os: osx
+      env: YABMP_BUILD_TYPE=Release YABMP_BUILD_PNG=NO CFLAGS="-m32 -march=i386"
+    - os: osx
+      env: YABMP_BUILD_TYPE=Debug   YABMP_BUILD_PNG=NO CFLAGS="-m64 -O1 -g -fsanitize=address -fno-omit-frame-pointer"
+    - os: linux
+      env: YABMP_BUILD_TYPE=Release YABMP_BUILD_PNG=YES CFLAGS="-arch x86_64"
+    - os: linux
+      env: YABMP_BUILD_TYPE=Release YABMP_BUILD_PNG=YES CFLAGS="-arch i386"
+    - compiler: gcc
+      env: YABMP_BUILD_TYPE=Debug   YABMP_BUILD_PNG=NO CFLAGS="-m64 -O1 -g -fsanitize=address -fno-omit-frame-pointer"
+    - compiler: clang
+      env: YABMP_BUILD_TYPE=Release YABMP_BUILD_PNG=NO CFLAGS="-m32 -march=i386"
+  
+addons:
+  apt:
+    packages:
+      - gcc-multilib
+
+install:
+  - ./tools/travis-install.sh
+  - export PATH=${PWD}/cmake-install/bin:$PATH
+  - mkdir build && cd build
+
+script:
+  - cmake -G "Unix Makefiles" -DYABMP_BUILD_PNG:BOOL=${YABMP_BUILD_PNG} -DCMAKE_BUILD_TYPE=${YABMP_BUILD_TYPE} ..
+  - make
+  - make -j 2 test
+
