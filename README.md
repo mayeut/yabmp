@@ -1,3 +1,7 @@
+[![Build Status](https://travis-ci.org/mayeut/yabmp.svg?branch=master)](https://travis-ci.org/mayeut/yabmp)
+[![codecov.io](http://codecov.io/github/mayeut/yabmp/coverage.svg?branch=master)](http://codecov.io/github/mayeut/yabmp?branch=master)
+[![Coverity Scan Build Status](https://scan.coverity.com/projects/6405/badge.svg)](https://scan.coverity.com/projects/mayeut-yabmp)
+
 # yabmp
 
 **This is still a work in progress**
@@ -15,6 +19,4 @@ Most of the time, BMP format is simple. However, yabmp aims to provide a robust 
 Anyone. As the yabmp code is released under [The MIT License](https://github.com/mayeut/yabmp/blob/master/LICENSE), anyone can use or modify the code, even for commercial applications.
 See [LICENSE](https://github.com/mayeut/yabmp/blob/master/LICENSE) for license and copyright information.
 
-## Current Status
 
-[![Build Status](https://travis-ci.org/mayeut/yabmp.svg?branch=master)](https://travis-ci.org/mayeut/yabmp)
