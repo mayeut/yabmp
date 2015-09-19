@@ -35,6 +35,7 @@ addons:
   apt:
     packages:
       - gcc-multilib
+      - zlib1g-dev:i386
 
 install:
   - ./tools/travis-install.sh
