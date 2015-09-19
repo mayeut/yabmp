@@ -28,19 +28,19 @@ YABMP_API(void, yabmp_get_version, (yabmp_uint32 * major, yabmp_uint32 * minor, 
 {
 	/* TODO VERSION */
 	if (major != NULL) {
-		*major = 1U;
+		*major = YABMP_VERSION_MAJOR;
 	}
 	if (minor != NULL) {
-		*minor = 0U;
+		*minor = YABMP_VERSION_MINOR;
 	}
 	if (patch != NULL) {
-		*patch = 0U;
+		*patch = YABMP_VERSION_PATCH;
 	}
 }
 YABMP_API(const char*, yabmp_get_version_string, ())
 {
 	/* TODO VERSION */
-	static const char c_version_string[] = "1.0.0";
+	static const char c_version_string[] = YABMP_STRINGIFY(YABMP_VERSION_MAJOR) "." YABMP_STRINGIFY(YABMP_VERSION_MINOR) "." YABMP_STRINGIFY(YABMP_VERSION_PATCH);
 	
 	return c_version_string;
 }

@@ -8,7 +8,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
     
 set(YABMP_LIBRARY_NAME yabmp)
 
-project(YABMP VERSION 1.0.0 LANGUAGES C)
+project(YABMP VERSION 0.1.0 LANGUAGES C)
 
 enable_testing()
 

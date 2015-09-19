@@ -136,6 +136,11 @@ int main(int argc, char* argv[])
 		goto BADEND;
 	}
 	
+	if ((params.output_file == NULL) && (params.input_file == NULL) ) {
+		if (params.version) {
+			goto BADEND;
+		}
+	}
 	
 	{
 		yabmp* l_bmp_reader = NULL;

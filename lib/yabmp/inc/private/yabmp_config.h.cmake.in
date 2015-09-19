@@ -23,22 +23,12 @@
  */
 
 /* Multiple inclusion protection */
-#ifndef YABMP_INTERNAL_H
-#define YABMP_INTERNAL_H
+#ifndef YABMP_CONFIG_H
+#define YABMP_CONFIG_H
 
-#include <string.h>
+/* YABMP version */
+#define YABMP_VERSION_MAJOR @YABMP_VERSION_MAJOR@
+#define YABMP_VERSION_MINOR @YABMP_VERSION_MINOR@
+#define YABMP_VERSION_PATCH @YABMP_VERSION_PATCH@
 
-#define YABMP_STRINGIFY(s) YABMP_STRINGIFY_IMPL(s)
-#define YABMP_STRINGIFY_IMPL(s) #s
-
-#include <yabmp_config.h>
-#include "yabmp_api.h"
-#include "yabmp_struct.h"
-#include "yabmp_info.h"
-#include "yabmp_malloc.h"
-#include "yabmp_message.h"
-#include "yabmp_stream.h"
-#include "yabmp_checks.h"
-#include "yabmp_rtransforms.h"
-
-#endif /* YABMP_INTERNAL_H */
+#endif /* YABMP_CONFIG_H */
