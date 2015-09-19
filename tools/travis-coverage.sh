@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 # This script executes the coverage step when running under travis-ci
 
@@ -19,5 +19,8 @@ function exit_handler ()
 trap exit_handler EXIT
 trap exit ERR
 
-find ./ -type f -name '*.gcno' | awk '{ print "mv "$0" $(dirname "$0")/$(basename "$0" .c.gcno).gcno" }' | bash
-find ./ -type f -name '*.gcda' | awk '{ print "mv "$0" $(dirname "$0")/$(basename "$0" .c.gcda).gcda" }' | bash
+#find ./ -type f -name '*.gcno' | awk '{ print "mv "$0" $(dirname "$0")/$(basename "$0" .c.gcno).gcno" }' | bash
+#find ./ -type f -name '*.gcda' | awk '{ print "mv "$0" $(dirname "$0")/$(basename "$0" .c.gcda).gcda" }' | bash
+
+find ./ -type f -name '*.gcno' -exec gcov  {} +
+bash <(curl -s https://codecov.io/bash)

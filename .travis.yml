@@ -42,9 +42,6 @@ addons:
       - gcc-multilib
       - zlib1g-dev:i386
 
-before_install:
-  - CFLAGS="" pip install --user codecov
-
 install:
   - ./tools/travis-install.sh
   - export PATH=${PWD}/cmake-install/bin:$PATH
@@ -56,4 +53,4 @@ script:
   - ctest --output-on-failure
   
 after_success:
-  - if [ "${LDFLAGS}" == "-coverage" ]; then ../tools/travis-coverage.sh && codecov ; fi
+  - if [ "${LDFLAGS}" == "-coverage" ]; then ../tools/travis-coverage.sh ; fi
