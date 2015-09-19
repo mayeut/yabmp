@@ -33,7 +33,7 @@ matrix:
       env: YABMP_BUILD_TYPE=Debug   CFLAGS="-m64 -O1 -g -fsanitize=address -fno-omit-frame-pointer"
     - compiler: clang
       env: YABMP_BUILD_TYPE=Release CFLAGS="-m32 -march=i386"
-    - compiler: clang
+    - compiler: gcc
       env: YABMP_BUILD_TYPE=Debug   CFLAGS="-m64 -O0 -g -coverage" LDFLAGS="-coverage"
   
 addons:
@@ -43,7 +43,7 @@ addons:
       - zlib1g-dev:i386
 
 before_install:
-  - pip install --user codecov
+  - CFLAGS="" pip install --user codecov
 
 install:
   - ./tools/travis-install.sh
