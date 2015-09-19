@@ -103,13 +103,6 @@ YABMP_IAPI(void, yabmp_bf32u_to_bgr48, (const yabmp* instance, const yabmp_uint3
 	l_green_mask = instance->info.v2.greenMask;
 	l_red_mask   = instance->info.v2.redMask;
 	
-	if ((l_blue_mask | l_green_mask | l_red_mask) == 0U) {
-		/* default color mask - no compression */
-		l_blue_mask  = 0x0000FFU;
-		l_green_mask = 0x00FF00U;
-		l_red_mask   = 0xFF0000U;
-	}
-	
 	yabmp_bitfield_get_shift_and_bits(l_blue_mask, &l_blue_shift, &l_dummy_bits);
 	yabmp_bitfield_get_shift_and_bits(l_green_mask, &l_green_shift, &l_dummy_bits);
 	yabmp_bitfield_get_shift_and_bits(l_red_mask, &l_red_shift, &l_dummy_bits);
@@ -245,13 +238,6 @@ YABMP_IAPI(void, yabmp_bf16u_to_bgr48, (const yabmp* instance, const yabmp_uint1
 	l_blue_mask  = (yabmp_uint16)instance->info.v2.blueMask;
 	l_green_mask = (yabmp_uint16)instance->info.v2.greenMask;
 	l_red_mask   = (yabmp_uint16)instance->info.v2.redMask;
-	
-	if ((l_blue_mask | l_green_mask | l_red_mask) == 0U) {
-		/* default color mask - no compression */
-		l_blue_mask  = 0x001FU;
-		l_green_mask = 0x03E0U;
-		l_red_mask   = 0x7C00U;
-	}
 	
 	yabmp_bitfield_get_shift_and_bits((yabmp_uint32)l_blue_mask, &l_blue_shift, &l_dummy_bits);
 	yabmp_bitfield_get_shift_and_bits((yabmp_uint32)l_green_mask, &l_green_shift, &l_dummy_bits);
