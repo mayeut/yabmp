@@ -359,11 +359,13 @@ static yabmp_status local_read_core_info(yabmp* reader, yabmp_info* info)
 		YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(info->core.width))); /* we'll need to validate this */
 		YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &l_height));
 		
-		/* TODO Top-Down */
-		//if (l_height & 0x80000000U) { /* height is negative 2's complement */
-		//	l_height = (l_height ^ 0xFFFFFFFFU) + 1U;
-		//	/* TODO set top-down flag */
-		//}
+#if 0
+		/* TODO Top-Down flag */
+		if (l_height & 0x80000000U) { /* height is negative 2's complement */
+			l_height = (l_height ^ 0xFFFFFFFFU) + 1U;
+			/* TODO set top-down flag */
+		}
+#endif
 		
 		info->core.height = l_height;
 	}

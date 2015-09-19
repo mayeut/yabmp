@@ -41,19 +41,6 @@
 #define YABMP_TRANSFORM_EXPAND     2U
 #define YABMP_TRANSFORM_GRAYSCALE  4U
 
-typedef struct yabmp_reader_struct
-{
-	yabmp_uint32 input_row_bytes;  /* input row size in bytes */
-	yabmp_uint32 input_step_bytes; /* intput step size in bytes */
-	
-} yabmp_reader;
-
-typedef struct yabmp_writer_struct
-{
-	yabmp_uint32 size; /* we need something */
-	
-} yabmp_writer;
-
 typedef void  (*yabmp_transform_fn)(const yabmp* instance, const void* pSrc, void* pDst );
 
 struct yabmp_struct
@@ -72,10 +59,8 @@ struct yabmp_struct
 	
 	/* stream management */
 	void* stream_context; /* context passed to stream functions */
-	union {
-		yabmp_stream_read_cb  read_fn;  /* user provided stream read function */
-		yabmp_stream_write_cb write_fn; /* user provided stream write function */
-	};
+	yabmp_stream_read_cb  read_fn;  /* user provided stream read function */
+	yabmp_stream_write_cb write_fn; /* user provided stream write function */
 	yabmp_stream_seek_cb  seek_fn;  /* user provided stream seek function */
 	yabmp_stream_close_cb close_fn; /* user provided stream close function */
 	yabmp_uint32 stream_offset; /* current offset */
@@ -96,14 +81,6 @@ struct yabmp_struct
 	yabmp_uint8* rle_row;
 	yabmp_uint32 rle_skip_x;
 	yabmp_uint32 rle_skip_y;
-	
-
-	
-	
-	union {
-		yabmp_reader reader;
-		yabmp_writer writer;
-	};
 };
 
 #endif /* YABMP_STRUCT_H */

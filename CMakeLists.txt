@@ -53,7 +53,7 @@ mark_as_advanced(LIBRARY_OUTPUT_PATH EXECUTABLE_OUTPUT_PATH)
 #-----------------------------------------------------------------------------
 # Compiler specific flags:
 if(CMAKE_COMPILER_IS_GNUCC)
-  set(CMAKE_C_FLAGS "-Wall -Werror ${CMAKE_C_FLAGS}") # "All" warnings (c.f. gcc documentation). Warnings are error.
+  set(CMAKE_C_FLAGS "-Wall -Werror -pedantic ${CMAKE_C_FLAGS}") # "All" warnings (c.f. gcc documentation). Warnings are error.
 endif()
 
 # Check if some include files are provided by the system

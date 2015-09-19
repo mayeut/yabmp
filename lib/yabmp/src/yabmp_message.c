@@ -64,7 +64,7 @@ static void yabmp_send_message(yabmp_message_cb message_fn, void* context, const
 #if !defined(NDEBUG)
 	int len =
 #endif
-	vsnprintf(message, sizeof(message), format, args);
+	vsnprintf(message, sizeof(message), format, args); /* TODO this is not C90 */
 #if !defined(NDEBUG)
 	assert((len >= 0) && (len < (int)YABMP_MAX_MSG_SIZE)); /* if longer message are seen during debug, update YABMP_MAX_MSG_SIZE */
 #endif

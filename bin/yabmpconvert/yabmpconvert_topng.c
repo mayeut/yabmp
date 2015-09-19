@@ -262,7 +262,7 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader)
 		png_set_swap(l_png_writer);
 	}
 	
-	// Now deal with the image
+	/* Now deal with the image */
 	l_buffer_size = png_get_rowbytes(l_png_writer, l_png_info);
 	if (l_need_full_image) {
 		/* TODO check overflow */
