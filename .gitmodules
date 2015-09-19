@@ -7,4 +7,4 @@
 	url = https://github.com/glennrp/libpng.git
 [submodule "optparse"]
 	path = thirdparty/optparse
-	url = https://github.com/skeeto/optparse.git
+	url = https://github.com/mayeut/optparse.git
