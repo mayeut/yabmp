@@ -204,20 +204,5 @@ BADEND:
 	}
 	
 	return result;
-#if 0
-	/* test args error for yabmp_create_reader */
-	{
-		yabmp* l_reader = NULL;
-		yabmp_create_reader(&l_reader, NULL, print_error, print_warning, NULL, custom_malloc, NULL);
-		yabmp_create_reader(&l_reader, NULL, print_error, print_warning, NULL, NULL, custom_free);
-		yabmp_create_reader(NULL, NULL, print_error, print_warning, NULL, NULL, custom_free);
-		yabmp_create_reader(NULL, NULL, print_error, print_warning, NULL, NULL, NULL);
-		yabmp_create_reader(&l_reader, NULL, print_error, print_warning, NULL, custom_malloc, custom_free);
-		yabmp_create_reader(&l_reader, NULL, print_error, print_warning, NULL, custom_malloc, custom_free);
-		yabmp_destroy_reader(&l_reader, NULL);
-	}
-	
-	return result;
-#endif
 }
 
