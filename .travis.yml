@@ -56,6 +56,4 @@ script:
   - ctest --output-on-failure
   
 after_success:
-  - if [ "${LDFLAGS}" == "-coverage" ]; find ./ -type f -name '*.gcno' | awk '{ print "mv "$0" $(dirname "$0")/$(basename "$0" .c.gcno).gcno" }' | bash ; fi
-  - if [ "${LDFLAGS}" == "-coverage" ]; find ./ -type f -name '*.gcda' | awk '{ print "mv "$0" $(dirname "$0")/$(basename "$0" .c.gcda).gcda" }' | bash ; fi
-  - if [ "${LDFLAGS}" == "-coverage" ]; then codecov ; fi
+  - if [ "${LDFLAGS}" == "-coverage" ]; then ../tools/travis-coverage.sh && codecov ; fi
