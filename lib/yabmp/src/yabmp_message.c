@@ -61,9 +61,12 @@ YABMP_IAPI(void, yabmp_send_warning, (const yabmp* instance, const char* format,
 static void yabmp_send_message(yabmp_message_cb message_fn, void* context, const char* format, va_list args)
 {
 	char message[YABMP_MAX_MSG_SIZE];
-	int  len;
-	
-	len = vsnprintf(message, sizeof(message), format, args);
+#if !defined(NDEBUG)
+	int len =
+#endif
+	vsnprintf(message, sizeof(message), format, args);
+#if !defined(NDEBUG)
 	assert((len >= 0) && (len < (int)YABMP_MAX_MSG_SIZE)); /* if longer message are seen during debug, update YABMP_MAX_MSG_SIZE */
+#endif
 	message_fn(context, message);
 }
