@@ -25,7 +25,7 @@ for FILE in ${FILES}; do
 	FILENAME=$(basename ${FILE} .gcno)
 	TARGETDIR=$(dirname ${FILE})
 	# This is a big hack...
-	SOURCE=$(find ../Dev/yabmp/yabmp -type f -name "${FILENAME}" -print0)
+	SOURCE=$(find ../ -type f -name "${FILENAME}" -print0)
 	if [ -f "${SOURCE}" ]; then
 		gcov ${SOURCE} --object-file ${FILE} -o ${TARGETDIR}/${FILENAME}.gcov
 	fi
