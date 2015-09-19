@@ -737,6 +737,15 @@ static yabmp_status local_setup_read(yabmp* reader)
 	yabmp_uint32 l_rle4_factor = 1U;
 	assert(reader != NULL);
 	
+	if (reader->rle_row != NULL) {
+		yabmp_free(reader, reader->rle_row);
+		reader->rle_row = NULL;
+	}
+	if (reader->input_row != NULL) {
+		yabmp_free(reader, reader->input_row);
+		reader->input_row = NULL;
+	}
+	
 	if (reader->info.file.dataOffset < reader->stream_offset) {
 		yabmp_send_error(reader, "Invalid data offset.");
 		return YABMP_ERR_UNKNOW;
@@ -787,8 +796,8 @@ static yabmp_status local_setup_read(yabmp* reader)
 	
 	/* TODO no LUT for 8bpp ?? */
 	if (reader->transforms & (YABMP_TRANSFORM_EXPAND | YABMP_TRANSFORM_GRAYSCALE)) {
-		reader->row8u = yabmp_malloc(reader, reader->input_step_bytes);
-		if (reader->row8u == NULL) {
+		reader->input_row = yabmp_malloc(reader, reader->input_step_bytes);
+		if (reader->input_row == NULL) {
 			return YABMP_ERR_ALLOCATION;
 		}
 		
@@ -815,6 +824,77 @@ static yabmp_status local_setup_read(yabmp* reader)
 			return YABMP_ERR_ALLOCATION;
 		}
 	}
+	
+	if (reader->transforms & YABMP_TRANSFORM_EXPAND) {
+		if (reader->info.core.bpp == 1U) {
+			reader->transform_fn = (yabmp_transform_fn)yabmp_pal1_to_bgr24;
+		}
+		else if (reader->info.core.bpp == 2U) {
+			reader->transform_fn = (yabmp_transform_fn)yabmp_pal2_to_bgr24;
+		}
+		else if ((reader->info.core.bpp == 4U) && (reader->info.v1.compression != YABMP_COMPRESSION_RLE4)) {
+			reader->transform_fn = (yabmp_transform_fn)yabmp_pal4_to_bgr24;
+		}
+		else if ((reader->info.core.bpp == 8U) || (reader->info.v1.compression == YABMP_COMPRESSION_RLE4)) {
+			reader->transform_fn = (yabmp_transform_fn)yabmp_pal8_to_bgr24;
+		}
+		else if (reader->info.core.bpp == 16U) {
+			if ((reader->info.colorMask & YABMP_COLOR_MASK_ALPHA) != 0U) {
+				if (reader->info.expanded_bpp == 8U) {
+					reader->transform_fn = (yabmp_transform_fn)yabmp_bf16u_to_bgra32;
+				} else {
+					reader->transform_fn = (yabmp_transform_fn)yabmp_bf16u_to_bgra64;
+				}
+			} else {
+				if (reader->info.expanded_bpp == 8U) {
+					reader->transform_fn = (yabmp_transform_fn)yabmp_bf16u_to_bgr24;
+				} else {
+					reader->transform_fn = (yabmp_transform_fn)yabmp_bf16u_to_bgr48;
+				}
+			}
+		} else if (reader->info.core.bpp == 32U) {
+			if ((reader->info.colorMask & YABMP_COLOR_MASK_ALPHA) != 0U) {
+				if (reader->info.expanded_bpp == 8U) {
+					reader->transform_fn = (yabmp_transform_fn)yabmp_bf32u_to_bgra32;
+				} else if (reader->info.expanded_bpp == 16U) {
+					reader->transform_fn = (yabmp_transform_fn)yabmp_bf32u_to_bgra64;
+				} else {
+					/* TODO yabmp_bf32u_to_bgra128 ??? */
+					yabmp_send_error(reader, "Can't expand to %ubpp sample.", 4U * (unsigned int)reader->info.expanded_bpp);
+					return YABMP_ERR_UNKNOW;
+				}
+			} else  {
+				if (reader->info.expanded_bpp == 8U) {
+					reader->transform_fn = (yabmp_transform_fn)yabmp_bf32u_to_bgr24;
+				} else if (reader->info.expanded_bpp == 16U) {
+					reader->transform_fn = (yabmp_transform_fn)yabmp_bf32u_to_bgr48;
+				} else {
+					/* TODO yabmp_bf32u_to_bgr96 ??? */
+					yabmp_send_error(reader, "Can't expand to %ubpp sample.", 3U * (unsigned int)reader->info.expanded_bpp);
+					return YABMP_ERR_UNKNOW;
+				}
+			}
+		}
+	}
+	else if (reader->transforms & YABMP_TRANSFORM_GRAYSCALE) {
+		if (reader->info.core.bpp == 1U) {
+			reader->transform_fn = (yabmp_transform_fn)yabmp_pal1_to_y8;
+		}
+		else if (reader->info.core.bpp == 2U) {
+			reader->transform_fn = (yabmp_transform_fn)yabmp_pal2_to_y8;
+		}
+		else if (reader->info.core.bpp == 4U) {
+			reader->transform_fn = (yabmp_transform_fn)yabmp_pal4_to_y8;
+		}
+		else if (reader->info.core.bpp == 8U) {
+			reader->transform_fn = (yabmp_transform_fn)yabmp_pal8_to_y8;
+		} else {
+			/* TODO ??? */
+			yabmp_send_error(reader, "Can't expand palette from %ubpp sample.", (unsigned int)reader->info.core.bpp);
+			return YABMP_ERR_UNKNOW;
+		}
+	}
+	
 	return YABMP_OK;
 }
 
@@ -841,88 +921,19 @@ YABMP_API(yabmp_status, yabmp_read_row, (yabmp* reader, void* row, size_t row_si
 		return YABMP_ERR_UNKNOW;
 	}
 	
-	if (reader->transforms & (YABMP_TRANSFORM_EXPAND | YABMP_TRANSFORM_GRAYSCALE)) {
+	if (reader->transform_fn != NULL) {
 		switch (reader->info.v1.compression) {
 			case YABMP_COMPRESSION_RLE8:
-				YABMP_SIMPLE_CHECK(local_rle8_decode_row(reader, reader->row8u));
+				YABMP_SIMPLE_CHECK(local_rle8_decode_row(reader, reader->input_row));
 				break;
 			case YABMP_COMPRESSION_RLE4:
-				YABMP_SIMPLE_CHECK(local_rle4_decode_row(reader, reader->row8u, 0));
+				YABMP_SIMPLE_CHECK(local_rle4_decode_row(reader, reader->input_row, 0));
 				break;
 		default:
-				YABMP_SIMPLE_CHECK(yabmp_stream_read(reader, reader->row8u, reader->input_step_bytes));
+				YABMP_SIMPLE_CHECK(yabmp_stream_read(reader, reader->input_row, reader->input_step_bytes));
 				break;
 		}
-	}
-	
-	if (reader->transforms & YABMP_TRANSFORM_EXPAND) {
-		if (reader->info.core.bpp == 1U) {
-			yabmp_pal1_to_bgr24(reader, reader->row8u, row);
-		}
-		else if (reader->info.core.bpp == 2U) {
-			yabmp_pal2_to_bgr24(reader, reader->row8u, row);
-		}
-		else if ((reader->info.core.bpp == 4U) && (reader->info.v1.compression != YABMP_COMPRESSION_RLE4)) {
-			yabmp_pal4_to_bgr24(reader, reader->row8u, row);
-		}
-		else if ((reader->info.core.bpp == 8U) || (reader->info.v1.compression == YABMP_COMPRESSION_RLE4)) {
-			yabmp_pal8_to_bgr24(reader, reader->row8u, row);
-		}
-		else if (reader->info.core.bpp == 16U) {
-			if ((reader->info.colorMask & YABMP_COLOR_MASK_ALPHA) != 0U) {
-				if (reader->info.expanded_bpp == 8U) {
-					yabmp_bf16u_to_bgra32(reader, reader->row16u, row);
-				} else {
-					yabmp_bf16u_to_bgra64(reader, reader->row16u, row);
-				}
-			} else {
-				if (reader->info.expanded_bpp == 8U) {
-					yabmp_bf16u_to_bgr24(reader, reader->row16u, row);
-				} else {
-					yabmp_bf16u_to_bgr48(reader, reader->row16u, row);
-				}
-			}
-		} else if (reader->info.core.bpp == 32U) {
-			if ((reader->info.colorMask & YABMP_COLOR_MASK_ALPHA) != 0U) {
-				if (reader->info.expanded_bpp == 8U) {
-					yabmp_bf32u_to_bgra32(reader, reader->row32u, row);
-				} else if (reader->info.expanded_bpp == 16U) {
-					yabmp_bf32u_to_bgra64(reader, reader->row32u, row);
-				} else {
-					/* TODO yabmp_bf32u_to_bgra128 ??? */
-					yabmp_send_error(reader, "Can't expand to %ubpp sample.", 4U * (unsigned int)reader->info.expanded_bpp);
-					return YABMP_ERR_UNKNOW;
-				}
-			} else  {
-				if (reader->info.expanded_bpp == 8U) {
-					yabmp_bf32u_to_bgr24(reader, reader->row32u, row);
-				} else if (reader->info.expanded_bpp == 16U) {
-					yabmp_bf32u_to_bgr48(reader, reader->row32u, row);
-				} else {
-					/* TODO yabmp_bf32u_to_bgr96 ??? */
-					yabmp_send_error(reader, "Can't expand to %ubpp sample.", 3U * (unsigned int)reader->info.expanded_bpp);
-					return YABMP_ERR_UNKNOW;
-				}
-			}
-		}
-	}
-	else if (reader->transforms & YABMP_TRANSFORM_GRAYSCALE) {
-		if (reader->info.core.bpp == 1U) {
-			yabmp_pal1_to_y8(reader, reader->row8u, row);
-		}
-		else if (reader->info.core.bpp == 2U) {
-			yabmp_pal2_to_y8(reader, reader->row8u, row);
-		}
-		else if (reader->info.core.bpp == 4U) {
-			yabmp_pal4_to_y8(reader, reader->row8u, row);
-		}
-		else if (reader->info.core.bpp == 8U) {
-			yabmp_pal8_to_y8(reader, reader->row8u, row);
-		} else {
-			/* TODO ??? */
-			yabmp_send_error(reader, "Can't expand palette from %ubpp sample.", (unsigned int)reader->info.core.bpp);
-			return YABMP_ERR_UNKNOW;
-		}
+		reader->transform_fn(reader, reader->input_row, row);
 	}
 	else {
 		switch (reader->info.v1.compression) {
