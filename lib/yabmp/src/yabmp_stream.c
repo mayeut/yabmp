@@ -48,9 +48,12 @@ static yabmp_status yabmp_file_seek(void* context, yabmp_uint32 offset)
 	yabmp_status l_status = YABMP_OK;
 	
 	assert(l_file != NULL);
-	assert(offset >= 0);
 	
-	/* TODO offset > LONG_MAX */
+#if LONG_MAX < 0xFFFFFFFFU
+	if (offset > LONG_MAX) {
+		return YABMP_ERR_UNKNOW;
+	}
+#endif
 	
 	if (fseek(l_file, (long)offset, SEEK_SET) != 0) {
 		l_status = YABMP_ERR_UNKNOW;

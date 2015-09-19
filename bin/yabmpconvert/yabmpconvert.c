@@ -50,20 +50,20 @@ static const char* get_appname(const char* app)
 {
 	const char* l_firstResult = NULL;
 	const char* l_secondResult = NULL;
+	int l_offset = 1;
 	
 	l_firstResult = strrchr(app, '/');
 	if (l_firstResult == NULL) {
 		l_firstResult = app;
+		l_offset = 0;
 	}
 	l_secondResult = strrchr(l_firstResult, '\\');
 	
-	if(l_firstResult == NULL) {
+	if(l_secondResult != NULL) {
 		l_firstResult = l_secondResult;
+		l_offset = 1;
 	}
-	if (l_firstResult == NULL) {
-		return app;
-	}
-	return l_firstResult + 1;
+	return l_firstResult + l_offset;
 }
 
 static void print_usage(FILE* stream, const char* app)
