@@ -11,6 +11,7 @@ env:
   - YABMP_BUILD_TYPE=Release CFLAGS="-m32 -march=i386"
   - YABMP_BUILD_TYPE=Release CFLAGS="-arch i386"
   - YABMP_BUILD_TYPE=Debug   CFLAGS="-m64 -O1 -g -fsanitize=address -fno-omit-frame-pointer"
+  - YABMP_BUILD_TYPE=Debug   CFLAGS="-m64 -O0 -g -coverage" LDFLAGS="-coverage"
   
 matrix:
   exclude:
@@ -22,6 +23,8 @@ matrix:
       env: YABMP_BUILD_TYPE=Release CFLAGS="-m32 -march=i386"
     - os: osx
       env: YABMP_BUILD_TYPE=Debug   CFLAGS="-m64 -O1 -g -fsanitize=address -fno-omit-frame-pointer"
+    - os: osx
+      env: YABMP_BUILD_TYPE=Debug   CFLAGS="-m64 -O0 -g -coverage" LDFLAGS="-coverage"
     - os: linux
       env: YABMP_BUILD_TYPE=Release CFLAGS="-arch x86_64"
     - os: linux
@@ -30,12 +33,17 @@ matrix:
       env: YABMP_BUILD_TYPE=Debug   CFLAGS="-m64 -O1 -g -fsanitize=address -fno-omit-frame-pointer"
     - compiler: clang
       env: YABMP_BUILD_TYPE=Release CFLAGS="-m32 -march=i386"
+    - compiler: clang
+      env: YABMP_BUILD_TYPE=Debug   CFLAGS="-m64 -O0 -g -coverage" LDFLAGS="-coverage"
   
 addons:
   apt:
     packages:
       - gcc-multilib
       - zlib1g-dev:i386
+
+before_install:
+  - pip install --user codecov
 
 install:
   - ./tools/travis-install.sh
@@ -46,3 +54,6 @@ script:
   - cmake -G "Unix Makefiles" -DYABMP_BUILD_PNG:BOOL=YES -DCMAKE_BUILD_TYPE=${YABMP_BUILD_TYPE} ..
   - make
   - ctest --output-on-failure
+  
+after_success:
+  - if [ "${LDFLAGS}" == "-coverage" ]; then codecov ; fi
