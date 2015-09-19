@@ -24,9 +24,7 @@
 
 #include <stdio.h>
 
-#include "../inc/private/yabmp_stream.h"
-#include "../inc/private/yabmp_message.h"
-#include "../inc/private/yabmp_checks.h"
+#include "../inc/private/yabmp_internal.h"
 
 /* FILE stream helper */
 static size_t yabmp_file_read (void* context, void * ptr, size_t size)
@@ -36,6 +34,7 @@ static size_t yabmp_file_read (void* context, void * ptr, size_t size)
 	assert(l_file != NULL);
 	return fread(ptr, 1U, size, l_file);
 }
+YABMP_UNUSED
 static size_t yabmp_file_write(void* context, const void * ptr, size_t size)
 {
 	FILE* l_file = (FILE*)context;

@@ -28,7 +28,7 @@ if [ "${TRAVIS_OS_NAME:-}" == "linux" ] || uname -s | grep -i Linux &> /dev/null
 elif [ "${TRAVIS_OS_NAME:-}" == "osx" ] || uname -s | grep -i Darwin &> /dev/null; then
 	wget -qO - http://www.cmake.org/files/v3.3/cmake-3.3.2-Darwin-universal.tar.gz | tar -xz
 	# copy to a directory that will not changed every version
-	mv cmake-3.3.2-Darwin-x86_64/CMake.app/Contents cmake-install
+	mv cmake-3.3.2-Darwin-universal/CMake.app/Contents cmake-install
 else
 	echo "OS not supported" && exit 1
 fi

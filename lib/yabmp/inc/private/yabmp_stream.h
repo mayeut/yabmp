@@ -26,13 +26,13 @@
 #ifndef YABMP_STREAM_H
 #define YABMP_STREAM_H
 
-#include "yabmp_api.h"
-#include "yabmp_struct.h"
+#include "yabmp_internal.h"
 
 YABMP_IAPI(yabmp_status, yabmp_stream_read, (yabmp* instance, yabmp_uint8* buffer, size_t buffer_len));
 YABMP_IAPI(yabmp_status, yabmp_stream_seek, (yabmp* reader, yabmp_uint32 offset)); /* max offset is on yabmp_uint32 for BMP */
 YABMP_IAPI(yabmp_status, yabmp_stream_skip, (yabmp* instance, yabmp_uint32 count));
 
+YABMP_UNUSED
 static yabmp_status yabmp_stream_read_8u(yabmp* instance, yabmp_uint8* value)
 {
 	yabmp_status l_status = YABMP_OK;
@@ -49,6 +49,8 @@ static yabmp_status yabmp_stream_read_8u(yabmp* instance, yabmp_uint8* value)
 	}
 	return l_status;
 }
+
+YABMP_UNUSED
 static yabmp_status yabmp_stream_read_le_16u(yabmp* instance, yabmp_uint16* value)
 {
 	yabmp_status l_status = YABMP_OK;
@@ -66,6 +68,7 @@ static yabmp_status yabmp_stream_read_le_16u(yabmp* instance, yabmp_uint16* valu
 	return l_status;
 }
 
+YABMP_UNUSED
 static yabmp_status yabmp_stream_read_le_32u(yabmp* instance, yabmp_uint32* value)
 {
 	yabmp_status l_status = YABMP_OK;

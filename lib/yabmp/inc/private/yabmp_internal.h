@@ -31,6 +31,12 @@
 #define YABMP_STRINGIFY(s) YABMP_STRINGIFY_IMPL(s)
 #define YABMP_STRINGIFY_IMPL(s) #s
 
+#if defined(__GNUC__)
+#	define YABMP_UNUSED __attribute__((unused))
+#	else
+# define YABMP_UNUSED
+#endif
+
 #include <yabmp_config.h>
 #include "yabmp_api.h"
 #include "yabmp_struct.h"
