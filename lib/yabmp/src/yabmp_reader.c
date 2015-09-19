@@ -161,6 +161,13 @@ YABMP_API(yabmp_status, yabmp_set_input_stream, (
 
 YABMP_API(yabmp_status, yabmp_read_info, (yabmp* reader))
 {
+	YABMP_SIMPLE_CHECK(yabmp_read_info_no_validation(reader));
+	YABMP_SIMPLE_CHECK(yabmp_valid_info(reader));
+	return YABMP_OK;
+}
+
+YABMP_API(yabmp_status, yabmp_read_info_no_validation, (yabmp* reader))
+{
 	yabmp_status l_status = YABMP_OK;
 	yabmp_info*  l_info = NULL;
 	
@@ -243,6 +250,65 @@ YABMP_API(yabmp_status, yabmp_read_info, (yabmp* reader))
 	reader->status |= YABMP_STATUS_HAS_INFO;
 BADEND:
 	return l_status;
+}
+YABMP_API(yabmp_status, yabmp_valid_info, (yabmp* reader))
+{
+	YABMP_CHECK_READER(reader);
+	
+	if ((reader->status & YABMP_STATUS_HAS_INFO) == 0U) {
+		yabmp_send_error(reader, "Info not read yet.");
+		return YABMP_ERR_UNKNOW;
+	}
+	
+	if (reader->info.core.colorPlaneCount != 1U) {
+		yabmp_send_error(reader, "%u color plane(s) not supported.", (unsigned int)reader->info.core.colorPlaneCount);
+		return YABMP_ERR_UNKNOW;
+	}
+	
+	switch (reader->info.core.bpp) {
+		case 1U:
+		case 2U:
+		case 4U:
+		case 8U:
+		case 16U:
+		case 24U:
+		case 32U:
+			break;
+		default:
+			yabmp_send_error(reader, "%ubpp not supported.", (unsigned int)reader->info.core.bpp);
+			return YABMP_ERR_UNKNOW;
+	}
+	switch (reader->info.v1.compression) {
+		case YABMP_COMPRESSION_NONE:
+			break;
+		case YABMP_COMPRESSION_BITFIELDS: /* Bit fields */
+			switch (reader->info.core.bpp) {
+				case 16U:
+				case 32U:
+					break;
+				default:
+					yabmp_send_error(reader, "%ubpp not supported for BitFields compression.", (unsigned int)reader->info.core.bpp);
+					return YABMP_ERR_UNKNOW;
+			}
+			break;
+		case YABMP_COMPRESSION_RLE4:
+			if (reader->info.core.bpp != 4U) {
+				yabmp_send_error(reader, "%ubpp not supported for RLE4 compression.", (unsigned int)reader->info.core.bpp);
+				return YABMP_ERR_UNKNOW;
+			}
+			break;
+		case YABMP_COMPRESSION_RLE8:
+			if (reader->info.core.bpp != 8U) {
+				yabmp_send_error(reader, "%ubpp not supported for RLE8 compression.", (unsigned int)reader->info.core.bpp);
+				return YABMP_ERR_UNKNOW;
+			}
+			break;
+		default:
+			yabmp_send_error(reader, "compression %" YABMP_PRIu32 " not supported.", reader->info.v1.compression);
+			return YABMP_ERR_UNKNOW;
+	}
+	reader->status |= YABMP_STATUS_HAS_VALID_INFO;
+	return YABMP_OK;
 }
 
 static yabmp_status local_read_file_header(yabmp* reader, yabmp_info* info)
@@ -665,38 +731,10 @@ static yabmp_status local_rle8_decode_row(yabmp* instance, yabmp_uint8* row)
 	return YABMP_OK;
 }
 
-static yabmp_status local_get_row_bytes(yabmp* instance)
-{
-	yabmp_uint32 l_row_bytes = 0U;
-	
-	assert(instance != NULL);
-	
-	switch (instance->info.v1.compression) {
-		case YABMP_COMPRESSION_NONE:
-		case YABMP_COMPRESSION_RLE4:
-		case YABMP_COMPRESSION_RLE8:
-		case YABMP_COMPRESSION_BITFIELDS:
-			break;
-  default:
-			instance->input_row_bytes  = 0U;
-			instance->input_step_bytes = 0U;
-			return YABMP_OK;
-	}
-	
-	l_row_bytes = instance->info.core.width;
-	
-	/* TODO overflow check */
-	l_row_bytes = ((l_row_bytes * (yabmp_uint32)instance->info.core.bpp) + 7U) & ~(yabmp_uint32)7U;
-	l_row_bytes /= 8U;
-	
-	instance->input_row_bytes  = l_row_bytes;
-	instance->transformed_row_bytes = l_row_bytes; /* no transforms */
-	instance->input_step_bytes = (l_row_bytes + 3U) & ~(yabmp_uint32)3U;
-	return YABMP_OK;
-}
-
 static yabmp_status local_setup_read(yabmp* reader)
 {
+	yabmp_uint32 l_row_bytes = 0U;
+	yabmp_uint32 l_rle4_factor = 1U;
 	assert(reader != NULL);
 	
 	if (reader->info.file.dataOffset < reader->stream_offset) {
@@ -707,17 +745,29 @@ static yabmp_status local_setup_read(yabmp* reader)
 		YABMP_SIMPLE_CHECK(yabmp_stream_skip(reader, reader->info.file.dataOffset - reader->stream_offset));
 	}
 	
-	YABMP_SIMPLE_CHECK(local_get_row_bytes(reader));
-	
-	if (reader->info.v1.compression == YABMP_COMPRESSION_RLE4) {
-		/* we might need an intermediate buffer */
-		/* TODO check expand */
-		/* TODO check overflow */
-		reader->rle_row = yabmp_malloc(reader, reader->input_row_bytes * 2U);
-		if (reader->rle_row == NULL) {
-			return YABMP_ERR_ALLOCATION;
-		}
+	switch (reader->info.v1.compression) {
+		case YABMP_COMPRESSION_NONE:
+		case YABMP_COMPRESSION_RLE8:
+		case YABMP_COMPRESSION_BITFIELDS:
+			break;
+		case YABMP_COMPRESSION_RLE4:
+			l_rle4_factor = 2U;
+			break;
+  default:
+			reader->input_row_bytes  = 0U;
+			reader->input_step_bytes = 0U;
+			break;
 	}
+	
+	l_row_bytes = reader->info.core.width;
+	
+	/* TODO overflow check */
+	l_row_bytes = ((l_row_bytes * (yabmp_uint32)reader->info.core.bpp) + 7U) & ~(yabmp_uint32)7U;
+	l_row_bytes /= 8U;
+	
+	reader->input_row_bytes  = l_row_bytes;
+	reader->transformed_row_bytes = l_row_bytes; /* no transforms */
+	reader->input_step_bytes = (l_row_bytes * l_rle4_factor + 3U) & ~(yabmp_uint32)3U;
 	
 	if (reader->transforms & YABMP_TRANSFORM_SCAN_ORDER) {
 		YABMP_SIMPLE_CHECK(yabmp_stream_skip(reader, reader->input_step_bytes * (yabmp_uint32)(reader->info.core.height - 1)));
@@ -757,6 +807,14 @@ static yabmp_status local_setup_read(yabmp* reader)
 			reader->transformed_row_bytes = reader->info.core.width;
 		}
 	}
+	else if (reader->info.v1.compression == YABMP_COMPRESSION_RLE4) {
+		/* we need an intermediate buffer */
+		/* TODO check overflow */
+		reader->rle_row = yabmp_malloc(reader, reader->input_row_bytes * 2U);
+		if (reader->rle_row == NULL) {
+			return YABMP_ERR_ALLOCATION;
+		}
+	}
 	return YABMP_OK;
 }
 
@@ -769,9 +827,8 @@ YABMP_API(yabmp_status, yabmp_read_row, (yabmp* reader, void* row, size_t row_si
 		return YABMP_ERR_INVALID_ARGS;
 	}
 	
-	if ((reader->status & YABMP_STATUS_HAS_INFO) == 0U) {
-		yabmp_send_error(reader, "Info not read yet.");
-		return YABMP_ERR_UNKNOW;
+	if ((reader->status & YABMP_STATUS_HAS_VALID_INFO) == 0U) {
+		YABMP_SIMPLE_CHECK(yabmp_valid_info(reader));
 	}
 	
 	if ((reader->status & YABMP_STATUS_HAS_LINES) == 0U) {
@@ -784,29 +841,31 @@ YABMP_API(yabmp_status, yabmp_read_row, (yabmp* reader, void* row, size_t row_si
 		return YABMP_ERR_UNKNOW;
 	}
 	
-	switch (reader->info.v1.compression) {
-		case YABMP_COMPRESSION_RLE8:
-			YABMP_SIMPLE_CHECK(local_rle8_decode_row(reader, row));
-			break;
-		case YABMP_COMPRESSION_RLE4:
-			YABMP_SIMPLE_CHECK(local_rle4_decode_row(reader, row, 1));
-			break;
-  default:
-			break;
+	if (reader->transforms & (YABMP_TRANSFORM_EXPAND | YABMP_TRANSFORM_GRAYSCALE)) {
+		switch (reader->info.v1.compression) {
+			case YABMP_COMPRESSION_RLE8:
+				YABMP_SIMPLE_CHECK(local_rle8_decode_row(reader, reader->row8u));
+				break;
+			case YABMP_COMPRESSION_RLE4:
+				YABMP_SIMPLE_CHECK(local_rle4_decode_row(reader, reader->row8u, 0));
+				break;
+		default:
+				YABMP_SIMPLE_CHECK(yabmp_stream_read(reader, reader->row8u, reader->input_step_bytes));
+				break;
+		}
 	}
 	
 	if (reader->transforms & YABMP_TRANSFORM_EXPAND) {
-		YABMP_SIMPLE_CHECK(yabmp_stream_read(reader, reader->row8u, reader->input_step_bytes));
 		if (reader->info.core.bpp == 1U) {
 			yabmp_pal1_to_bgr24(reader, reader->row8u, row);
 		}
 		else if (reader->info.core.bpp == 2U) {
 			yabmp_pal2_to_bgr24(reader, reader->row8u, row);
 		}
-		else if (reader->info.core.bpp == 4U) {
+		else if ((reader->info.core.bpp == 4U) && (reader->info.v1.compression != YABMP_COMPRESSION_RLE4)) {
 			yabmp_pal4_to_bgr24(reader, reader->row8u, row);
 		}
-		else if (reader->info.core.bpp == 8U) {
+		else if ((reader->info.core.bpp == 8U) || (reader->info.v1.compression == YABMP_COMPRESSION_RLE4)) {
 			yabmp_pal8_to_bgr24(reader, reader->row8u, row);
 		}
 		else if (reader->info.core.bpp == 16U) {
@@ -827,22 +886,27 @@ YABMP_API(yabmp_status, yabmp_read_row, (yabmp* reader, void* row, size_t row_si
 			if ((reader->info.colorMask & YABMP_COLOR_MASK_ALPHA) != 0U) {
 				if (reader->info.expanded_bpp == 8U) {
 					yabmp_bf32u_to_bgra32(reader, reader->row32u, row);
-				} else {
+				} else if (reader->info.expanded_bpp == 16U) {
 					yabmp_bf32u_to_bgra64(reader, reader->row32u, row);
+				} else {
+					/* TODO yabmp_bf32u_to_bgra128 ??? */
+					yabmp_send_error(reader, "Can't expand to %ubpp sample.", 4U * (unsigned int)reader->info.expanded_bpp);
+					return YABMP_ERR_UNKNOW;
 				}
-				/* TODO yabmp_bf32u_to_bgra128 ??? */
 			} else  {
 				if (reader->info.expanded_bpp == 8U) {
 					yabmp_bf32u_to_bgr24(reader, reader->row32u, row);
-				} else {
+				} else if (reader->info.expanded_bpp == 16U) {
 					yabmp_bf32u_to_bgr48(reader, reader->row32u, row);
+				} else {
+					/* TODO yabmp_bf32u_to_bgr96 ??? */
+					yabmp_send_error(reader, "Can't expand to %ubpp sample.", 3U * (unsigned int)reader->info.expanded_bpp);
+					return YABMP_ERR_UNKNOW;
 				}
-				/* TODO yabmp_bf32u_to_bgra128 ??? */
 			}
 		}
 	}
 	else if (reader->transforms & YABMP_TRANSFORM_GRAYSCALE) {
-		YABMP_SIMPLE_CHECK(yabmp_stream_read(reader, reader->row8u, reader->input_step_bytes));
 		if (reader->info.core.bpp == 1U) {
 			yabmp_pal1_to_y8(reader, reader->row8u, row);
 		}
@@ -854,12 +918,19 @@ YABMP_API(yabmp_status, yabmp_read_row, (yabmp* reader, void* row, size_t row_si
 		}
 		else if (reader->info.core.bpp == 8U) {
 			yabmp_pal8_to_y8(reader, reader->row8u, row);
+		} else {
+			/* TODO ??? */
+			yabmp_send_error(reader, "Can't expand palette from %ubpp sample.", (unsigned int)reader->info.core.bpp);
+			return YABMP_ERR_UNKNOW;
 		}
 	}
 	else {
 		switch (reader->info.v1.compression) {
-			case YABMP_COMPRESSION_RLE4:
 			case YABMP_COMPRESSION_RLE8:
+				YABMP_SIMPLE_CHECK(local_rle8_decode_row(reader, row));
+				break;
+			case YABMP_COMPRESSION_RLE4:
+				YABMP_SIMPLE_CHECK(local_rle4_decode_row(reader, row, 1));
 				break;
 			default:
 				YABMP_SIMPLE_CHECK(yabmp_stream_read(reader, row, reader->input_row_bytes));

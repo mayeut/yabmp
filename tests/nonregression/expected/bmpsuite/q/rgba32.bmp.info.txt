@@ -1,5 +1,6 @@
 Dimensions (WxH): 127x64
 Pixels Per Meter (XxY): 2835x2835
+Color Plane Count: 1
 Bits Per Pixel: 32
 Bits Per Channel: B8.G8.R8.A8
 Color mask:  COLOR ALPHA

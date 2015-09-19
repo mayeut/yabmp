@@ -32,6 +32,7 @@ YABMP_IAPI(void, yabmp_init_info, (yabmp_info* info))
 	
 	/* set default values */
 	info->colorMask = YABMP_COLOR_MASK_COLOR;
+	info->core.colorPlaneCount = 1U;
 }
 
 YABMP_API(yabmp_status, yabmp_get_dimensions, (const yabmp* instance, yabmp_uint32* width, yabmp_uint32* height))
@@ -264,5 +265,21 @@ YABMP_API(yabmp_status, yabmp_get_palette, (const yabmp* instance, yabmp_uint32 
 	*red_lut   = info->lutR;
 	*alpha_lut = info->lutA;
 	
+	return YABMP_OK;
+}
+
+YABMP_API(yabmp_status, yabmp_get_color_plane_count, (const yabmp* instance, unsigned int* color_plane_count))
+{
+	const yabmp_info* info = NULL;
+	
+	YABMP_CHECK_INSTANCE(instance);
+	
+	info = &instance->info;
+	
+	if (color_plane_count == NULL) {
+		yabmp_send_error(instance, "NULL color_plane_count.");
+		return YABMP_ERR_INVALID_ARGS;
+	}
+	*color_plane_count = info->core.colorPlaneCount;
 	return YABMP_OK;
 }

@@ -72,21 +72,26 @@ static void print_usage(FILE* stream, const char* app)
 		"usage:\n"
 		"%s -h|--help : this help message\n"
 		"%s -v|--version : print version\n"
-		"%s [-vq] -i input -o output\n"
-		"  -v, --version: print version before info\n"
-		"  -q, --quiet:   no error/warning printed\n"
-		"  -i, --input:   input filename\n"
-		"  -o, --output:  output filename\n", app, app, app);
+		"%s [-ekvq] -i input -o output\n"
+		"  -i, --input:           input filename\n"
+		"  -o, --output:          output filename\n"
+		"  -e, --expand-palette:  expand palette to RGB\n"
+		"  -k, --keep-palette:    keep grayscale palette\n"
+		"  -v, --version:         print version before info\n"
+		"  -q, --quiet:           no error/warning printed\n"
+		, app, app, app);
 }
 
 int main(int argc, char* argv[])
 {
 	static const struct optparse_long options[] = {
-		{ "input",   'i', OPTPARSE_REQUIRED },
-		{ "output",  'o', OPTPARSE_REQUIRED },
-		{ "version", 'v', OPTPARSE_NONE },
-		{ "help",    'h', OPTPARSE_NONE },
-		{ "quiet",   'q', OPTPARSE_NONE },
+		{ "input",          'i', OPTPARSE_REQUIRED },
+		{ "output",         'o', OPTPARSE_REQUIRED },
+		{ "expand-palette", 'e', OPTPARSE_NONE },
+		{ "keep-palette",   'k', OPTPARSE_NONE },
+		{ "version",        'v', OPTPARSE_NONE },
+		{ "help",           'h', OPTPARSE_NONE },
+		{ "quiet",          'q', OPTPARSE_NONE },
 		{ 0 }
 	};
 	
@@ -100,6 +105,18 @@ int main(int argc, char* argv[])
 	
 	while ((option = optparse_long(&optparse, options, NULL)) != -1) {
 		switch (option) {
+			case 'i':
+				params.input_file = optparse.optarg;
+				break;
+			case 'o':
+				params.output_file = optparse.optarg;
+				break;
+			case 'e':
+				params.expand_palette = 1;
+				break;
+			case 'k':
+				params.keep_gray_palette = 1;
+				break;
 			case 'v':
 				params.version = 1;
 				break;
@@ -108,12 +125,6 @@ int main(int argc, char* argv[])
 				break;
 			case 'q':
 				params.quiet = 1;
-				break;
-			case 'o':
-				params.output_file = optparse.optarg;
-				break;
-			case 'i':
-				params.input_file = optparse.optarg;
 				break;
 			case '?':
 				fprintf(stderr, "%s: %s\n", get_appname(argv[0]), optparse.errmsg);

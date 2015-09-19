@@ -211,9 +211,16 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader)
 		const uint8_t *alpha_lut;
 		png_color l_png_palette[256];
 		
-		assert(yabmp_get_palette(bmp_reader, &l_num_palette, &blue_lut, &green_lut, &red_lut, &alpha_lut) == YABMP_OK);
+		if(yabmp_get_palette(bmp_reader, &l_num_palette, &blue_lut, &green_lut, &red_lut, &alpha_lut) != YABMP_OK) {
+			if (!parameters->quiet) {
+				fprintf(stderr, "ERROR: yabmp_get_palette failed.\n");
+			}
+		}
 		if (l_num_palette > 256U) {
-			fprintf(stderr, "ERROR: palette with mor than 256 entries not supported.\n");
+			if (!parameters->quiet) {
+				fprintf(stderr, "ERROR: palette with more than 256 entries not supported.\n");
+				goto BADEND;
+			}
 		}
 		for (i = 0U; i < l_num_palette; ++i) {
 			l_png_palette[i].blue  = blue_lut[i];

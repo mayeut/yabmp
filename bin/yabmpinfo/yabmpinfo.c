@@ -184,7 +184,7 @@ int main(int argc, char* argv[])
 			result = 1;
 			goto FREE_INSTANCE;
 		}
-		if (yabmp_read_info(l_reader) != YABMP_OK) {
+		if (yabmp_read_info_no_validation(l_reader) != YABMP_OK) {
 			result = 1;
 			goto FREE_INSTANCE;
 		}
