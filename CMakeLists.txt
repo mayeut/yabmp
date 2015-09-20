@@ -64,8 +64,6 @@ ensure_file_include("string.h"   HAVE_STRING_H   YES)
 ensure_file_include("stdio.h"    HAVE_STDIO_H    YES)
 ensure_file_include("stdarg.h"   HAVE_STDARG_H   YES)
 ensure_file_include("assert.h"   HAVE_ASSERT_H   YES)
-ensure_file_include("stdint.h"   HAVE_STDINT_H   YES)
-ensure_file_include("inttypes.h" HAVE_INTTYPES_H YES)
 
 #-----------------------------------------------------------------------------
 # Build Library
