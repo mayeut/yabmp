@@ -1,0 +1,8 @@
+Dimensions (WxH): 127x64
+Pixels Per Meter (XxY): 2835x2835
+Color Plane Count: 1
+Bits Per Pixel: 32
+Bits Per Channel: B7.G18.R7.A0
+Color mask:  COLOR
+Compression: BITFIELDS B:0x0000007F G:0x01FFFF80 R:0xFE000000 A:0x00000000
+Scan direction: BOTTOM-UP
