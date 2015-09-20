@@ -50,7 +50,23 @@ static void custom_free(void* context, void* ptr)
 	(void)context;
 	free(ptr);
 }
-
+static size_t custom_read(void* context, void * ptr, size_t size)
+{
+	(void)context;
+	(void)ptr;
+	(void)size;
+	return 0U;
+}
+static yabmp_status custom_seek(void* context, yabmp_uint32 offset)
+{
+	(void)context;
+	(void)offset;
+	return YABMP_ERR_UNKNOW;
+}
+static void custom_close(void* context)
+{
+	(void)context;
+}
 
 int main(int argc, char* argv[])
 {
@@ -84,6 +100,34 @@ int main(int argc, char* argv[])
 
 		result |= (yabmp_create_reader(&l_reader, NULL, print_error, print_warning, NULL, custom_malloc, custom_free) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
 
+		yabmp_destroy_reader(&l_reader);
+	}
+	
+	/* test args error for yabmp_set_input_stream */
+	{
+		yabmp* l_reader = NULL;
+		result |= (yabmp_create_reader(&l_reader, NULL, print_error, print_warning, NULL, NULL, NULL) == YABMP_OK) ? EXIT_SUCCESS : EXIT_FAILURE;
+		
+		result |= (yabmp_set_input_stream(NULL, NULL, NULL, NULL, NULL) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_set_input_stream(l_reader, NULL, NULL, NULL, NULL) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_set_input_stream(l_reader, NULL, NULL, custom_seek, NULL) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_set_input_stream(l_reader, NULL, NULL, NULL, custom_close) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_set_input_stream(l_reader, NULL, custom_read, NULL, NULL) == YABMP_OK) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_set_input_stream(l_reader, NULL, custom_read, custom_seek, custom_close) == YABMP_ERR_UNKNOW) ? EXIT_SUCCESS : EXIT_FAILURE;
+		
+		yabmp_destroy_reader(&l_reader);
+	}
+	
+	/* test args error for yabmp_read_info */
+	{
+		yabmp* l_reader = NULL;
+		result |= (yabmp_create_reader(&l_reader, NULL, print_error, print_warning, NULL, NULL, NULL) == YABMP_OK) ? EXIT_SUCCESS : EXIT_FAILURE;
+		
+		result |= (yabmp_read_info(NULL) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_read_info(l_reader) == YABMP_ERR_UNKNOW) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_set_input_stream(l_reader, NULL, custom_read, NULL, NULL) == YABMP_OK) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_read_info(l_reader) == YABMP_ERR_UNKNOW) ? EXIT_SUCCESS : EXIT_FAILURE;
+		
 		yabmp_destroy_reader(&l_reader);
 	}
 	
