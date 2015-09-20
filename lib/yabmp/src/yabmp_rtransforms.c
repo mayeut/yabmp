@@ -44,7 +44,7 @@ YABMP_IAPI(void, yabmp_bitfield_get_shift_and_bits, (yabmp_uint32 mask, unsigned
 		/* count bits */
 		mask = mask - ((mask >> 1) & 0x55555555U);
 		mask = (mask & 0x33333333U) + ((mask >> 2) & 0x33333333U);
-		l_bits = ((mask + (mask >> 4) & 0xF0F0F0FU) * 0x1010101U) >> 24;
+		l_bits = (((mask + (mask >> 4)) & 0x0F0F0F0FU) * 0x01010101U) >> 24;
 	}
 	*shift = l_shift;
 	*bits = l_bits;
