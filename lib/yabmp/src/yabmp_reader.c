@@ -288,6 +288,58 @@ YABMP_API(yabmp_status, yabmp_valid_info, (yabmp* reader))
 			switch (reader->info.core.bpp) {
 				case 16U:
 				case 32U:
+					{
+						/* Check bitfield validity */
+						unsigned int l_all_shift, l_blue_shift, l_green_shift, l_red_shift, l_alpha_shift;
+						unsigned int l_all_bits,  l_blue_bits,  l_green_bits,  l_red_bits,  l_alpha_bits;
+						
+						yabmp_bitfield_get_shift_and_bits(reader->info.v2.blueMask | reader->info.v2.greenMask | reader->info.v2.redMask | reader->info.v3.alphaMask,  &l_all_shift, &l_all_bits);
+						yabmp_bitfield_get_shift_and_bits(reader->info.v2.blueMask,  &l_blue_shift, &l_blue_bits);
+						yabmp_bitfield_get_shift_and_bits(reader->info.v2.greenMask, &l_green_shift, &l_green_bits);
+						yabmp_bitfield_get_shift_and_bits(reader->info.v2.redMask,   &l_red_shift, &l_red_bits);
+						yabmp_bitfield_get_shift_and_bits(reader->info.v3.alphaMask, &l_alpha_shift, &l_alpha_bits);
+						
+						/* sum of bits must be == to bit count of ORed mask (no intersection) */
+						if ((l_blue_bits + l_green_bits + l_red_bits + l_alpha_bits) != l_all_bits) {
+							yabmp_send_error(reader, "Invalid masks found for BitFields compression.");
+							return YABMP_ERR_UNKNOW;
+						}
+						/* sum of bits must be <= to bpp */
+						if (l_all_bits > reader->info.core.bpp) {
+							yabmp_send_error(reader, "Invalid masks found for BitFields compression.");
+							return YABMP_ERR_UNKNOW;
+						}
+						/* each mask set bits must be contiguous */
+						/* check (mask >> bits) + 1 is a power of 2 */
+						if (reader->info.v2.blueMask != 0U) {
+							yabmp_uint32 l_mask = reader->info.v2.blueMask >> l_blue_shift;
+							if ((l_mask & (l_mask+1U)) != 0U) {
+								yabmp_send_error(reader, "Invalid masks found for BitFields compression.");
+								return YABMP_ERR_UNKNOW;
+							}
+						}
+						if (reader->info.v2.greenMask != 0U) {
+							yabmp_uint32 l_mask = reader->info.v2.greenMask >> l_green_shift;
+							if ((l_mask & (l_mask+1U)) != 0U) {
+								yabmp_send_error(reader, "Invalid masks found for BitFields compression.");
+								return YABMP_ERR_UNKNOW;
+							}
+						}
+						if (reader->info.v2.redMask != 0U) {
+							yabmp_uint32 l_mask = reader->info.v2.redMask >> l_red_shift;
+							if ((l_mask & (l_mask+1U)) != 0U) {
+								yabmp_send_error(reader, "Invalid masks found for BitFields compression.");
+								return YABMP_ERR_UNKNOW;
+							}
+						}
+						if (reader->info.v3.alphaMask != 0U) {
+							yabmp_uint32 l_mask = reader->info.v3.alphaMask >> l_alpha_shift;
+							if ((l_mask & (l_mask+1U)) != 0U) {
+								yabmp_send_error(reader, "Invalid masks found for BitFields compression.");
+								return YABMP_ERR_UNKNOW;
+							}
+						}
+					}
 					break;
 				default:
 					yabmp_send_error(reader, "%ubpp not supported for BitFields compression.", (unsigned int)reader->info.core.bpp);
