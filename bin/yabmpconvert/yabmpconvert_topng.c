@@ -31,12 +31,18 @@
 
 #include "yabmpconvert.h"
 
-static void PNGCBAPI print_png_error(png_structp png_struct, png_const_charp message)
+#if defined(PNGCBAPI)
+#	define YABMP_PNGCBAPI PNGCBAPI
+#else
+#	define YABMP_PNGCBAPI PNGAPI
+#endif
+
+static void YABMP_PNGCBAPI print_png_error(png_structp png_struct, png_const_charp message)
 {
 	(void)png_struct;
 	fprintf(stderr, "PNG ERROR: %s\n", message);
 }
-static void PNGCBAPI print_png_warning(png_structp png_struct, png_const_charp message)
+static void YABMP_PNGCBAPI print_png_warning(png_structp png_struct, png_const_charp message)
 {
 	(void)png_struct;
 	fprintf(stderr, "PNG WARNING: %s\n", message);
