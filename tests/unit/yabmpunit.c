@@ -212,8 +212,6 @@ int main(int argc, char* argv[])
 	/* test args error for yabmp_set_* transforms */
 	{
 		yabmp* l_reader = NULL;
-		void* l_row = (void*)1U;
-		
 		
 		result |= (yabmp_create_reader(&l_reader, NULL, print_error, print_warning, NULL, NULL, NULL) == YABMP_OK) ? EXIT_SUCCESS : EXIT_FAILURE;
 		
