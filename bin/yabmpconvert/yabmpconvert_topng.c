@@ -71,53 +71,32 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader)
 	int l_png_bit_depth = 8; /* default to 8 bits */
 	
 	if(yabmp_get_dimensions(bmp_reader, &l_width, &l_height) != YABMP_OK) {
-		if (!parameters->quiet) {
-			fprintf(stderr, "yabmp_get_dimensions failed.");
-		}
-		goto BADEND;
+		return EXIT_FAILURE;
 	}
 	if (yabmp_get_pixels_per_meter(bmp_reader, &l_res_x, &l_res_y) != YABMP_OK) {
-		if (!parameters->quiet) {
-			fprintf(stderr, "yabmp_get_pixels_per_meter failed.");
-		}
-		return 1;
+		return EXIT_FAILURE;
 	}
 	if(yabmp_get_bpp(bmp_reader, &l_bpp) != YABMP_OK) {
-		if (!parameters->quiet) {
-			fprintf(stderr, "yabmp_get_bpp failed.");
-		}
-		goto BADEND;
+		return EXIT_FAILURE;
 	}
 	if(yabmp_get_color_mask(bmp_reader, &l_color_mask) != YABMP_OK) {
-		if (!parameters->quiet) {
-			fprintf(stderr, "yabmp_get_color_mask failed.");
-		}
-		goto BADEND;
+		return EXIT_FAILURE;
 	}
 	if(yabmp_get_compression(bmp_reader, &l_compression) != YABMP_OK) {
-		if (!parameters->quiet) {
-			fprintf(stderr, "yabmp_get_compression failed.");
-		}
-		goto BADEND;
+		return EXIT_FAILURE;
 	}
 	if(yabmp_get_scan_direction(bmp_reader, &l_scan_direction) != YABMP_OK) {
-		if (!parameters->quiet) {
-			fprintf(stderr, "yabmp_get_scan_direction failed.");
-		}
-		goto BADEND;
+		return EXIT_FAILURE;
 	}
 	if(yabmp_get_bits(bmp_reader, &blue_bits, &green_bits, &red_bits, &alpha_bits) != YABMP_OK) {
-		if (!parameters->quiet) {
-			fprintf(stderr, "yabmp_get_bits failed.");
-		}
-		goto BADEND;
+		return EXIT_FAILURE;
 	}
 	
 	if ((blue_bits > 16U) || (green_bits > 16U) || (red_bits > 16U) || (alpha_bits > 16U)) {
 		if (!parameters->quiet) {
 			fprintf(stderr, "ERROR: PNG does not support more than 16 bits per channel\n");
 		}
-		goto BADEND;
+		return EXIT_FAILURE;
 	}
 	
 	if ((blue_bits > 8U) || (green_bits > 8U) || (red_bits > 8U) || (alpha_bits > 8U)) {
@@ -166,7 +145,7 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader)
 			break;
 		default:
 			fprintf(stderr, "ERROR: Transcoding not supported.\n");
-			goto BADEND;
+			return EXIT_FAILURE;
 	}
 	switch (l_scan_direction)
 	{
@@ -179,7 +158,7 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader)
 						l_need_full_image = 1;
 					} else {
 						if (yabmp_set_invert_scan_direction(bmp_reader) != YABMP_OK) {
-							goto BADEND;
+							return EXIT_FAILURE;
 						}
 					}
 					break;
@@ -193,7 +172,7 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader)
 			break;
 		default:
 			fprintf(stderr, "ERROR: Unknown scan direction.\n");
-			return 1;
+			return EXIT_FAILURE;
 	}
 	if ((parameters->output_file[0] == '-') && (parameters->output_file[1] == '\0')) {
 		l_output = stdout;
@@ -202,11 +181,14 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader)
 		l_output = fopen(parameters->output_file, "wb");
 		if (l_output == NULL) {
 			fprintf(stderr, "ERROR: can't open file %s for writing\n", parameters->output_file);
-			goto BADEND;
+			return EXIT_FAILURE;
 		}
 	}
 	
 	l_png_writer = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, print_png_error, print_png_warning);
+	if (l_png_writer == NULL) {
+		 goto BADEND;
+	}
 	if (setjmp(png_jmpbuf(l_png_writer))) {
 		goto BADEND;
 	}
@@ -324,7 +306,9 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader)
 	png_write_end(l_png_writer, NULL);
 	result = 0;
 BADEND:
-	png_destroy_write_struct(&l_png_writer, &l_png_info);
+	if (l_png_writer != NULL) {
+		png_destroy_write_struct(&l_png_writer, &l_png_info);
+	}
 	if ((l_output != NULL) && (l_output != stdout)) {
 		fclose(l_output);
 	}

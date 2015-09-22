@@ -25,7 +25,7 @@
 #include <assert.h>
 #include "yabmp_printinfo.h"
 
-int yabmp_printinfo(FILE* outstream, yabmp* bmp_reader, int quiet)
+int yabmp_printinfo(FILE* outstream, yabmp* bmp_reader)
 {
 	yabmp_uint32 l_width, l_height, l_compression, l_res_x, l_res_y;
 	unsigned int l_bpp, l_scan_direction, l_color_mask;
@@ -33,51 +33,27 @@ int yabmp_printinfo(FILE* outstream, yabmp* bmp_reader, int quiet)
 	unsigned int l_color_plane_count;
 
 	if (yabmp_get_dimensions(bmp_reader, &l_width, &l_height) != YABMP_OK) {
-		if (!quiet) {
-			fprintf(stderr, "yabmp_get_dimensions failed.");
-		}
 		return 1;
 	}
 	if (yabmp_get_pixels_per_meter(bmp_reader, &l_res_x, &l_res_y) != YABMP_OK) {
-		if (!quiet) {
-			fprintf(stderr, "yabmp_get_pixels_per_meter failed.");
-		}
 		return 1;
 	}
 	if (yabmp_get_bpp(bmp_reader, &l_bpp) != YABMP_OK) {
-		if (!quiet) {
-			fprintf(stderr, "yabmp_get_bpp failed.");
-		}
 		return 1;
 	}
 	if (yabmp_get_color_mask(bmp_reader, &l_color_mask) != YABMP_OK) {
-		if (!quiet) {
-			fprintf(stderr, "yabmp_get_color_mask failed.");
-		}
 		return 1;
 	}
 	if (yabmp_get_compression(bmp_reader, &l_compression) != YABMP_OK) {
-		if (!quiet) {
-			fprintf(stderr, "yabmp_get_compression failed.");
-		}
 		return 1;
 	}
 	if (yabmp_get_scan_direction(bmp_reader, &l_scan_direction) != YABMP_OK) {
-		if (!quiet) {
-			fprintf(stderr, "yabmp_get_scan_direction failed.");
-		}
 		return 1;
 	}
 	if (yabmp_get_bits(bmp_reader, &l_blue_bits, &l_green_bits, &l_red_bits, &l_alpha_bits) != YABMP_OK) {
-		if (!quiet) {
-			fprintf(stderr, "yabmp_get_bits failed.");
-		}
 		return 1;
 	}
 	if (yabmp_get_color_plane_count(bmp_reader, &l_color_plane_count) != YABMP_OK) {
-		if (!quiet) {
-			fprintf(stderr, "yabmp_get_color_plane_count failed.");
-		}
 		return 1;
 	}
 		
@@ -113,10 +89,7 @@ int yabmp_printinfo(FILE* outstream, yabmp* bmp_reader, int quiet)
 		case YABMP_COMPRESSION_BITFIELDS:
 			{
 				yabmp_uint32 blue_mask, green_mask, red_mask, alpha_mask;
-				if (yabmp_get_bitfields(bmp_reader, &blue_mask, &green_mask, &red_mask, &alpha_mask) != YABMP_OK){
-					if (!quiet) {
-						fprintf(stderr, "yabmp_get_bitfields failed.");
-					}
+				if (yabmp_get_bitfields(bmp_reader, &blue_mask, &green_mask, &red_mask, &alpha_mask) != YABMP_OK) {
 					return 1;
 				}
 				fprintf(outstream, "Compression: BITFIELDS B:0x%08" YABMP_PRIX32 " G:0x%08" YABMP_PRIX32 " R:0x%08" YABMP_PRIX32 " A:0x%08" YABMP_PRIX32 "\n", blue_mask, green_mask, red_mask, alpha_mask);

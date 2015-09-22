@@ -204,7 +204,7 @@ int main(int argc, char* argv[])
 			result = 1;
 			goto FREE_INSTANCE;
 		}
-		if (yabmp_printinfo(outStream, l_reader, flags.quiet) != 0) {
+		if (yabmp_printinfo(outStream, l_reader) != 0) {
 			result = 1;
 		}
 FREE_INSTANCE:

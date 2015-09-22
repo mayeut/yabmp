@@ -227,8 +227,10 @@ int main(int argc, char* argv[])
 			goto BADEND;
 		}
 		else {
-			fprintf(stderr, "%s: missing input or output file\n", get_appname(argv[0]));
-			print_usage(stderr, get_appname(argv[0]));
+			if (!params.quiet) {
+				fprintf(stderr, "%s: missing input or output file\n", get_appname(argv[0]));
+				print_usage(stderr, get_appname(argv[0]));
+			}
 			result = EXIT_FAILURE;
 			goto BADEND;
 		}
