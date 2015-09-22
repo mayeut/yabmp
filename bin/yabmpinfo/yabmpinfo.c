@@ -42,6 +42,14 @@ static void print_warning(void* context, const char* message)
 	fprintf(stderr, "WARNING: %s\n", message);
 }
 
+static size_t yabmp_file_read (void* context, void * ptr, size_t size)
+{
+	FILE* l_file = (FILE*)context;
+	
+	assert(l_file != NULL);
+	return fread(ptr, 1U, size, l_file);
+}
+
 static const char* get_appname(const char* app)
 {
 	const char* l_firstResult = NULL;
@@ -181,9 +189,16 @@ int main(int argc, char* argv[])
 			result = 1;
 			goto FREE_INSTANCE;
 		}
-		if (yabmp_set_input_file(l_reader, input) != YABMP_OK) {
-			result = 1;
-			goto FREE_INSTANCE;
+		if ((input[0] == '-') && (input[1] == '\0')) {
+			if (yabmp_set_input_stream(l_reader, stdin, yabmp_file_read, NULL, NULL) != YABMP_OK) {
+				result = 1;
+				goto FREE_INSTANCE;
+			}
+		} else {
+			if (yabmp_set_input_file(l_reader, input) != YABMP_OK) {
+				result = 1;
+				goto FREE_INSTANCE;
+			}
 		}
 		if (yabmp_read_info_no_validation(l_reader) != YABMP_OK) {
 			result = 1;

@@ -1,7 +1,7 @@
-# Non regression tests 
+# Non regression tests
 
 function(yabmp_add_info_test file)
-	set(options FAILS)
+	set(options FAILS STDIN)
   cmake_parse_arguments(MY_TEST "${options}" "" "" ${ARGN} )
 	
 	set(INPUT ${CMAKE_CURRENT_SOURCE_DIR}/input/${file})
@@ -10,11 +10,18 @@ function(yabmp_add_info_test file)
 		file(MAKE_DIRECTORY "${OUTPUTDIR}")
 	endif()
 	
-	add_test(NAME ${file}-info COMMAND yabmpinfo -o "${CMAKE_CURRENT_BINARY_DIR}/${file}.info.txt" "${INPUT}" )
+	set(NAME_SUFFIX)
+	if(MY_TEST_STDIN)
+		set(NAME_SUFFIX "-stdin")
+		file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/${file}${NAME_SUFFIX}.cmake" "message(\"\${YABMP_INFO}\")\nexecute_process(COMMAND \"\${YABMP_INFO}\" -o \"${CMAKE_CURRENT_BINARY_DIR}/${file}${NAME_SUFFIX}.info.txt\" \"-\" INPUT_FILE ${INPUT} RESULT_VARIABLE PROC_RESULT ERROR_VARIABLE PROC_ERROR)\nif(PROC_RESULT)\nmessage(FATAL_ERROR \"\${PROC_ERROR}\${YABMP_INFO} exited with result \${PROC_RESULT}\")\nendif()")
+		add_test(NAME ${file}${NAME_SUFFIX}-info COMMAND "${CMAKE_COMMAND}" --trace "-DYABMP_INFO:FILEPATH=$<TARGET_FILE:yabmpinfo>" -P "${CMAKE_CURRENT_BINARY_DIR}/${file}${NAME_SUFFIX}.cmake" )
+	else()
+		add_test(NAME ${file}-info COMMAND yabmpinfo -o "${CMAKE_CURRENT_BINARY_DIR}/${file}${NAME_SUFFIX}.info.txt" "${INPUT}" )
+	endif()
 	set_tests_properties(${file}-info PROPERTIES WILL_FAIL ${MY_TEST_FAILS})
 	if (NOT MY_TEST_FAILS)
-		add_test(NAME ${file}-info-compare COMMAND "${CMAKE_COMMAND}" -E compare_files "${CMAKE_CURRENT_SOURCE_DIR}/expected/${file}.info.txt" "${CMAKE_CURRENT_BINARY_DIR}/${file}.info.txt")
-		set_tests_properties(${file}-info-compare PROPERTIES DEPENDS ${file}-info)
+		add_test(NAME ${file}${NAME_SUFFIX}-info-compare COMMAND "${CMAKE_COMMAND}" -E compare_files "${CMAKE_CURRENT_SOURCE_DIR}/expected/${file}.info.txt" "${CMAKE_CURRENT_BINARY_DIR}/${file}${NAME_SUFFIX}.info.txt")
+		set_tests_properties(${file}${NAME_SUFFIX}-info-compare PROPERTIES DEPENDS ${file}${NAME_SUFFIX}-info)
 	endif()
 endfunction()
 
@@ -44,6 +51,7 @@ endfunction()
 
 # bmpsuite good tests
 yabmp_add_info_test("bmpsuite/g/pal1.bmp")
+yabmp_add_info_test("bmpsuite/g/pal1.bmp" STDIN)
 yabmp_add_test("bmpsuite/g/pal1.bmp")
 yabmp_add_test("bmpsuite/g/pal1.bmp" EXPANDPALETTE)
 yabmp_add_test("bmpsuite/g/pal1.bmp" KEEPPALETTE)
