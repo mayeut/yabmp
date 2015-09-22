@@ -816,7 +816,7 @@ static yabmp_status local_setup_read(yabmp* reader)
 		case YABMP_COMPRESSION_RLE4:
 			l_rle4_factor = 2U;
 			break;
-  default:
+		default:
 			reader->input_row_bytes  = 0U;
 			reader->input_step_bytes = 0U;
 			break;
