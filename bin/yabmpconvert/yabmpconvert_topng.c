@@ -193,7 +193,10 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader)
 	
 	l_png_writer = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, print_png_error, print_png_warning);
 	if (l_png_writer == NULL) {
-		 goto BADEND;
+		if (!parameters->quiet) {
+			fprintf(stderr, "ERROR: can't create PNG struct\n");
+		}
+		goto BADEND;
 	}
 	if (setjmp(png_jmpbuf(l_png_writer))) {
 		goto BADEND;
