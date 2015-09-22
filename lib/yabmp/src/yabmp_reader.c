@@ -575,7 +575,6 @@ static yabmp_status local_rle4_decode_row(yabmp* instance, yabmp_uint8* row, int
 {
 	yabmp_uint32 l_remaining = instance->info.core.width;
 	yabmp_uint8* l_dst = row;
-	yabmp_uint8  l_buffer[128];
 	
 	if (repack) {
 		l_dst = instance->rle_row;
@@ -586,25 +585,24 @@ static yabmp_status local_rle4_decode_row(yabmp* instance, yabmp_uint8* row, int
 		instance->rle_skip_y--;
 		goto REPACK;
 	}
-	
 	if (instance->rle_skip_x) {
 		memset(l_dst, 0, instance->rle_skip_x);
 		l_remaining -= instance->rle_skip_x;
+		l_dst += instance->rle_skip_x;
 		instance->rle_skip_x = 0U;
 	}
 	
-	for (;;) {
-		yabmp_uint8 l_values[2];
+	for (;;) /* process one line at a time */
+	{
+		yabmp_uint8  l_values[2];
 		unsigned int l_len;
-		
 		YABMP_SIMPLE_CHECK(yabmp_stream_read(instance, l_values, sizeof(l_values)));
 		l_len = l_values[0];
 		if (l_len) { /* non escaped Encoded mode */
 			yabmp_uint8  l_index = l_values[1];
 			if (l_len > l_remaining) {
-				/* we have a problem here ... */
-				yabmp_send_error(instance, "The RLE4 stream seems corrupted");
-				return YABMP_ERR_UNKNOW;
+				/* limit to remaining */
+				l_len = (unsigned int)l_remaining;
 			}
 			l_remaining -= l_len;
 			/* write value */
@@ -626,6 +624,7 @@ static yabmp_status local_rle4_decode_row(yabmp* instance, yabmp_uint8* row, int
 			}
 			else if (l_abs == 1U) { /* end of bitmap */
 				memset(l_dst, 0, l_remaining);
+				instance->rle_skip_y = UINT_MAX;
 				break;
 			}
 			else if (l_abs == 2U) { /* delta dx,dy */
@@ -636,9 +635,8 @@ static yabmp_status local_rle4_decode_row(yabmp* instance, yabmp_uint8* row, int
 				
 				l_count = l_delta[0];
 				if (l_count > l_remaining) {
-					/* we have a problem here ... */
-					yabmp_send_error(instance, "The RLE4 stream seems corrupted");
-					return YABMP_ERR_UNKNOW;
+					/* limit to remaining */
+					l_count = (unsigned int)l_remaining;
 				}
 				if (l_delta[1] == 0U) {
 					/* only dx */
@@ -656,11 +654,11 @@ static yabmp_status local_rle4_decode_row(yabmp* instance, yabmp_uint8* row, int
 			}
 			else /* absolute mode */
 			{
+				yabmp_uint8  l_buffer[128];
 				unsigned int i;
 				if (l_abs > l_remaining) {
-					/* we have a problem here ... */
-					yabmp_send_error(instance, "The RLE4 stream seems corrupted");
-					return YABMP_ERR_UNKNOW;
+					/* limit to remaining */
+					l_abs = (unsigned int)l_remaining;
 				}
 				l_remaining -= l_abs;
 				YABMP_SIMPLE_CHECK(yabmp_stream_read(instance, l_buffer, (l_abs + 1U) / 2U ));
@@ -709,6 +707,7 @@ static yabmp_status local_rle8_decode_row(yabmp* instance, yabmp_uint8* row)
 	if (instance->rle_skip_x) {
 		memset(row, 0, instance->rle_skip_x);
 		l_remaining -= instance->rle_skip_x;
+		row += instance->rle_skip_x;
 		instance->rle_skip_x = 0U;
 	}
 	
@@ -721,9 +720,8 @@ static yabmp_status local_rle8_decode_row(yabmp* instance, yabmp_uint8* row)
 		if (l_len) { /* non escaped Encoded mode */
 			yabmp_uint8  l_index = l_values[1];
 			if (l_len > l_remaining) {
-				/* we have a problem here ... */
-				yabmp_send_error(instance, "The RLE8 stream seems corrupted");
-				return YABMP_ERR_UNKNOW;
+				/* limit to remaining */
+				l_len = (unsigned int)l_remaining;
 			}
 			l_remaining -= l_len;
 			/* write value */
@@ -740,6 +738,7 @@ static yabmp_status local_rle8_decode_row(yabmp* instance, yabmp_uint8* row)
 			}
 			else if (l_abs == 1U) { /* end of bitmap */
 				memset(row, 0, l_remaining);
+				instance->rle_skip_y = UINT_MAX;
 				break;
 			}
 			else if (l_abs == 2U) { /* delta dx,dy */
@@ -750,9 +749,8 @@ static yabmp_status local_rle8_decode_row(yabmp* instance, yabmp_uint8* row)
 				
 				l_count = l_delta[0];
 				if (l_count > l_remaining) {
-					/* we have a problem here ... */
-					yabmp_send_error(instance, "The RLE8 stream seems corrupted");
-					return YABMP_ERR_UNKNOW;
+					/* limit to remaining */
+					l_count = (unsigned int)l_remaining;
 				}
 				if (l_delta[1] == 0U) {
 					/* only dx */
@@ -771,9 +769,8 @@ static yabmp_status local_rle8_decode_row(yabmp* instance, yabmp_uint8* row)
 			else /* absolute mode */
 			{
 				if (l_abs > l_remaining) {
-					/* we have a problem here ... */
-					yabmp_send_error(instance, "The RLE8 stream seems corrupted");
-					return YABMP_ERR_UNKNOW;
+					/* limit to remaining */
+					l_abs = (unsigned int)l_remaining;
 				}
 				l_remaining -= l_abs;
 				YABMP_SIMPLE_CHECK(yabmp_stream_read(instance, row, l_abs));

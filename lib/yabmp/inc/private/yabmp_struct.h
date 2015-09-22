@@ -79,8 +79,8 @@ struct yabmp_struct
 	void*              input_row;
 	
 	yabmp_uint8* rle_row;
-	yabmp_uint32 rle_skip_x;
-	yabmp_uint32 rle_skip_y;
+	unsigned int rle_skip_x;
+	unsigned int rle_skip_y;
 };
 
 #endif /* YABMP_STRUCT_H */
