@@ -1020,9 +1020,12 @@ YABMP_API(yabmp_status, yabmp_read_row, (yabmp* reader, void* row, size_t row_si
 
 YABMP_API(yabmp_status, yabmp_set_invert_scan_direction, (yabmp* instance))
 {
-	yabmp_status l_status = YABMP_OK;
-	
 	YABMP_CHECK_INSTANCE(instance);
+	
+	if (instance->seek_fn == NULL) {
+		yabmp_send_error(instance, "Scan direction change is only supported with a non NULL seek function.");
+		return YABMP_ERR_UNKNOW;
+	}
 	
 	switch (instance->info.v1.compression)
 	{
@@ -1032,11 +1035,9 @@ YABMP_API(yabmp_status, yabmp_set_invert_scan_direction, (yabmp* instance))
 			break;
   default:
 			yabmp_send_error(instance, "Scan direction change is only supported for YABMP_COMPRESSION_NONE & YABMP_COMPRESSION_BITFIELDS.");
-			l_status = YABMP_ERR_UNKNOW;
-			break;
+			return YABMP_ERR_UNKNOW;
 	}
-	
-	return l_status;
+	return YABMP_OK;
 }
 
 YABMP_API(yabmp_status, yabmp_set_expand_to_bgrx, (yabmp* instance))

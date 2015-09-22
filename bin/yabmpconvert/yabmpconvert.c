@@ -77,6 +77,33 @@ static void custom_free(void* context, void* ptr)
 	free(buffer);
 }
 
+static size_t yabmp_file_read (void* context, void * ptr, size_t size)
+{
+	FILE* l_file = (FILE*)context;
+	
+	assert(l_file != NULL);
+	return fread(ptr, 1U, size, l_file);
+}
+
+static yabmp_status yabmp_file_seek(void* context, yabmp_uint32 offset)
+{
+	FILE* l_file = (FILE*)context;
+	yabmp_status l_status = YABMP_OK;
+	
+	assert(l_file != NULL);
+	
+#if LONG_MAX < 0xFFFFFFFFU
+	if (offset > LONG_MAX) {
+		return YABMP_ERR_UNKNOW;
+	}
+#endif
+	
+	if (fseek(l_file, (long)offset, SEEK_SET) != 0) {
+		l_status = YABMP_ERR_UNKNOW;
+	}
+	return l_status;
+}
+
 static const char* get_appname(const char* app)
 {
 	const char* l_firstResult = NULL;
@@ -104,11 +131,12 @@ static void print_usage(FILE* stream, const char* app)
 		"usage:\n"
 		"%s -h|--help : this help message\n"
 		"%s -v|--version : print version\n"
-		"%s [-ekvq] -i input -o output\n"
+		"%s [-ekvq] [--no-seek] -i input -o output\n"
 		"  -i, --input:           input filename\n"
 		"  -o, --output:          output filename\n"
 		"  -e, --expand-palette:  expand palette to RGB\n"
 		"  -k, --keep-palette:    keep grayscale palette\n"
+		"  -n, --no-seek:         no seek function when reading from stdin\n"
 		"  -v, --version:         print version before info\n"
 		"  -q, --quiet:           no error/warning printed\n"
 		, app, app, app);
@@ -121,6 +149,7 @@ int main(int argc, char* argv[])
 		{ "output",         'o', OPTPARSE_REQUIRED },
 		{ "expand-palette", 'e', OPTPARSE_NONE },
 		{ "keep-palette",   'k', OPTPARSE_NONE },
+		{ "no-seek",        'n', OPTPARSE_NONE },
 		{ "version",        'v', OPTPARSE_NONE },
 		{ "help",           'h', OPTPARSE_NONE },
 		{ "quiet",          'q', OPTPARSE_NONE },
@@ -169,6 +198,9 @@ int main(int argc, char* argv[])
 			case 'q':
 				params.quiet = 1;
 				break;
+			case 'n':
+				params.no_seek_fn = 1;
+				break;
 			case '?':
 				fprintf(stderr, "%s: %s\n", get_appname(argv[0]), optparse.errmsg);
 				print_usage(stderr, get_appname(argv[0]));
@@ -208,9 +240,16 @@ int main(int argc, char* argv[])
 			result = EXIT_FAILURE;
 			goto FREE_INSTANCE;
 		}
-		if (yabmp_set_input_file(l_bmp_reader, params.input_file) != YABMP_OK) {
-			result = EXIT_FAILURE;
-			goto FREE_INSTANCE;
+		if ((params.input_file[0] == '-') && (params.input_file[1] == '\0')) {
+			if (yabmp_set_input_stream(l_bmp_reader, stdin, yabmp_file_read, params.no_seek_fn ? NULL : yabmp_file_seek, NULL) != YABMP_OK) {
+				result = 1;
+				goto FREE_INSTANCE;
+			}
+		} else {
+			if (yabmp_set_input_file(l_bmp_reader, params.input_file) != YABMP_OK) {
+				result = EXIT_FAILURE;
+				goto FREE_INSTANCE;
+			}
 		}
 		if (yabmp_read_info(l_bmp_reader) != YABMP_OK) {
 			result = EXIT_FAILURE;

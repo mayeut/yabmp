@@ -36,6 +36,7 @@ typedef struct
 	unsigned int quiet:1;
 	unsigned int expand_palette:1;
 	unsigned int keep_gray_palette:1;
+	unsigned int no_seek_fn:1;
 } yabmpconvert_parameters;
 
 int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader);

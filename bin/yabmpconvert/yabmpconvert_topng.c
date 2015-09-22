@@ -174,8 +174,13 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader)
 			switch (l_compression) {
 				case YABMP_COMPRESSION_NONE:
 				case YABMP_COMPRESSION_BITFIELDS:
-					if (yabmp_set_invert_scan_direction(bmp_reader) != YABMP_OK) {
-						goto BADEND;
+					if (parameters->no_seek_fn) {
+						/* no seek for stdin */
+						l_need_full_image = 1;
+					} else {
+						if (yabmp_set_invert_scan_direction(bmp_reader) != YABMP_OK) {
+							goto BADEND;
+						}
 					}
 					break;
 				default:
@@ -190,12 +195,17 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader)
 			fprintf(stderr, "ERROR: Unknown scan direction.\n");
 			return 1;
 	}
-	l_output = fopen(parameters->output_file, "wb");
-	if (l_output == NULL) {
-		fprintf(stderr, "ERROR: can't open file %s for writing\n", parameters->output_file);
-		goto BADEND;
+	if ((parameters->output_file[0] == '-') && (parameters->output_file[1] == '\0')) {
+		l_output = stdout;
 	}
-		
+	else {
+		l_output = fopen(parameters->output_file, "wb");
+		if (l_output == NULL) {
+			fprintf(stderr, "ERROR: can't open file %s for writing\n", parameters->output_file);
+			goto BADEND;
+		}
+	}
+	
 	l_png_writer = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, print_png_error, print_png_warning);
 	if (setjmp(png_jmpbuf(l_png_writer))) {
 		goto BADEND;
@@ -315,7 +325,7 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader)
 	result = 0;
 BADEND:
 	png_destroy_write_struct(&l_png_writer, &l_png_info);
-	if (l_output != NULL) {
+	if ((l_output != NULL) && (l_output != stdout)) {
 		fclose(l_output);
 	}
 	if (l_buffer != NULL) {
