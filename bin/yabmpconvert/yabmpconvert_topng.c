@@ -144,7 +144,9 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader)
 			}
 			break;
 		default:
-			fprintf(stderr, "ERROR: Transcoding not supported.\n");
+			if (!parameters->quiet) {
+				fprintf(stderr, "ERROR: Transcoding not supported.\n");
+			}
 			return EXIT_FAILURE;
 	}
 	switch (l_scan_direction)
@@ -171,7 +173,9 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader)
 		case YABMP_SCAN_TOP_DOWN:
 			break;
 		default:
-			fprintf(stderr, "ERROR: Unknown scan direction.\n");
+			if (!parameters->quiet) {
+				fprintf(stderr, "ERROR: Unknown scan direction.\n");
+			}
 			return EXIT_FAILURE;
 	}
 	if ((parameters->output_file[0] == '-') && (parameters->output_file[1] == '\0')) {
@@ -180,7 +184,9 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader)
 	else {
 		l_output = fopen(parameters->output_file, "wb");
 		if (l_output == NULL) {
-			fprintf(stderr, "ERROR: can't open file %s for writing\n", parameters->output_file);
+			if (!parameters->quiet) {
+				fprintf(stderr, "ERROR: can't open file %s for writing\n", parameters->output_file);
+			}
 			return EXIT_FAILURE;
 		}
 	}
@@ -210,15 +216,13 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader)
 		png_color l_png_palette[256];
 		
 		if(yabmp_get_palette(bmp_reader, &l_num_palette, &blue_lut, &green_lut, &red_lut, &alpha_lut) != YABMP_OK) {
-			if (!parameters->quiet) {
-				fprintf(stderr, "ERROR: yabmp_get_palette failed.\n");
-			}
+			goto BADEND;
 		}
 		if (l_num_palette > 256U) {
 			if (!parameters->quiet) {
 				fprintf(stderr, "ERROR: palette with more than 256 entries not supported.\n");
-				goto BADEND;
 			}
+			goto BADEND;
 		}
 		for (i = 0U; i < l_num_palette; ++i) {
 			l_png_palette[i].blue  = blue_lut[i];
@@ -270,7 +274,9 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader)
 		l_buffer = malloc(l_buffer_size);
 	}
 	if (l_buffer == NULL) {
-		fprintf(stderr, "ERROR: can't allocate buffer for 1 line\n");
+		if (!parameters->quiet) {
+			fprintf(stderr, "ERROR: can't allocate buffer for 1 line\n");
+		}
 		goto BADEND;
 	}
 	if (l_need_full_image) {
