@@ -222,8 +222,14 @@ int main(int argc, char* argv[])
 		goto BADEND;
 	}
 	
-	if ((params.output_file == NULL) && (params.input_file == NULL) ) {
+	if ((params.output_file == NULL) || (params.input_file == NULL) ) {
 		if (params.version) {
+			goto BADEND;
+		}
+		else {
+			fprintf(stderr, "%s: missing input or output file\n", get_appname(argv[0]));
+			print_usage(stderr, get_appname(argv[0]));
+			result = EXIT_FAILURE;
 			goto BADEND;
 		}
 	}
