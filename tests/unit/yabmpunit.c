@@ -116,6 +116,14 @@ int main(int argc, char* argv[])
 		result |= (yabmp_set_input_stream(l_reader, NULL, custom_read, custom_seek, custom_close) == YABMP_ERR_UNKNOW) ? EXIT_SUCCESS : EXIT_FAILURE;
 		
 		yabmp_destroy_reader(&l_reader);
+		
+		result |= (yabmp_create_reader(&l_reader, NULL, print_error, print_warning, NULL, NULL, NULL) == YABMP_OK) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_set_input_file(NULL, NULL) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_set_input_file(l_reader, NULL) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_set_input_file(l_reader, "dummy/directory/that/does/not/exist/file.txt") == YABMP_ERR_UNKNOW) ? EXIT_SUCCESS : EXIT_FAILURE;
+		
+		yabmp_destroy_reader(&l_reader);
+		
 	}
 	
 	/* test args error for yabmp_read_info */
