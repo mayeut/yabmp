@@ -29,6 +29,12 @@ for FILE in ${FILES}; do
 	if [ -f "${SOURCE}" ]; then
 		gcov ${SOURCE} --object-file ${FILE}
 		mv ${FILENAME}.gcov ${TARGETDIR}/${FILENAME}.gcov
+		# if any .h need to do otherwise... They can exist multiple times...
+		OTHERS=$(find ./ -maxdepth 1 -type f -name '*.gcov')
+		for OTHER in ${OTHERS}; do
+			OTHER=$(basename ${OTHER} .gcov)
+			mv ${OTHER}.gcov ${TARGETDIR}/${OTHER}.$(cmake -E md5sum ${OTHER}.gcov | awk '{ print $1 }').gcov
+		done
 	fi
 done
 
