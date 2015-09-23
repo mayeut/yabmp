@@ -242,14 +242,14 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader)
 		if ((l_png_color_mask & ~PNG_COLOR_MASK_ALPHA) == PNG_COLOR_TYPE_RGB) {
 			l_sBIT.alpha = alpha_bits;
 			l_sBIT.gray  = 0U;
-			l_sBIT.blue  = blue_bits;
-			l_sBIT.green = green_bits;
-			l_sBIT.red   = red_bits;
+			l_sBIT.blue  = blue_bits ? blue_bits : 1; /* 0 is forbidden, transform deadlocks */
+			l_sBIT.green = green_bits ? green_bits : 1;
+			l_sBIT.red   = red_bits ? red_bits : 1;
 			png_set_sBIT(l_png_writer, l_png_info, &l_sBIT);
 			
 			/* because of png_set_bgr */
-			l_sBIT.blue  = red_bits;
-			l_sBIT.red   = blue_bits;
+			l_sBIT.blue  = red_bits ? red_bits : 1;
+			l_sBIT.red   = blue_bits ? blue_bits : 1;
 			png_set_shift(l_png_writer, &l_sBIT);
 		}
 	}
