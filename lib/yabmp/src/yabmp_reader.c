@@ -430,12 +430,15 @@ static yabmp_status local_read_core_info(yabmp* reader, yabmp_info* info)
 static yabmp_status local_read_info(yabmp* reader, yabmp_info* info)
 {
 	yabmp_status l_status = YABMP_OK;
+	yabmp_uint32 l_header_size = 0U;
 	int l_is_os2 = 0;
 	
 	assert(reader != NULL);
 	assert(info != NULL);
 	
-	switch (info->core.size) {
+	l_header_size = info->core.size;
+	
+	switch (l_header_size) {
 		case 12U:  /* core only */
 		case 40U:  /* info v1 */
 		case 52U:  /* info v2 */
@@ -453,7 +456,7 @@ static yabmp_status local_read_info(yabmp* reader, yabmp_info* info)
 	}
 
 	/* read v1 */
-	if (info->core.size >= 40U)
+	if (l_header_size >= 40U)
 	{
 		YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(info->v1.compression)));
 		YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(info->v1.rawDataSize)));
@@ -464,35 +467,36 @@ static yabmp_status local_read_info(yabmp* reader, yabmp_info* info)
 	}
 	
 	if (l_is_os2) {
-		if (info->core.size >= 64U)
+		if (l_header_size >= 64U)
 		{
 			/* let's just ignore for now... */
 			YABMP_SIMPLE_CHECK(yabmp_stream_skip(reader, 24U));
 		}
 	}
 	else {
-		/* some invalid files out there... */
-		if ((info->v1.compression == YABMP_COMPRESSION_BITFIELDS) && (info->core.size < 52U)) {
+		if ((info->v1.compression == YABMP_COMPRESSION_BITFIELDS) && (l_header_size < 52U)) {
 			if ((info->file.dataOffset > reader->stream_offset) && ((info->file.dataOffset - reader->stream_offset) >= 12U)) {
-				yabmp_send_warning(reader, "Compression BMP bitfields found with v1 only header. Assuming V2 header.");
-				info->core.size = 52U;
+				l_header_size = 52U;
+			} else {
+				yabmp_send_error(reader, "Compression BMP bitfields found but masks aren't present.");
+				return YABMP_ERR_UNKNOW;
 			}
 		}
 		
 		/* read v2 */
-		if (info->core.size >= 52U)
+		if (l_header_size >= 52U)
 		{
 			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(info->v2.redMask)));
 			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(info->v2.greenMask)));
 			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(info->v2.blueMask)));
 		}
 		/* read v2 */
-		if (info->core.size >= 56U)
+		if (l_header_size >= 56U)
 		{
 			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(info->v3.alphaMask)));
 		}
 		
-		if (info->core.size >= 108U)
+		if (l_header_size >= 108U)
 		{
 			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(info->v4.colorSpaceType)));
 			YABMP_SIMPLE_CHECK(yabmp_stream_read(reader, info->v4.colorSpaceEP, sizeof(info->v4.colorSpaceEP)));
@@ -501,7 +505,7 @@ static yabmp_status local_read_info(yabmp* reader, yabmp_info* info)
 			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(info->v4.blueGamma)));
 		}
 		
-		if (info->core.size >= 124U)
+		if (l_header_size >= 124U)
 		{
 			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(info->v5.intent)));
 			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(info->v5.iccProfileData)));
@@ -519,7 +523,7 @@ static yabmp_status local_read_info(yabmp* reader, yabmp_info* info)
 		
 		if (l_colorCount == 0U) {
 			/* Probably not valid, but such files have been seen in the wild. */
-			if ((info->core.size == 12U) && (info->file.dataOffset > (reader->stream_offset + 2U)) && (info->file.dataOffset < (reader->stream_offset + 3U*l_maxColorCount))) {
+			if ((l_header_size == 12U) && (info->file.dataOffset > (reader->stream_offset + 2U)) && (info->file.dataOffset < (reader->stream_offset + 3U*l_maxColorCount))) {
 				yabmp_send_warning(reader, "Data offset suggests wrong sized palette. Correcting palette size.");
 				l_colorCount = (info->file.dataOffset - reader->stream_offset) / 3U;
 			} else {
@@ -531,7 +535,7 @@ static yabmp_status local_read_info(yabmp* reader, yabmp_info* info)
 			l_colorCount = l_maxColorCount;
 		}
 		
-		if (info->core.size >= 40U) { /* palette entry is 4 bytes */
+		if (l_header_size >= 40U) { /* palette entry is 4 bytes */
 			for (i = 0U; i < l_colorCount; ++i) {
 				YABMP_SIMPLE_CHECK(yabmp_stream_read_8u(reader, &(info->lutB[i])));
 				YABMP_SIMPLE_CHECK(yabmp_stream_read_8u(reader, &(info->lutG[i])));
