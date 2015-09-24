@@ -216,6 +216,9 @@ FREE_INSTANCE:
 BADEND:
 	if ((outStream != stdout) && (outStream != NULL)) {
 		fclose(outStream);
+		if (result && !has_multiple_files) {
+			(void)remove(output);
+		}
 	}
 	
 	return result;

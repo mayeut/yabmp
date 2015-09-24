@@ -320,6 +320,9 @@ BADEND:
 	}
 	if ((l_output != NULL) && (l_output != stdout)) {
 		fclose(l_output);
+		if (result != 0) {
+			(void)remove(parameters->output_file);
+		}
 	}
 	if (l_buffer != NULL) {
 		free(l_buffer);
