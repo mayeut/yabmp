@@ -50,15 +50,15 @@ static size_t yabmp_file_read (void* context, void * ptr, size_t size)
 	return fread(ptr, 1U, size, l_file);
 }
 
-static const char* get_appname(const char* app)
+static const char* yabmp_basename(const char* path)
 {
 	const char* l_firstResult = NULL;
 	const char* l_secondResult = NULL;
 	int l_offset = 1;
 	
-	l_firstResult = strrchr(app, '/');
+	l_firstResult = strrchr(path, '/');
 	if (l_firstResult == NULL) {
-		l_firstResult = app;
+		l_firstResult = path;
 		l_offset = 0;
 	}
 	l_secondResult = strrchr(l_firstResult, '\\');
@@ -106,6 +106,8 @@ int main(int argc, char* argv[])
 	const char* last_input = NULL;
 	FILE* outStream = stdout;
 	
+	argv[0] = (char*)yabmp_basename(argv[0]);
+	
 	optparse_init(&optparse, argv);
 	
 	while ((option = optparse_long(&optparse, options, NULL)) != -1) {
@@ -123,8 +125,8 @@ int main(int argc, char* argv[])
 				output = optparse.optarg;
 				break;
 			case '?':
-				fprintf(stderr, "%s: %s\n", get_appname(argv[0]), optparse.errmsg);
-				print_usage(stderr, get_appname(argv[0]));
+				fprintf(stderr, "%s: %s\n", argv[0], optparse.errmsg);
+				print_usage(stderr, argv[0]);
 				result = 1;
 				goto BADEND;
 		}
@@ -146,10 +148,10 @@ int main(int argc, char* argv[])
 	}
 	
 	if (flags.version) {
-		fprintf(outStream, "%s %s\n", get_appname(argv[0]), yabmp_get_version_string());
+		fprintf(outStream, "%s %s\n", argv[0], yabmp_get_version_string());
 	}
 	if (flags.help) {
-		print_usage(stdout, get_appname(argv[0]));
+		print_usage(stdout, argv[0]);
 		goto BADEND;
 	}
 	
@@ -157,8 +159,8 @@ int main(int argc, char* argv[])
 	if (input == NULL) {
 		if (!flags.version) {
 			if (!flags.quiet) {
-				fprintf(stderr, "%s: missing file1 argument\n", get_appname(argv[0]));
-				print_usage(stderr, get_appname(argv[0]));
+				fprintf(stderr, "%s: missing file1 argument\n", argv[0]);
+				print_usage(stderr, argv[0]);
 			}
 			result = 1;
 		}
@@ -182,7 +184,7 @@ int main(int argc, char* argv[])
 				fputc('\n', outStream);
 			}
 			last_input = input;
-			fprintf(outStream, "%s:\n", input);
+			fprintf(outStream, "%s:\n", yabmp_basename(input));
 		}
 		l_reader = NULL;
 		if (yabmp_create_reader(&l_reader, NULL, flags.quiet ? NULL : print_error, flags.quiet ? NULL : print_warning, NULL, NULL, NULL) != YABMP_OK) {

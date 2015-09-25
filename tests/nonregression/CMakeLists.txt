@@ -61,6 +61,11 @@ function(yabmp_add_test file)
 	endif()
 endfunction()
 
+# yabmpinfo multiple inputs
+add_test(NAME multiple-info COMMAND yabmpinfo -o "${CMAKE_CURRENT_BINARY_DIR}/multiple.info.txt" "${CMAKE_CURRENT_SOURCE_DIR}/input/bmpsuite/g/pal1.bmp" "${CMAKE_CURRENT_SOURCE_DIR}/input/bmpsuite/g/pal4.bmp")
+add_test(NAME multiple-info-compare COMMAND "${CMAKE_COMMAND}" -E compare_files "${CMAKE_CURRENT_SOURCE_DIR}/expected/multiple.info.txt" "${CMAKE_CURRENT_BINARY_DIR}/multiple.info.txt")
+set_tests_properties(multiple-info-compare PROPERTIES DEPENDS multiple-info)
+
 # bmpsuite good tests
 yabmp_add_info_test("bmpsuite/g/pal1.bmp")
 yabmp_add_info_test("bmpsuite/g/pal1.bmp" STDIN)
