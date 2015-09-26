@@ -193,7 +193,7 @@ yabmp_add_test("bmpsuite/q/rgba32-61754.bmp" FAILS)
 yabmp_add_info_test("bmpsuite/q/rgba32-81284.bmp")
 yabmp_add_test("bmpsuite/q/rgba32-81284.bmp")
 yabmp_add_info_test("bmpsuite/q/rgba32abf.bmp")
-yabmp_add_test("bmpsuite/q/rgba32abf.bmp" FAILS)
+yabmp_add_test("bmpsuite/q/rgba32abf.bmp")
 
 
 # bmpsuite bad tests

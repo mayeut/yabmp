@@ -362,6 +362,7 @@ YABMP_API(yabmp_status, yabmp_valid_info, (yabmp* reader))
 			yabmp_send_error(reader, "compression %" YABMP_PRIu32 " not supported.", reader->info.v1.compression);
 			return YABMP_ERR_UNKNOW;
 	}
+	
 	reader->status |= YABMP_STATUS_HAS_VALID_INFO;
 	return YABMP_OK;
 }
@@ -482,18 +483,37 @@ static yabmp_status local_read_info(yabmp* reader, yabmp_info* info)
 				return YABMP_ERR_UNKNOW;
 			}
 		}
+		if ((info->v1.compression == 6U /* BI_ALPHABITFIELDS */) && (l_header_size == 40U)) {
+			if ((info->file.dataOffset > reader->stream_offset) && ((info->file.dataOffset - reader->stream_offset) >= 16U)) {
+				l_header_size = 56U;
+				info->v1.compression = YABMP_COMPRESSION_BITFIELDS;
+			} else {
+				yabmp_send_error(reader, "Compression BMP bitfields found but masks aren't present.");
+				return YABMP_ERR_UNKNOW;
+			}
+		}
 		
 		/* read v2 */
 		if (l_header_size >= 52U)
 		{
-			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(info->v2.redMask)));
-			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(info->v2.greenMask)));
-			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(info->v2.blueMask)));
+			if (reader->info.v1.compression != YABMP_COMPRESSION_BITFIELDS) {
+				YABMP_SIMPLE_CHECK(yabmp_stream_skip(reader, 3U * (yabmp_uint32)sizeof(yabmp_uint32)));
+			}
+			else {
+				YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(info->v2.redMask)));
+				YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(info->v2.greenMask)));
+				YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(info->v2.blueMask)));
+			}
 		}
 		/* read v2 */
 		if (l_header_size >= 56U)
 		{
-			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(info->v3.alphaMask)));
+			if (reader->info.v1.compression != YABMP_COMPRESSION_BITFIELDS) {
+				YABMP_SIMPLE_CHECK(yabmp_stream_skip(reader, 1U * (yabmp_uint32)sizeof(yabmp_uint32)));
+			}
+			else {
+				YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(info->v3.alphaMask)));
+			}
 		}
 		
 		if (l_header_size >= 108U)
@@ -514,7 +534,6 @@ static yabmp_status local_read_info(yabmp* reader, yabmp_info* info)
 		}
 	}
 	
-	/* TODO Shall we read a LUT when bpp > 8 ? */
 	if (info->core.bpp <= 8U) {
 		const yabmp_uint32 l_maxColorCount = 1U << info->core.bpp;
 		yabmp_uint32 l_colorCount = info->v1.pltColorCount;
