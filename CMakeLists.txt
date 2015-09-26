@@ -38,6 +38,9 @@ if (APPLE)
 	option(YABMP_USE_DSYMUTIL "Call dsymutil on binaries after build." OFF)
 endif()
 
+option(YABMP_BUILD_DOC "Build documentation." OFF)
+
+
 #-----------------------------------------------------------------------------
 # Big endian test:
 include (${CMAKE_ROOT}/Modules/TestBigEndian.cmake)
@@ -81,3 +84,8 @@ add_subdirectory(bin)
 # Add tests
 add_subdirectory(tests)
 
+#-----------------------------------------------------------------------------
+# Add documentation
+if (YABMP_BUILD_DOC)
+	add_subdirectory(doc)
+endif()

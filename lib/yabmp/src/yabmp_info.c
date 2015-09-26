@@ -65,40 +65,28 @@ YABMP_API(yabmp_status, yabmp_get_dimensions, (const yabmp* instance, const yabm
 {
 	YABMP_CHECK_INSTANCE(instance);
 	
-	if ((info == NULL) || ((width == NULL) && (height == NULL))) {
-		yabmp_send_error(instance, "NULL info or (NULL width and NULL height).");
+	if ((info == NULL) || (width == NULL) || (height == NULL)) {
+		yabmp_send_error(instance, "NULL info or NULL width or NULL height.");
 		return YABMP_ERR_INVALID_ARGS;
 	}
-	if (width != NULL) {
-		*width = info->width;
-	} else {
-		yabmp_send_warning(instance, "NULL width.");
-	}
-	if (height != NULL) {
-			*height = info->height;
-	} else {
-		yabmp_send_warning(instance, "NULL height.");
-	}
+	
+	*width = info->width;
+	*height = info->height;
+	
 	return YABMP_OK;
 }
 YABMP_API(yabmp_status, yabmp_get_pixels_per_meter, (const yabmp* instance, const yabmp_info* info, yabmp_uint32* x, yabmp_uint32* y))
 {
 	YABMP_CHECK_INSTANCE(instance);
 	
-	if ((info == NULL) || ((x == NULL) && (y == NULL))) {
-		yabmp_send_error(instance, "NULL info or (NULL x and NULL y).");
+	if ((info == NULL) || (x == NULL) || (y == NULL)) {
+		yabmp_send_error(instance, "NULL info or NULL x or NULL y.");
 		return YABMP_ERR_INVALID_ARGS;
 	}
-	if (x != NULL) {
-		*x = info->res_ppm_x;
-	} else {
-		yabmp_send_warning(instance, "NULL x.");
-	}
-	if (y != NULL) {
-		*y = info->res_ppm_y;
-	} else {
-		yabmp_send_warning(instance, "NULL y.");
-	}
+	
+	*x = info->res_ppm_x;
+	*y = info->res_ppm_y;
+
 	return YABMP_OK;
 }
 

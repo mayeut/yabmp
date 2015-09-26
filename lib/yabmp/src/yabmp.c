@@ -26,7 +26,6 @@
 
 YABMP_API(void, yabmp_get_version, (yabmp_uint32 * major, yabmp_uint32 * minor, yabmp_uint32 * patch))
 {
-	/* TODO VERSION */
 	if (major != NULL) {
 		*major = YABMP_VERSION_MAJOR;
 	}
