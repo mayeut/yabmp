@@ -48,7 +48,7 @@ static void YABMP_PNGCBAPI print_png_warning(png_structp png_struct, png_const_c
 	fprintf(stderr, "PNG WARNING: %s\n", message);
 }
 
-int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader)
+int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader, yabmp_info* bmp_info)
 {
 	int result = EXIT_FAILURE; /* default is fail */
 	void* l_buffer = NULL;
@@ -70,25 +70,25 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader)
 	FILE* l_output = NULL;
 	int l_png_bit_depth = 8; /* default to 8 bits */
 	
-	if(yabmp_get_dimensions(bmp_reader, &l_width, &l_height) != YABMP_OK) {
+	if(yabmp_get_dimensions(bmp_reader, bmp_info, &l_width, &l_height) != YABMP_OK) {
 		return EXIT_FAILURE;
 	}
-	if (yabmp_get_pixels_per_meter(bmp_reader, &l_res_x, &l_res_y) != YABMP_OK) {
+	if (yabmp_get_pixels_per_meter(bmp_reader, bmp_info, &l_res_x, &l_res_y) != YABMP_OK) {
 		return EXIT_FAILURE;
 	}
-	if(yabmp_get_bpp(bmp_reader, &l_bpp) != YABMP_OK) {
+	if(yabmp_get_bpp(bmp_reader, bmp_info, &l_bpp) != YABMP_OK) {
 		return EXIT_FAILURE;
 	}
-	if(yabmp_get_color_mask(bmp_reader, &l_color_mask) != YABMP_OK) {
+	if(yabmp_get_color_mask(bmp_reader, bmp_info, &l_color_mask) != YABMP_OK) {
 		return EXIT_FAILURE;
 	}
-	if(yabmp_get_compression(bmp_reader, &l_compression) != YABMP_OK) {
+	if(yabmp_get_compression(bmp_reader, bmp_info, &l_compression) != YABMP_OK) {
 		return EXIT_FAILURE;
 	}
-	if(yabmp_get_scan_direction(bmp_reader, &l_scan_direction) != YABMP_OK) {
+	if(yabmp_get_scan_direction(bmp_reader, bmp_info, &l_scan_direction) != YABMP_OK) {
 		return EXIT_FAILURE;
 	}
-	if(yabmp_get_bits(bmp_reader, &blue_bits, &green_bits, &red_bits, &alpha_bits) != YABMP_OK) {
+	if(yabmp_get_bits(bmp_reader, bmp_info, &blue_bits, &green_bits, &red_bits, &alpha_bits) != YABMP_OK) {
 		return EXIT_FAILURE;
 	}
 	
@@ -212,13 +212,10 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader)
 	
 	if (l_png_color_mask == PNG_COLOR_TYPE_PALETTE) {
 		yabmp_uint32 i, l_num_palette;
-		const yabmp_uint8 *blue_lut;
-		const yabmp_uint8 *green_lut;
-		const yabmp_uint8 *red_lut;
-		const yabmp_uint8 *alpha_lut;
+		const yabmp_color *l_bmp_palette;
 		png_color l_png_palette[256];
 		
-		if(yabmp_get_palette(bmp_reader, &l_num_palette, &blue_lut, &green_lut, &red_lut, &alpha_lut) != YABMP_OK) {
+		if(yabmp_get_palette(bmp_reader, bmp_info, &l_num_palette, &l_bmp_palette) != YABMP_OK) {
 			goto BADEND;
 		}
 		if (l_num_palette > 256U) {
@@ -228,9 +225,9 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader)
 			goto BADEND;
 		}
 		for (i = 0U; i < l_num_palette; ++i) {
-			l_png_palette[i].blue  = blue_lut[i];
-			l_png_palette[i].green = green_lut[i];
-			l_png_palette[i].red   = red_lut[i];
+			l_png_palette[i].blue  = l_bmp_palette[i].blue;
+			l_png_palette[i].green = l_bmp_palette[i].green;
+			l_png_palette[i].red   = l_bmp_palette[i].red;
 		}
 		
 		png_set_PLTE(l_png_writer, l_png_info, l_png_palette, (int)l_num_palette);

@@ -178,7 +178,9 @@ int main(int argc, char* argv[])
 	
 	do
 	{
-		yabmp* l_reader;
+		yabmp* l_reader = NULL;
+		yabmp_info* l_info = NULL;
+		
 		if (has_multiple_files) {
 			if (last_input != NULL) {
 				fputc('\n', outStream);
@@ -186,8 +188,11 @@ int main(int argc, char* argv[])
 			last_input = input;
 			fprintf(outStream, "%s:\n", yabmp_basename(input));
 		}
-		l_reader = NULL;
 		if (yabmp_create_reader(&l_reader, NULL, flags.quiet ? NULL : print_error, flags.quiet ? NULL : print_warning, NULL, NULL, NULL) != YABMP_OK) {
+			result = 1;
+			goto FREE_INSTANCE;
+		}
+		if (yabmp_create_info(l_reader, &l_info) != YABMP_OK) {
 			result = 1;
 			goto FREE_INSTANCE;
 		}
@@ -202,15 +207,15 @@ int main(int argc, char* argv[])
 				goto FREE_INSTANCE;
 			}
 		}
-		if (yabmp_read_info_no_validation(l_reader) != YABMP_OK) {
+		if (yabmp_read_info(l_reader, l_info) != YABMP_OK) {
 			result = 1;
 			goto FREE_INSTANCE;
 		}
-		if (yabmp_printinfo(outStream, l_reader) != 0) {
+		if (yabmp_printinfo(outStream, l_reader, l_info) != 0) {
 			result = 1;
 		}
 FREE_INSTANCE:
-		yabmp_destroy_reader(&l_reader);
+		yabmp_destroy_reader(&l_reader, &l_info);
 		if (result) {
 			goto BADEND;
 		}

@@ -68,7 +68,8 @@ struct yabmp_struct
 	yabmp_uint32 status; /* what have we done ? */
 	yabmp_uint32 transforms; /* transformations that need to be done */
 	
-	yabmp_info info; /* info that get's read/written from/to bmp. User get's different info depending on transformation */ 
+	yabmp_bmpinfo info; /* info that get's read/written from/to bmp. User get's different info depending on transformation */ 
+	struct yabmp_info_struct info2;
 	
 	yabmp_uint32 input_row_bytes;  /* input row size in bytes */
 	yabmp_uint32 input_step_bytes; /* intput step size in bytes */

@@ -28,6 +28,6 @@
 #include <stdio.h>
 #include <yabmp.h>
 
-int yabmp_printinfo(FILE* outstream, yabmp* bmp_reader);
+int yabmp_printinfo(FILE* outstream, yabmp* bmp_reader, const yabmp_info* info);
 
 #endif /* YABMP_PRINTINFO_H */

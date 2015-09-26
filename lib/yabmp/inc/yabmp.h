@@ -60,6 +60,13 @@ typedef enum yabmp_status_enum
 typedef struct yabmp_struct      yabmp;
 typedef struct yabmp_info_struct yabmp_info;
 		
+typedef struct yabmp_color_struct
+{
+   yabmp_uint8 red;
+   yabmp_uint8 green;
+   yabmp_uint8 blue;
+} yabmp_color;
+		
 typedef void  (*yabmp_message_cb)(void* context, const char* message);
 typedef void* (*yabmp_malloc_cb)(void* context, size_t size);
 typedef void  (*yabmp_free_cb)(void* context, void* ptr);
@@ -81,7 +88,7 @@ YABMP_API(yabmp_status, yabmp_create_reader, (
 	yabmp_malloc_cb malloc_fn,
 	yabmp_free_cb free_fn
 ));
-YABMP_API(void, yabmp_destroy_reader, (yabmp** reader));
+YABMP_API(void, yabmp_destroy_reader, (yabmp** reader, yabmp_info** info));
 		
 YABMP_API(yabmp_status, yabmp_set_input_stream, (
 	yabmp* reader,
@@ -95,20 +102,19 @@ YABMP_API(yabmp_status, yabmp_set_input_file, (
 	const char* path
 ));
 		
-YABMP_API(yabmp_status, yabmp_read_info, (yabmp* reader));
-YABMP_API(yabmp_status, yabmp_read_info_no_validation, (yabmp* reader));
-YABMP_API(yabmp_status, yabmp_valid_info, (yabmp* reader));
+YABMP_API(yabmp_status, yabmp_create_info, (yabmp* instance, yabmp_info ** info));
+
+YABMP_API(yabmp_status, yabmp_read_info, (yabmp* reader, yabmp_info * info));
 YABMP_API(yabmp_status, yabmp_read_row, (yabmp* reader, void* row, size_t row_size));
-YABMP_API(yabmp_status, yabmp_get_dimensions, (const yabmp* instance, yabmp_uint32* width, yabmp_uint32* height));
-YABMP_API(yabmp_status, yabmp_get_pixels_per_meter, (const yabmp* instance, yabmp_uint32* x, yabmp_uint32* y));
-YABMP_API(yabmp_status, yabmp_get_bpp, (const yabmp* instance, unsigned int* bpp));
-YABMP_API(yabmp_status, yabmp_get_color_mask, (const yabmp* instance, unsigned int* color_mask));
-YABMP_API(yabmp_status, yabmp_get_compression, (const yabmp* instance, yabmp_uint32* compression));
-YABMP_API(yabmp_status, yabmp_get_scan_direction, (const yabmp* instance, unsigned int* scan_direction));
-YABMP_API(yabmp_status, yabmp_get_bitfields, (const yabmp* instance, yabmp_uint32* blue_mask, yabmp_uint32* green_mask, yabmp_uint32 * red_mask, yabmp_uint32 * alpha_mask));
-YABMP_API(yabmp_status, yabmp_get_bits, (const yabmp* instance, unsigned int* blue_bits, unsigned int* green_bits, unsigned int * red_bits, unsigned int * alpha_bits));
-YABMP_API(yabmp_status, yabmp_get_palette, (const yabmp* instance, yabmp_uint32 * count, yabmp_uint8 const** blue_lut, yabmp_uint8 const** green_lut, yabmp_uint8 const** red_lut, yabmp_uint8 const ** alpha_lut));
-YABMP_API(yabmp_status, yabmp_get_color_plane_count, (const yabmp* instance, unsigned int* color_plane_count));
+YABMP_API(yabmp_status, yabmp_get_dimensions, (const yabmp* instance, const yabmp_info* info, yabmp_uint32* width, yabmp_uint32* height));
+YABMP_API(yabmp_status, yabmp_get_pixels_per_meter, (const yabmp* instance, const yabmp_info* info, yabmp_uint32* x, yabmp_uint32* y));
+YABMP_API(yabmp_status, yabmp_get_bpp, (const yabmp* instance, const yabmp_info* info, unsigned int* bpp));
+YABMP_API(yabmp_status, yabmp_get_color_mask, (const yabmp* instance, const yabmp_info* info, unsigned int* color_mask));
+YABMP_API(yabmp_status, yabmp_get_compression, (const yabmp* instance, const yabmp_info* info, yabmp_uint32* compression));
+YABMP_API(yabmp_status, yabmp_get_scan_direction, (const yabmp* instance, const yabmp_info* info, unsigned int* scan_direction));
+YABMP_API(yabmp_status, yabmp_get_bitfields, (const yabmp* instance, const yabmp_info* info, yabmp_uint32* blue_mask, yabmp_uint32* green_mask, yabmp_uint32 * red_mask, yabmp_uint32 * alpha_mask));
+YABMP_API(yabmp_status, yabmp_get_bits, (const yabmp* instance, const yabmp_info* info, unsigned int* blue_bits, unsigned int* green_bits, unsigned int * red_bits, unsigned int * alpha_bits));
+YABMP_API(yabmp_status, yabmp_get_palette, (const yabmp* instance, const yabmp_info* info, unsigned int * color_count, yabmp_color const** palette));
 		
 YABMP_API(yabmp_status, yabmp_set_invert_scan_direction, (yabmp* instance));
 YABMP_API(yabmp_status, yabmp_set_expand_to_bgrx, (yabmp* instance));

@@ -24,169 +24,159 @@
 
 #include "../inc/private/yabmp_internal.h"
 
+YABMP_API(yabmp_status, yabmp_create_info, (yabmp* instance, yabmp_info ** info))
+{
+	YABMP_CHECK_INSTANCE(instance);
+	
+	if ((info == NULL) || (*info != NULL)) {
+		yabmp_send_error(instance, "NULL info or non-NULL *info.");
+		return YABMP_ERR_INVALID_ARGS;
+	}
+	
+	*info = yabmp_malloc(instance, sizeof(struct yabmp_info_struct));
+	if (*info == NULL) {
+		return YABMP_ERR_ALLOCATION;
+	}
+	yabmp_init_info(*info);
+	return YABMP_OK;
+}
+
+YABMP_IAPI(void, yabmp_destroy_info, (yabmp* instance, yabmp_info** info))
+{
+	assert(instance != NULL);
+	
+	if ((info == NULL) || (*info == NULL)) {
+		return;
+	}
+	
+	yabmp_free(instance, *info);
+	*info = NULL;
+}
+
 YABMP_IAPI(void, yabmp_init_info, (yabmp_info* info))
 {
 	assert(info != NULL);
 	
-	/* All set to 0 by default */
+	memset(info, 0, sizeof(struct yabmp_info_struct));
 	
-	/* set default values */
-	info->colorMask = YABMP_COLOR_MASK_COLOR;
-	info->core.colorPlaneCount = 1U;
 }
 
-YABMP_API(yabmp_status, yabmp_get_dimensions, (const yabmp* instance, yabmp_uint32* width, yabmp_uint32* height))
+YABMP_API(yabmp_status, yabmp_get_dimensions, (const yabmp* instance, const yabmp_info* info, yabmp_uint32* width, yabmp_uint32* height))
 {
-	const yabmp_info* info = NULL;
-	
 	YABMP_CHECK_INSTANCE(instance);
 	
-	info = &instance->info;
-	
-	if ((width == NULL) && (height == NULL)) {
-		yabmp_send_error(instance, "NULL width and NULL height.");
+	if ((info == NULL) || ((width == NULL) && (height == NULL))) {
+		yabmp_send_error(instance, "NULL info or (NULL width and NULL height).");
 		return YABMP_ERR_INVALID_ARGS;
 	}
 	if (width != NULL) {
-		*width = info->core.width;
+		*width = info->width;
 	} else {
 		yabmp_send_warning(instance, "NULL width.");
 	}
 	if (height != NULL) {
-		if (info->core.height & 0x80000000U) { /* height is negative 2's complement */
-			*height = (info->core.height ^ 0xFFFFFFFFU) + 1U;
-		} else {
-			*height = info->core.height;
-		}
+			*height = info->height;
 	} else {
 		yabmp_send_warning(instance, "NULL height.");
 	}
 	return YABMP_OK;
 }
-YABMP_API(yabmp_status, yabmp_get_pixels_per_meter, (const yabmp* instance, yabmp_uint32* x, yabmp_uint32* y))
+YABMP_API(yabmp_status, yabmp_get_pixels_per_meter, (const yabmp* instance, const yabmp_info* info, yabmp_uint32* x, yabmp_uint32* y))
 {
-	const yabmp_info* info = NULL;
-	
 	YABMP_CHECK_INSTANCE(instance);
 	
-	info = &instance->info;
-	
-	if ((x == NULL) && (y == NULL)) {
-		yabmp_send_error(instance, "NULL x and NULL y.");
+	if ((info == NULL) || ((x == NULL) && (y == NULL))) {
+		yabmp_send_error(instance, "NULL info or (NULL x and NULL y).");
 		return YABMP_ERR_INVALID_ARGS;
 	}
 	if (x != NULL) {
-		*x = info->v1.resXppm;
+		*x = info->res_ppm_x;
 	} else {
 		yabmp_send_warning(instance, "NULL x.");
 	}
 	if (y != NULL) {
-		*y = info->v1.resYppm;
+		*y = info->res_ppm_y;
 	} else {
 		yabmp_send_warning(instance, "NULL y.");
 	}
 	return YABMP_OK;
 }
 
-YABMP_API(yabmp_status, yabmp_get_bpp, (const yabmp* instance, unsigned int* bpp))
+YABMP_API(yabmp_status, yabmp_get_bpp, (const yabmp* instance, const yabmp_info* info, unsigned int* bpp))
 {
-	const yabmp_info* info = NULL;
-	
 	YABMP_CHECK_INSTANCE(instance);
 	
-	info = &instance->info;
-	
-	if (bpp == NULL) {
+	if ((info == NULL) || (bpp == NULL)) {
 		yabmp_send_error(instance, "NULL info or NULL bpp.");
 		return YABMP_ERR_INVALID_ARGS;
 	}
-	*bpp = info->core.bpp;
+	*bpp = info->bpp;
 	return YABMP_OK;
 }
 
-YABMP_API(yabmp_status, yabmp_get_color_mask, (const yabmp* instance, yabmp_uint32* color_mask))
+YABMP_API(yabmp_status, yabmp_get_color_mask, (const yabmp* instance, const yabmp_info* info, unsigned int * color_mask))
 {
-	const yabmp_info* info = NULL;
-	
 	YABMP_CHECK_INSTANCE(instance);
 	
-	info = &instance->info;
-	
-	if (color_mask == NULL) {
+	if ((info == NULL) || (color_mask == NULL)) {
 		yabmp_send_error(instance, "NULL info or NULL color_mask.");
 		return YABMP_ERR_INVALID_ARGS;
 	}
-	*color_mask = info->colorMask;
+	*color_mask = (info->flags >> YABMP_COLOR_SHIFT) & YABMP_COLOR_MASK;
 	return YABMP_OK;
 }
 
-YABMP_API(yabmp_status, yabmp_get_scan_direction, (const yabmp* instance, yabmp_uint32* scan_direction))
+YABMP_API(yabmp_status, yabmp_get_scan_direction, (const yabmp* instance, const yabmp_info* info, unsigned int* scan_direction))
 {
-	const yabmp_info* info = NULL;
-	
 	YABMP_CHECK_INSTANCE(instance);
 	
-	info = &instance->info;
-	
-	if (scan_direction == NULL) {
+	if ((info == NULL) || (scan_direction == NULL)) {
 		yabmp_send_error(instance, "NULL info or NULL colorMask.");
 		return YABMP_ERR_INVALID_ARGS;
 	}
-	if (info->core.height & 0x80000000U) { /* height is negative 2's complement */
-		*scan_direction = YABMP_SCAN_TOP_DOWN;
-	} else {
-		*scan_direction = YABMP_SCAN_BOTTOM_UP;
-	}
+	*scan_direction = (info->flags >> YABMP_SCAN_SHIFT) & YABMP_SCAN_MASK;
 	return YABMP_OK;
 }
 
-YABMP_API(yabmp_status, yabmp_get_compression, (const yabmp* instance, yabmp_uint32* compression))
+YABMP_API(yabmp_status, yabmp_get_compression, (const yabmp* instance, const yabmp_info* info, yabmp_uint32* compression))
 {
-	const yabmp_info* info = NULL;
-	
 	YABMP_CHECK_INSTANCE(instance);
 	
-	info = &instance->info;
-	
-	if (compression == NULL) {
+	if ((info == NULL) || (compression == NULL)) {
 		yabmp_send_error(instance, "NULL info or NULL compression.");
 		return YABMP_ERR_INVALID_ARGS;
 	}
 	/* TODO, deal with OS/2 diff */
-	switch (info->v1.compression) {
+	switch (info->compression) {
 		case YABMP_COMPRESSION_NONE:
 		case YABMP_COMPRESSION_BITFIELDS: /* Bit fields */
 		case YABMP_COMPRESSION_RLE4:
 		case YABMP_COMPRESSION_RLE8:
-			*compression = info->v1.compression; /* initialized to 0 if only core header */
+			*compression = info->compression; /* initialized to 0 if only core header */
 			break;
 		default:
-			yabmp_send_warning(instance, "Unsupported compression %" YABMP_PRIu32 ".", info->v1.compression);
-			*compression = info->v1.compression; /* initialized to 0 if only core header */
+			yabmp_send_warning(instance, "Unsupported compression %" YABMP_PRIu32 ".", info->compression);
+			*compression = info->compression; /* initialized to 0 if only core header */
 			break;
 	}
 	return YABMP_OK;
 }
 
-YABMP_API(yabmp_status, yabmp_get_bitfields, (const yabmp* instance, yabmp_uint32* blue_mask, yabmp_uint32* green_mask, yabmp_uint32 * red_mask, yabmp_uint32 * alpha_mask))
+YABMP_API(yabmp_status, yabmp_get_bitfields, (const yabmp* instance, const yabmp_info* info, yabmp_uint32* blue_mask, yabmp_uint32* green_mask, yabmp_uint32 * red_mask, yabmp_uint32 * alpha_mask))
 {
-	const yabmp_info* info = NULL;
-	
 	YABMP_CHECK_INSTANCE(instance);
 	
-	info = &instance->info;
-	
-	if ((blue_mask == NULL) || (green_mask == NULL) || (red_mask == NULL) || (alpha_mask == NULL)) {
+	if ((info == NULL) || (blue_mask == NULL) || (green_mask == NULL) || (red_mask == NULL) || (alpha_mask == NULL)) {
 		yabmp_send_error(instance, "NULL info or NULL *_mask.");
 		return YABMP_ERR_INVALID_ARGS;
 	}
 	/* TODO, deal with OS/2 diff */
-	switch (info->v1.compression) {
+	switch (info->compression) {
 		case YABMP_COMPRESSION_BITFIELDS: /* Bit fields */
-			*blue_mask = info->v2.blueMask;
-			*green_mask = info->v2.greenMask;
-			*red_mask = info->v2.redMask;
-			*alpha_mask = info->v3.alphaMask; /* 0 if not initialised */
+			*blue_mask = info->mask_blue;
+			*green_mask = info->mask_green;
+			*red_mask = info->mask_red;
+			*alpha_mask = info->mask_alpha; /* 0 if not initialised */
 			break;
 		default:
 			yabmp_send_error(instance, "Compression is not bitfields");
@@ -195,91 +185,37 @@ YABMP_API(yabmp_status, yabmp_get_bitfields, (const yabmp* instance, yabmp_uint3
 	return YABMP_OK;
 }
 
-YABMP_API(yabmp_status, yabmp_get_bits, (const yabmp* instance, unsigned int* blue_bits, unsigned int* green_bits, unsigned int * red_bits, unsigned int * alpha_bits))
+YABMP_API(yabmp_status, yabmp_get_bits, (const yabmp* instance, const yabmp_info* info, unsigned int* blue_bits, unsigned int* green_bits, unsigned int * red_bits, unsigned int * alpha_bits))
 {
-	unsigned int l_dummy_shift;
-	const yabmp_info* info = NULL;
-	
 	YABMP_CHECK_INSTANCE(instance);
 	
-	info = &instance->info;
-	
-	if ((blue_bits == NULL) || (green_bits == NULL) || (red_bits == NULL) || (alpha_bits == NULL)) {
+	if ((info == NULL) || (blue_bits == NULL) || (green_bits == NULL) || (red_bits == NULL) || (alpha_bits == NULL)) {
 		yabmp_send_error(instance, "NULL info or NULL *_bits.");
 		return YABMP_ERR_INVALID_ARGS;
 	}
-	/* TODO, deal with OS/2 diff */
-	switch (info->v1.compression) {
-		case YABMP_COMPRESSION_BITFIELDS: /* Bit fields */
-			yabmp_bitfield_get_shift_and_bits(info->v2.blueMask,  &l_dummy_shift, blue_bits);
-			yabmp_bitfield_get_shift_and_bits(info->v2.greenMask, &l_dummy_shift, green_bits);
-			yabmp_bitfield_get_shift_and_bits(info->v2.redMask,   &l_dummy_shift, red_bits);
-			yabmp_bitfield_get_shift_and_bits(info->v3.alphaMask, &l_dummy_shift, alpha_bits); /* 0 if not initialised */
-			break;
-		default:
-			if (instance->info.core.bpp == 16) {
-				*blue_bits = 5;
-				*green_bits = 5;
-				*red_bits = 5;
-			} else {
-				*blue_bits = 8;
-				*green_bits = 8;
-				*red_bits = 8;
-			}
-			yabmp_bitfield_get_shift_and_bits(info->v3.alphaMask, &l_dummy_shift, alpha_bits); /* 0 if not initialised */
-			break;
-	}
+	*blue_bits  = info->bpc_blue;
+	*green_bits = info->bpc_green;
+	*red_bits   = info->bpc_red;
+	*alpha_bits = info->bpc_alpha;
 	return YABMP_OK;
 }
 
-YABMP_API(yabmp_status, yabmp_get_palette, (const yabmp* instance, yabmp_uint32 * count, yabmp_uint8 const** blue_lut, yabmp_uint8 const** green_lut, yabmp_uint8 const** red_lut, yabmp_uint8 const** alpha_lut))
+YABMP_API(yabmp_status, yabmp_get_palette, (const yabmp* instance, const yabmp_info* info, unsigned int * color_count, yabmp_color const** palette))
 {
-	yabmp_uint32 l_count;
-	const yabmp_info* info = NULL;
-	
 	YABMP_CHECK_INSTANCE(instance);
 	
-	info = &instance->info;
-	
-	if ((count == NULL) || (blue_lut == NULL) || (green_lut == NULL) || (red_lut == NULL) || (alpha_lut == NULL)) {
-		yabmp_send_error(instance, "NULL info or NULL count or NULL *_lut.");
+	if ((info == NULL) || (color_count == NULL) || (palette == NULL)) {
+		yabmp_send_error(instance, "NULL info or NULL color_count or NULL palette.");
 		return YABMP_ERR_INVALID_ARGS;
 	}
 	
-	if ((info->colorMask & YABMP_COLOR_MASK_PALETTE) == 0U) {
+	if (((info->flags >> YABMP_COLOR_SHIFT) & YABMP_COLOR_MASK_PALETTE) == 0U) {
 		yabmp_send_error(instance, "No palette.");
 		return YABMP_ERR_UNKNOW;
 	}
-	
-	l_count = info->v1.pltColorCount;
-	if (l_count == 0U) {
-		l_count = 1U << info->core.bpp;
-	}
-	else if (l_count > 256U) {
-		l_count = 256U;
-	}
-	
-	*count = l_count;
-	*blue_lut  = info->lutB;
-	*green_lut = info->lutG;
-	*red_lut   = info->lutR;
-	*alpha_lut = info->lutA;
-	
-	return YABMP_OK;
-}
 
-YABMP_API(yabmp_status, yabmp_get_color_plane_count, (const yabmp* instance, unsigned int* color_plane_count))
-{
-	const yabmp_info* info = NULL;
+	*color_count = info->num_palette;
+	*palette     = info->palette;
 	
-	YABMP_CHECK_INSTANCE(instance);
-	
-	info = &instance->info;
-	
-	if (color_plane_count == NULL) {
-		yabmp_send_error(instance, "NULL color_plane_count.");
-		return YABMP_ERR_INVALID_ARGS;
-	}
-	*color_plane_count = info->core.colorPlaneCount;
 	return YABMP_OK;
 }

@@ -1,5 +1,4 @@
 Dimensions (WxH): 127x64
-Color Plane Count: 1
 Bits Per Pixel: 8
 Bits Per Channel: B8.G8.R8.A0
 Color mask:  PALETTE COLOR

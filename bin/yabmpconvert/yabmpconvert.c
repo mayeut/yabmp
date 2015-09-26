@@ -243,8 +243,13 @@ int main(int argc, char* argv[])
 	for (;;)
 	{
 		yabmp* l_bmp_reader = NULL;
+		yabmp_info* l_bmp_info = NULL;
 		
 		if (yabmp_create_reader(&l_bmp_reader, NULL, params.quiet ? NULL : print_yabmp_error, params.quiet ? NULL : print_yabmp_warning, NULL, (use_custom_malloc != NULL) ? custom_malloc : NULL, (use_custom_malloc != NULL) ? custom_free : NULL) != YABMP_OK) {
+			result = EXIT_FAILURE;
+			goto FREE_INSTANCE;
+		}
+		if (yabmp_create_info(l_bmp_reader, &l_bmp_info) != YABMP_OK) {
 			result = EXIT_FAILURE;
 			goto FREE_INSTANCE;
 		}
@@ -259,14 +264,14 @@ int main(int argc, char* argv[])
 				goto FREE_INSTANCE;
 			}
 		}
-		if (yabmp_read_info(l_bmp_reader) != YABMP_OK) {
+		if (yabmp_read_info(l_bmp_reader, l_bmp_info) != YABMP_OK) {
 			result = EXIT_FAILURE;
 			goto FREE_INSTANCE;
 		}
 		/* yabmp_printinfo(stdout, l_bmp_reader, 0); */
-		result = convert_topng(&params, l_bmp_reader);
+		result = convert_topng(&params, l_bmp_reader, l_bmp_info);
 FREE_INSTANCE:
-		yabmp_destroy_reader(&l_bmp_reader);
+		yabmp_destroy_reader(&l_bmp_reader, &l_bmp_info);
 		if ((use_custom_malloc != NULL) && (result != 0)) {
 			if (allocation_current < allocation_max) {
 				break;

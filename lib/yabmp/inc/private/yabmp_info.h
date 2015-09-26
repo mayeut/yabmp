@@ -30,6 +30,12 @@
 
 #define YABMP_FILE_TYPE(a, b) ((yabmp_uint16)a | (((yabmp_uint16)b) << 8))
 
+#define YABMP_COLOR_SHIFT 0
+#define YABMP_COLOR_MASK  (YABMP_COLOR_MASK_PALETTE | YABMP_COLOR_MASK_COLOR | YABMP_COLOR_MASK_ALPHA)
+
+#define YABMP_SCAN_SHIFT 4
+#define YABMP_SCAN_MASK  (YABMP_SCAN_TOP_DOWN)
+
 typedef struct {
 	yabmp_uint16 type;       /* 'BM' for Win Bitmap, 'BA' for OS/2 */
 	yabmp_uint32 fileSize;   /* File size in bytes         */
@@ -81,7 +87,7 @@ typedef struct {
 } yabmp_dib_v5_info;
 
 
-struct yabmp_info_struct
+typedef struct
 {
 	/* FILE cache */
 	yabmp_file_header   file;
@@ -100,8 +106,30 @@ struct yabmp_info_struct
 	/* Computed cache */
 	yabmp_uint32 colorMask;
 	yabmp_uint8  expanded_bpp; /* maximum bit count for one color when expanded (8, 16 or 32) */
+} yabmp_bmpinfo;
+
+struct yabmp_info_struct
+{
+	yabmp_uint32 width;        /* Width of the image in pixels  */
+	yabmp_uint32 height;       /* Heigth of the image in pixels */
+	yabmp_uint32 res_ppm_x;    /* Horizontal resolution in pixels/meter */
+	yabmp_uint32 res_ppm_y;    /* Vertical resolution in pixels/meter */
+	yabmp_uint32 compression;  /* Compression method */
+	yabmp_uint32 mask_blue;    /* blue-channel bit mask */
+	yabmp_uint32 mask_green;   /* green-channel bit mask */
+	yabmp_uint32 mask_red;     /* red-channel bit mask */
+	yabmp_uint32 mask_alpha;   /* alpha-channel bit mask */
+	unsigned int num_palette;  /* Number of colors in the palette */
+	yabmp_uint8  bpp;          /* Number of bits per pixels */
+	yabmp_uint8  bpc_blue;     /* blue-channel bpp */
+	yabmp_uint8  bpc_green;    /* green-channel bpp */
+	yabmp_uint8  bpc_red;      /* red-channel bpp */
+	yabmp_uint8  bpc_alpha;    /* alpha-channel bpp */
+	yabmp_uint8  flags;        /* color mask, top-down */
+	yabmp_color  palette[256]; /* palette */
 };
 
 YABMP_IAPI(void, yabmp_init_info, (yabmp_info* info));
+YABMP_IAPI(void, yabmp_destroy_info, (yabmp* instance, yabmp_info** info));
 
 #endif

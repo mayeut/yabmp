@@ -25,35 +25,31 @@
 #include <assert.h>
 #include "yabmp_printinfo.h"
 
-int yabmp_printinfo(FILE* outstream, yabmp* bmp_reader)
+int yabmp_printinfo(FILE* outstream, yabmp* bmp_reader, const yabmp_info* info)
 {
 	yabmp_uint32 l_width, l_height, l_compression, l_res_x, l_res_y;
 	unsigned int l_bpp, l_scan_direction, l_color_mask;
 	unsigned int l_blue_bits, l_green_bits, l_red_bits, l_alpha_bits;
-	unsigned int l_color_plane_count;
 
-	if (yabmp_get_dimensions(bmp_reader, &l_width, &l_height) != YABMP_OK) {
+	if (yabmp_get_dimensions(bmp_reader, info, &l_width, &l_height) != YABMP_OK) {
 		return 1;
 	}
-	if (yabmp_get_pixels_per_meter(bmp_reader, &l_res_x, &l_res_y) != YABMP_OK) {
+	if (yabmp_get_pixels_per_meter(bmp_reader, info, &l_res_x, &l_res_y) != YABMP_OK) {
 		return 1;
 	}
-	if (yabmp_get_bpp(bmp_reader, &l_bpp) != YABMP_OK) {
+	if (yabmp_get_bpp(bmp_reader, info, &l_bpp) != YABMP_OK) {
 		return 1;
 	}
-	if (yabmp_get_color_mask(bmp_reader, &l_color_mask) != YABMP_OK) {
+	if (yabmp_get_color_mask(bmp_reader, info, &l_color_mask) != YABMP_OK) {
 		return 1;
 	}
-	if (yabmp_get_compression(bmp_reader, &l_compression) != YABMP_OK) {
+	if (yabmp_get_compression(bmp_reader, info, &l_compression) != YABMP_OK) {
 		return 1;
 	}
-	if (yabmp_get_scan_direction(bmp_reader, &l_scan_direction) != YABMP_OK) {
+	if (yabmp_get_scan_direction(bmp_reader, info, &l_scan_direction) != YABMP_OK) {
 		return 1;
 	}
-	if (yabmp_get_bits(bmp_reader, &l_blue_bits, &l_green_bits, &l_red_bits, &l_alpha_bits) != YABMP_OK) {
-		return 1;
-	}
-	if (yabmp_get_color_plane_count(bmp_reader, &l_color_plane_count) != YABMP_OK) {
+	if (yabmp_get_bits(bmp_reader, info, &l_blue_bits, &l_green_bits, &l_red_bits, &l_alpha_bits) != YABMP_OK) {
 		return 1;
 	}
 		
@@ -61,7 +57,6 @@ int yabmp_printinfo(FILE* outstream, yabmp* bmp_reader)
 	if ((l_res_x != 0U) || (l_res_y != 0U)) {
 		fprintf(outstream, "Pixels Per Meter (XxY): %" YABMP_PRIu32 "x%" YABMP_PRIu32 "\n", l_res_x, l_res_y);
 	}
-	fprintf(outstream, "Color Plane Count: %u\n", l_color_plane_count);
 	fprintf(outstream, "Bits Per Pixel: %u\n", l_bpp);
 	fprintf(outstream, "Bits Per Channel: B%u.G%u.R%u.A%u\n", l_blue_bits, l_green_bits, l_red_bits, l_alpha_bits);
 	fputs("Color mask: ", outstream);
@@ -89,7 +84,7 @@ int yabmp_printinfo(FILE* outstream, yabmp* bmp_reader)
 		case YABMP_COMPRESSION_BITFIELDS:
 			{
 				yabmp_uint32 blue_mask, green_mask, red_mask, alpha_mask;
-				if (yabmp_get_bitfields(bmp_reader, &blue_mask, &green_mask, &red_mask, &alpha_mask) != YABMP_OK) {
+				if (yabmp_get_bitfields(bmp_reader, info, &blue_mask, &green_mask, &red_mask, &alpha_mask) != YABMP_OK) {
 					return 1;
 				}
 				fprintf(outstream, "Compression: BITFIELDS B:0x%08" YABMP_PRIX32 " G:0x%08" YABMP_PRIX32 " R:0x%08" YABMP_PRIX32 " A:0x%08" YABMP_PRIX32 "\n", blue_mask, green_mask, red_mask, alpha_mask);

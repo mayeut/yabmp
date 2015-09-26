@@ -1,8 +1,0 @@
-Dimensions (WxH): 127x64
-Pixels Per Meter (XxY): 2835x2835
-Color Plane Count: 1
-Bits Per Pixel: 0
-Bits Per Channel: B8.G8.R8.A0
-Color mask:  PALETTE COLOR
-Compression: UNKNOWN
-Scan direction: BOTTOM-UP

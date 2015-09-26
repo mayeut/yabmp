@@ -39,6 +39,6 @@ typedef struct
 	unsigned int no_seek_fn:1;
 } yabmpconvert_parameters;
 
-int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader);
+int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader, yabmp_info* bmp_info);
 
 #endif /* YABMPCONVERT_H */
