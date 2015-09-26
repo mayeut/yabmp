@@ -193,26 +193,6 @@ YABMP_API(yabmp_status, yabmp_read_info_no_validation, (yabmp* reader))
 	switch (l_info->file.type) {
 		case YABMP_FILE_TYPE('B', 'M'): /* BM */
 			break;
-		case YABMP_FILE_TYPE('B', 'A'): /* BA */
-			yabmp_send_error(reader, "OS/2 struct bitmap array not supported.");
-			l_status = YABMP_ERR_UNKNOW;
-			goto BADEND;
-		case YABMP_FILE_TYPE('C', 'I'): /* CI */
-			yabmp_send_error(reader, "OS/2 struct color icon not supported.");
-			l_status = YABMP_ERR_UNKNOW;
-			goto BADEND;
-		case YABMP_FILE_TYPE('C', 'P'): /* CP */
-			yabmp_send_error(reader, "OS/2 const color pointer not supported.");
-			l_status = YABMP_ERR_UNKNOW;
-			goto BADEND;
-		case YABMP_FILE_TYPE('I', 'C'): /* IC */
-			yabmp_send_error(reader, "OS/2 struct icon not supported.");
-			l_status = YABMP_ERR_UNKNOW;
-			goto BADEND;
-		case YABMP_FILE_TYPE('P', 'T'): /* PT */
-			yabmp_send_error(reader, "OS/2 pointer.");
-			l_status = YABMP_ERR_UNKNOW;
-			goto BADEND;
 		default:
 			yabmp_send_error(reader, "Unknown file type.");
 			l_status = YABMP_ERR_UNKNOW;
