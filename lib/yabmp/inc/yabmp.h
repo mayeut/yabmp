@@ -255,7 +255,6 @@ YABMP_API(yabmp_status, yabmp_set_input_file, (
 	const char* path
 ));
 
-
 /**
  * Creates an information object.
  *

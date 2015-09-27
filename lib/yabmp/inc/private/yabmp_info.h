@@ -98,11 +98,6 @@ typedef struct
 	yabmp_dib_v4_info   v4;
 	yabmp_dib_v5_info   v5;
 	
-	yabmp_uint8 lutR[256];
-	yabmp_uint8 lutG[256];
-	yabmp_uint8 lutB[256];
-	yabmp_uint8 lutA[256];
-	
 	/* Computed cache */
 	yabmp_uint32 colorMask;
 	yabmp_uint8  expanded_bpp; /* maximum bit count for one color when expanded (8, 16 or 32) */

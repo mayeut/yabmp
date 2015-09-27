@@ -26,9 +26,6 @@
 
 #include "../inc/private/yabmp_internal.h"
 
-static yabmp_status local_read_file_header(yabmp* reader, yabmp_bmpinfo* info);
-static yabmp_status local_read_core_info(yabmp* reader, yabmp_bmpinfo* info);
-static yabmp_status local_read_info(yabmp* reader, yabmp_bmpinfo* info);
 static yabmp_status local_read_info_no_validation(yabmp* reader);
 static yabmp_status local_valid_info(yabmp* reader);
 
@@ -225,28 +222,6 @@ YABMP_API(yabmp_status, yabmp_read_info, (yabmp* reader, yabmp_info* info))
 	
 	reader->info2.flags |= reader->info.colorMask << YABMP_COLOR_SHIFT;
 	
-	/* copy palette */
-	{
-		unsigned int i, l_count;
-		
-		if (((reader->info2.flags >> YABMP_COLOR_SHIFT) & YABMP_COLOR_MASK_PALETTE) == YABMP_COLOR_MASK_PALETTE) {
-			l_count = reader->info.v1.pltColorCount;
-			if (l_count == 0U) {
-				l_count = 1U << reader->info.core.bpp;
-			}
-			else if (l_count > 256U) {
-				l_count = 256U;
-			}
-		
-			reader->info2.num_palette = l_count;
-			for (i = 0; i < 256; ++i) {
-				reader->info2.palette[i].blue = reader->info.lutB[i];
-				reader->info2.palette[i].green = reader->info.lutG[i];
-				reader->info2.palette[i].red = reader->info.lutR[i];
-			}
-		}
-	}
-	
 	memcpy(info, &(reader->info2), sizeof(struct yabmp_info_struct));
 	
 	return YABMP_OK;
@@ -254,8 +229,11 @@ YABMP_API(yabmp_status, yabmp_read_info, (yabmp* reader, yabmp_info* info))
 
 static yabmp_status local_read_info_no_validation(yabmp* reader)
 {
-	yabmp_status l_status = YABMP_OK;
-	yabmp_bmpinfo*  l_info = NULL;
+	yabmp_status   l_status = YABMP_OK;
+	yabmp_bmpinfo* l_info = NULL;
+	yabmp_uint16   l_data16u;
+	yabmp_uint32   l_header_size;
+	int l_is_os2 = 0;
 	
 	YABMP_CHECK_READER(reader);
 	
@@ -273,30 +251,248 @@ static yabmp_status local_read_info_no_validation(yabmp* reader)
 	l_info->colorMask = YABMP_COLOR_MASK_COLOR;
 	
 	/* read file header */
-	l_status = local_read_file_header(reader, l_info);
-	if (l_status != YABMP_OK) {
-		goto BADEND;
-	}
-	
-	switch (l_info->file.type) {
+	YABMP_SIMPLE_CHECK(yabmp_stream_read_le_16u(reader, &l_data16u));
+	switch (l_data16u) {
 		case YABMP_FILE_TYPE('B', 'M'): /* BM */
 			break;
 		default:
 			yabmp_send_error(reader, "Unknown file type.");
-			l_status = YABMP_ERR_UNKNOW;
-			goto BADEND;
+			return YABMP_ERR_UNKNOW;
 	}
+	YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(l_info->file.fileSize)));
+	YABMP_SIMPLE_CHECK(yabmp_stream_read_le_16u(reader, &l_data16u)); /* reserved1 */
+	if (l_data16u != 0U) {
+		yabmp_send_warning(reader, "Found invalid reserved value in stream.");
+	}
+	YABMP_SIMPLE_CHECK(yabmp_stream_read_le_16u(reader, &l_data16u)); /* reserved2 */
+	if (l_data16u != 0U) {
+		yabmp_send_warning(reader, "Found invalid reserved value in stream.");
+	}
+	YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(l_info->file.dataOffset)));
 	
 	/* read core info */
-	l_status = local_read_core_info(reader, l_info);
-	if (l_status != YABMP_OK) {
-		goto BADEND;
+	YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &l_header_size)); /* header size */
+	switch (l_header_size)
+	{
+		case 12U: /* only core */
+			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_16u(reader, &l_data16u)); /* width */
+			l_info->core.width = l_data16u;
+			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_16u(reader, &l_data16u)); /* height */
+			l_info->core.height = l_data16u;
+			break;
+		case 16U: /* OS/2 v2 minimum header */
+		case 20U: /* OS/2 v2 Compression */
+		case 24U: /* OS/2 v2 ImageDataSize */
+		case 28U: /* OS/2 v2 XResolution */
+		case 32U: /* OS/2 v2 YResolution */
+		case 36U: /* OS/2 v2 ColorsUsed */
+		case 42U: /* OS/2 v2 Units */
+		case 44U: /* OS/2 v2 Reserved (Padding) */
+		case 46U: /* OS/2 v2 Recording */
+		case 48U: /* OS/2 v2 Rendering */
+		case 60U: /* OS/2 v2 ColorEncoding */
+		case 64U: /* OS/2 v2 full 64 bytes header */
+			l_is_os2 = 1;
+			/* fall through intended */
+		case 40U: /* MS v3 + OS/2 v2 ColorsImportant */
+		case 52U: /* Adobe RGB  masks + OS/2 Size1 */
+		case 56U: /* Adobe RGBA masks + OS/2 Size2 */
+		case 108U: /* MS v4 */
+		case 124U: /* MS v5 */
+			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(l_info->core.width)));  /* width */
+			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(l_info->core.height))); /* height */
+			break;
+		default:
+			yabmp_send_error(reader, "Invalid header size %u bytes.", (unsigned int)l_header_size);
+			return YABMP_ERR_UNKNOW;
+	}
+	/* TODO remove */
+	l_info->core.size = l_header_size;
+#if 0
+		/* TODO Top-Down flag */
+		if (l_height & 0x80000000U) { /* height is negative 2's complement */
+			l_height = (l_height ^ 0xFFFFFFFFU) + 1U;
+			/* TODO set top-down flag */
+		}
+#endif
+	YABMP_SIMPLE_CHECK(yabmp_stream_read_le_16u(reader, &l_data16u)); /* color plane count */
+	if (l_data16u != 1U) {
+		yabmp_send_error(reader, "%u color plane(s) not supported.", (unsigned int)l_data16u);
+		return YABMP_ERR_UNKNOW;
+	}
+	YABMP_SIMPLE_CHECK(yabmp_stream_read_le_16u(reader, &(l_info->core.bpp)));
+	switch (l_info->core.bpp) {
+		case 16U:
+		case 32U:
+			break;
+		case 1U:
+		case 2U:
+		case 4U:
+		case 8U:
+		case 24U:
+			if ((l_header_size == 52U) || (l_header_size == 56U)) {
+				/* we're dealing with an OS/2 v2 bitmap, Adobe RGB(A) masks is 16/32 bpp which OS/2 doesn't support */
+				l_is_os2 = 1;
+			}
+			break;
+		default:
+			yabmp_send_error(reader, "%ubpp not supported.", (unsigned int)l_info->core.bpp);
+			return YABMP_ERR_UNKNOW;
 	}
 	
 	/* read info */
-	l_status = local_read_info(reader, l_info);
-	if (l_status != YABMP_OK) {
-		goto BADEND;
+	if (l_header_size >= 20U)
+	{
+		YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(l_info->v1.compression)));
+	}
+	if (l_header_size >= 24U)
+	{
+		YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(l_info->v1.rawDataSize)));
+	}
+	if (l_header_size >= 28U)
+	{
+		YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(l_info->v1.resXppm)));
+	}
+	if (l_header_size >= 32U)
+	{
+		YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(l_info->v1.resYppm)));
+	}
+	if (l_header_size >= 36U)
+	{
+		YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(l_info->v1.pltColorCount)));
+	}
+	if (l_header_size >= 40U)
+	{
+		YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(l_info->v1.importantColorCount)));
+	}
+	
+	if (l_is_os2) {
+		if (l_header_size > 40U)
+		{
+			/* let's just ignore for now... */
+			YABMP_SIMPLE_CHECK(yabmp_stream_skip(reader, l_header_size - 40U));
+		}
+	} else {
+		/* Not OS/2 */
+		if ((l_info->v1.compression == YABMP_COMPRESSION_BITFIELDS) && (l_header_size < 52U)) {
+			if ((l_info->file.dataOffset > reader->stream_offset) && ((l_info->file.dataOffset - reader->stream_offset) >= 12U)) {
+				l_header_size = 52U;
+			} else {
+				yabmp_send_error(reader, "Compression BMP bitfields found but masks aren't present.");
+				return YABMP_ERR_UNKNOW;
+			}
+		}
+		if ((l_info->v1.compression == 6U /* BI_ALPHABITFIELDS */) && (l_header_size == 40U)) {
+			if ((l_info->file.dataOffset > reader->stream_offset) && ((l_info->file.dataOffset - reader->stream_offset) >= 16U)) {
+				l_header_size = 56U;
+				l_info->v1.compression = YABMP_COMPRESSION_BITFIELDS;
+			} else {
+				yabmp_send_error(reader, "Compression BMP bitfields found but masks aren't present.");
+				return YABMP_ERR_UNKNOW;
+			}
+		}
+		
+		/* read v2 */
+		if (l_header_size >= 52U)
+		{
+			if (reader->info.v1.compression != YABMP_COMPRESSION_BITFIELDS) {
+				YABMP_SIMPLE_CHECK(yabmp_stream_skip(reader, 3U * (yabmp_uint32)sizeof(yabmp_uint32)));
+			}
+			else {
+				YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(l_info->v2.redMask)));
+				YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(l_info->v2.greenMask)));
+				YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(l_info->v2.blueMask)));
+			}
+		}
+		/* read v2 */
+		if (l_header_size >= 56U)
+		{
+			if (reader->info.v1.compression != YABMP_COMPRESSION_BITFIELDS) {
+				YABMP_SIMPLE_CHECK(yabmp_stream_skip(reader, 1U * (yabmp_uint32)sizeof(yabmp_uint32)));
+			}
+			else {
+				YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(l_info->v3.alphaMask)));
+			}
+		}
+		
+		if (l_header_size >= 108U)
+		{
+			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(l_info->v4.colorSpaceType)));
+			YABMP_SIMPLE_CHECK(yabmp_stream_read(reader, l_info->v4.colorSpaceEP, sizeof(l_info->v4.colorSpaceEP)));
+			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(l_info->v4.redGamma)));
+			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(l_info->v4.greenGamma)));
+			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(l_info->v4.blueGamma)));
+		}
+		
+		if (l_header_size >= 124U)
+		{
+			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(l_info->v5.intent)));
+			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(l_info->v5.iccProfileData)));
+			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(l_info->v5.iccProfileSize)));
+			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(l_info->v5.reserved)));
+		}
+	}
+	
+	if (l_info->core.bpp <= 8U) {
+		const yabmp_uint32 l_maxColorCount = 1U << l_info->core.bpp;
+		yabmp_uint32 l_colorCount = l_info->v1.pltColorCount;
+		unsigned int l_isColorPalette = 0U;
+		yabmp_uint32 i;
+		
+		if (l_colorCount == 0U) {
+			/* Probably not valid, but such files have been seen in the wild. */
+			if ((l_header_size == 12U) && (l_info->file.dataOffset > (reader->stream_offset + 2U)) && (l_info->file.dataOffset < (reader->stream_offset + 3U*l_maxColorCount))) {
+				yabmp_send_warning(reader, "Data offset suggests wrong sized palette. Correcting palette size.");
+				l_colorCount = (l_info->file.dataOffset - reader->stream_offset) / 3U;
+			} else {
+				l_colorCount = l_maxColorCount;
+			}
+		}
+		else if (l_colorCount > l_maxColorCount) {
+			yabmp_send_warning(reader, "Invalid palette found (%" YABMP_PRIu32 " entries). Ignoring some values.", l_colorCount);
+			l_colorCount = l_maxColorCount;
+		}
+		
+		reader->info2.num_palette = (unsigned int)l_colorCount;
+		if (l_header_size > 12U) { /* palette entry is 4 bytes */
+			yabmp_color * l_palette = reader->info2.palette;
+			for (i = 0U; i < l_colorCount; ++i) {
+				yabmp_uint8 l_value;
+				YABMP_SIMPLE_CHECK(yabmp_stream_read_8u(reader, &(l_palette[i].blue)));
+				YABMP_SIMPLE_CHECK(yabmp_stream_read_8u(reader, &(l_palette[i].green)));
+				YABMP_SIMPLE_CHECK(yabmp_stream_read_8u(reader, &(l_palette[i].red)));
+				YABMP_SIMPLE_CHECK(yabmp_stream_read_8u(reader, &l_value));
+				
+				l_isColorPalette |= (l_palette[i].blue ^ l_palette[i].green) | (l_palette[i].green ^ l_palette[i].red);
+			}
+		} else { /* palette entry is 3 bytes */
+			yabmp_color * l_palette = reader->info2.palette;
+			for (i = 0U; i < l_colorCount; ++i) {
+				YABMP_SIMPLE_CHECK(yabmp_stream_read_8u(reader, &(l_palette[i].blue)));
+				YABMP_SIMPLE_CHECK(yabmp_stream_read_8u(reader, &(l_palette[i].green)));
+				YABMP_SIMPLE_CHECK(yabmp_stream_read_8u(reader, &(l_palette[i].red)));
+				
+				l_isColorPalette |= (l_palette[i].blue ^ l_palette[i].green) | (l_palette[i].green ^ l_palette[i].red);
+			}
+		}
+		/* ignore values over 256U */
+		for (; i < l_info->v1.pltColorCount; ++i) {
+			yabmp_uint32 l_value;
+			/* We can't be in BITMAPCOREHEADER case here */
+			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &l_value));
+		}
+		if (l_isColorPalette == 0U) {
+			l_info->colorMask &= ~(yabmp_uint32)YABMP_COLOR_MASK_COLOR;
+		}
+		l_info->colorMask |= YABMP_COLOR_MASK_PALETTE;
+	} else if (l_info->v1.pltColorCount > 0) {
+		yabmp_send_warning(reader, "Ignoring palette in true color image.");
+		/* We can't be in BITMAPCOREHEADER case here */
+		/* TODO overflow check */
+		YABMP_SIMPLE_CHECK(yabmp_stream_skip(reader, l_info->v1.pltColorCount * 4U));
+	}
+	if (l_info->v3.alphaMask != 0U) {
+		l_info->colorMask |= YABMP_COLOR_MASK_ALPHA;
 	}
 	
 	{
@@ -319,9 +515,9 @@ static yabmp_status local_read_info_no_validation(yabmp* reader)
 		
 	}
 	reader->status |= YABMP_STATUS_HAS_INFO;
-BADEND:
 	return l_status;
 }
+
 static yabmp_status local_valid_info(yabmp* reader)
 {
 	YABMP_CHECK_READER(reader);
@@ -331,24 +527,6 @@ static yabmp_status local_valid_info(yabmp* reader)
 		return YABMP_ERR_UNKNOW;
 	}
 	
-	if (reader->info.core.colorPlaneCount != 1U) {
-		yabmp_send_error(reader, "%u color plane(s) not supported.", (unsigned int)reader->info.core.colorPlaneCount);
-		return YABMP_ERR_UNKNOW;
-	}
-	
-	switch (reader->info.core.bpp) {
-		case 1U:
-		case 2U:
-		case 4U:
-		case 8U:
-		case 16U:
-		case 24U:
-		case 32U:
-			break;
-		default:
-			yabmp_send_error(reader, "%ubpp not supported.", (unsigned int)reader->info.core.bpp);
-			return YABMP_ERR_UNKNOW;
-	}
 	switch (reader->info.v1.compression) {
 		case YABMP_COMPRESSION_NONE:
 			break;
@@ -433,233 +611,6 @@ static yabmp_status local_valid_info(yabmp* reader)
 	
 	reader->status |= YABMP_STATUS_HAS_VALID_INFO;
 	return YABMP_OK;
-}
-
-static yabmp_status local_read_file_header(yabmp* reader, yabmp_bmpinfo* info)
-{
-	yabmp_status l_status = YABMP_OK;
-	
-	assert(reader != NULL);
-	assert(info != NULL);
-	
-	/* read type */
-	YABMP_SIMPLE_CHECK(yabmp_stream_read_le_16u(reader, &(info->file.type)));
-	YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(info->file.fileSize)));
-	YABMP_SIMPLE_CHECK(yabmp_stream_read_le_16u(reader, &(info->file.reserved1)));
-	YABMP_SIMPLE_CHECK(yabmp_stream_read_le_16u(reader, &(info->file.reserved2)));
-	YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(info->file.dataOffset)));
-	
-	return l_status;
-}
-
-static yabmp_status local_read_core_info(yabmp* reader, yabmp_bmpinfo* info)
-{
-	yabmp_status l_status = YABMP_OK;
-	yabmp_uint32 l_smallCore = 0U;
-	
-	assert(reader != NULL);
-	assert(info != NULL);
-	
-	/* read core info */
-	YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(info->core.size)));
-	switch (info->core.size) {
-		case 12U: /* only core */
-			l_smallCore = 1U;
-			break;
-		default:
-			break;
-	}
-	if (l_smallCore != 0U) {
-		yabmp_uint16 l_value;
-		YABMP_SIMPLE_CHECK(yabmp_stream_read_le_16u(reader, &l_value));
-		info->core.width = l_value;
-		YABMP_SIMPLE_CHECK(yabmp_stream_read_le_16u(reader, &l_value));
-		info->core.height = l_value;
-	} else {
-		yabmp_uint32 l_height;
-		YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(info->core.width))); /* we'll need to validate this */
-		YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &l_height));
-		
-#if 0
-		/* TODO Top-Down flag */
-		if (l_height & 0x80000000U) { /* height is negative 2's complement */
-			l_height = (l_height ^ 0xFFFFFFFFU) + 1U;
-			/* TODO set top-down flag */
-		}
-#endif
-		
-		info->core.height = l_height;
-	}
-	YABMP_SIMPLE_CHECK(yabmp_stream_read_le_16u(reader, &(info->core.colorPlaneCount)));
-	YABMP_SIMPLE_CHECK(yabmp_stream_read_le_16u(reader, &(info->core.bpp)));
-	
-	return l_status;
-}
-
-static yabmp_status local_read_info(yabmp* reader, yabmp_bmpinfo* info)
-{
-	yabmp_status l_status = YABMP_OK;
-	yabmp_uint32 l_header_size = 0U;
-	int l_is_os2 = 0;
-	
-	assert(reader != NULL);
-	assert(info != NULL);
-	
-	l_header_size = info->core.size;
-	
-	switch (l_header_size) {
-		case 12U:  /* core only */
-		case 40U:  /* info v1 */
-		case 52U:  /* info v2 */
-		case 56U:  /* info v3 */
-		case 108U: /* info v4 */
-		case 124U: /* info v5 */
-			break;
-		case 16U:
-		case 64U:  /* OS22XBITMAPHEADER */
-			l_is_os2 = 1;
-			break;
-		default:
-			yabmp_send_error(reader, "Invalid Bitmap file (unknown header size : %" YABMP_PRIu32 ").", info->core.size);
-			return YABMP_ERR_UNKNOW;
-	}
-
-	/* read v1 */
-	if (l_header_size >= 40U)
-	{
-		YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(info->v1.compression)));
-		YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(info->v1.rawDataSize)));
-		YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(info->v1.resXppm)));
-		YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(info->v1.resYppm)));
-		YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(info->v1.pltColorCount)));
-		YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(info->v1.importantColorCount)));
-	}
-	
-	if (l_is_os2) {
-		if (l_header_size >= 64U)
-		{
-			/* let's just ignore for now... */
-			YABMP_SIMPLE_CHECK(yabmp_stream_skip(reader, 24U));
-		}
-	}
-	else {
-		if ((info->v1.compression == YABMP_COMPRESSION_BITFIELDS) && (l_header_size < 52U)) {
-			if ((info->file.dataOffset > reader->stream_offset) && ((info->file.dataOffset - reader->stream_offset) >= 12U)) {
-				l_header_size = 52U;
-			} else {
-				yabmp_send_error(reader, "Compression BMP bitfields found but masks aren't present.");
-				return YABMP_ERR_UNKNOW;
-			}
-		}
-		if ((info->v1.compression == 6U /* BI_ALPHABITFIELDS */) && (l_header_size == 40U)) {
-			if ((info->file.dataOffset > reader->stream_offset) && ((info->file.dataOffset - reader->stream_offset) >= 16U)) {
-				l_header_size = 56U;
-				info->v1.compression = YABMP_COMPRESSION_BITFIELDS;
-			} else {
-				yabmp_send_error(reader, "Compression BMP bitfields found but masks aren't present.");
-				return YABMP_ERR_UNKNOW;
-			}
-		}
-		
-		/* read v2 */
-		if (l_header_size >= 52U)
-		{
-			if (reader->info.v1.compression != YABMP_COMPRESSION_BITFIELDS) {
-				YABMP_SIMPLE_CHECK(yabmp_stream_skip(reader, 3U * (yabmp_uint32)sizeof(yabmp_uint32)));
-			}
-			else {
-				YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(info->v2.redMask)));
-				YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(info->v2.greenMask)));
-				YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(info->v2.blueMask)));
-			}
-		}
-		/* read v2 */
-		if (l_header_size >= 56U)
-		{
-			if (reader->info.v1.compression != YABMP_COMPRESSION_BITFIELDS) {
-				YABMP_SIMPLE_CHECK(yabmp_stream_skip(reader, 1U * (yabmp_uint32)sizeof(yabmp_uint32)));
-			}
-			else {
-				YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(info->v3.alphaMask)));
-			}
-		}
-		
-		if (l_header_size >= 108U)
-		{
-			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(info->v4.colorSpaceType)));
-			YABMP_SIMPLE_CHECK(yabmp_stream_read(reader, info->v4.colorSpaceEP, sizeof(info->v4.colorSpaceEP)));
-			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(info->v4.redGamma)));
-			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(info->v4.greenGamma)));
-			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(info->v4.blueGamma)));
-		}
-		
-		if (l_header_size >= 124U)
-		{
-			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(info->v5.intent)));
-			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(info->v5.iccProfileData)));
-			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(info->v5.iccProfileSize)));
-			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(info->v5.reserved)));
-		}
-	}
-	
-	if (info->core.bpp <= 8U) {
-		const yabmp_uint32 l_maxColorCount = 1U << info->core.bpp;
-		yabmp_uint32 l_colorCount = info->v1.pltColorCount;
-		unsigned int l_isColorPalette = 0U;
-		yabmp_uint32 i;
-		
-		if (l_colorCount == 0U) {
-			/* Probably not valid, but such files have been seen in the wild. */
-			if ((l_header_size == 12U) && (info->file.dataOffset > (reader->stream_offset + 2U)) && (info->file.dataOffset < (reader->stream_offset + 3U*l_maxColorCount))) {
-				yabmp_send_warning(reader, "Data offset suggests wrong sized palette. Correcting palette size.");
-				l_colorCount = (info->file.dataOffset - reader->stream_offset) / 3U;
-			} else {
-				l_colorCount = l_maxColorCount;
-			}
-		}
-		else if (l_colorCount > l_maxColorCount) {
-			yabmp_send_warning(reader, "Invalid palette found (%" YABMP_PRIu32 " entries). Ignoring some values.", l_colorCount);
-			l_colorCount = l_maxColorCount;
-		}
-		
-		if (l_header_size >= 40U) { /* palette entry is 4 bytes */
-			for (i = 0U; i < l_colorCount; ++i) {
-				YABMP_SIMPLE_CHECK(yabmp_stream_read_8u(reader, &(info->lutB[i])));
-				YABMP_SIMPLE_CHECK(yabmp_stream_read_8u(reader, &(info->lutG[i])));
-				YABMP_SIMPLE_CHECK(yabmp_stream_read_8u(reader, &(info->lutR[i])));
-				YABMP_SIMPLE_CHECK(yabmp_stream_read_8u(reader, &(info->lutA[i])));
-				
-				l_isColorPalette |= (info->lutB[i] ^ info->lutG[i]) | (info->lutG[i] ^ info->lutR[i]);
-			}
-		} else { /* palette entry is 3 bytes */
-			for (i = 0U; i < l_colorCount; ++i) {
-				YABMP_SIMPLE_CHECK(yabmp_stream_read_8u(reader, &(info->lutB[i])));
-				YABMP_SIMPLE_CHECK(yabmp_stream_read_8u(reader, &(info->lutG[i])));
-				YABMP_SIMPLE_CHECK(yabmp_stream_read_8u(reader, &(info->lutR[i])));
-				
-				l_isColorPalette |= (info->lutB[i] ^ info->lutG[i]) | (info->lutG[i] ^ info->lutR[i]);
-			}
-		}
-		/* ignore values over 256U */
-		for (; i < info->v1.pltColorCount; ++i) {
-			yabmp_uint32 l_value;
-			/* We can't be in BITMAPCOREHEADER case here */
-			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &l_value));
-		}
-		if (l_isColorPalette == 0U) {
-			info->colorMask &= ~(yabmp_uint32)YABMP_COLOR_MASK_COLOR;
-		}
-		info->colorMask |= YABMP_COLOR_MASK_PALETTE;
-	} else if (info->v1.pltColorCount > 0) {
-		yabmp_send_warning(reader, "Ignoring palette in true color image.");
-		/* We can't be in BITMAPCOREHEADER case here */
-		YABMP_SIMPLE_CHECK(yabmp_stream_skip(reader, info->v1.pltColorCount * 4U));
-	}
-	if (info->v3.alphaMask != 0U) {
-		info->colorMask |= YABMP_COLOR_MASK_ALPHA;
-	}
-	
-	return l_status;
 }
 
 static yabmp_status local_rle4_decode_row(yabmp* instance, yabmp_uint8* row, int repack)
@@ -1054,6 +1005,11 @@ YABMP_API(yabmp_status, yabmp_read_row, (yabmp* reader, void* row, size_t row_si
 	
 	if ((reader->status & YABMP_STATUS_HAS_INFO) == 0U) {
 		yabmp_send_error(reader, "yabmp_read_info not called.");
+		return YABMP_ERR_UNKNOW;
+	}
+	
+	if ((reader->status & YABMP_STATUS_HAS_VALID_INFO) == 0U) {
+		yabmp_send_error(reader, "Invalid info were found.");
 		return YABMP_ERR_UNKNOW;
 	}
 	

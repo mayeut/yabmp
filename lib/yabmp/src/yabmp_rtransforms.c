@@ -325,11 +325,13 @@ YABMP_IAPI(void, yabmp_bf16u_to_bgra64, (const yabmp* instance, const yabmp_uint
 YABMP_IAPI(void, yabmp_pal1_to_bgr24, (const yabmp* instance, const yabmp_uint8* pSrc, yabmp_uint8* pDst ))
 {
 	yabmp_uint32 x, l_width;
+	const yabmp_color *l_palette;
 	
 	assert(instance != NULL);
 	assert(pSrc != NULL);
 	assert(pDst != NULL);
 	
+	l_palette = instance->info2.palette;
 	l_width = (yabmp_uint32)instance->info.core.width;
 	
 	for(x = 0U; x < l_width / 8U; ++x)
@@ -338,44 +340,44 @@ YABMP_IAPI(void, yabmp_pal1_to_bgr24, (const yabmp* instance, const yabmp_uint8*
 		yabmp_uint8 l_current;
 		
 		l_current = (l_value >> 7) & 0x01;
-		pDst[24*x+0] = instance->info.lutB[l_current];
-		pDst[24*x+1] = instance->info.lutG[l_current];
-		pDst[24*x+2] = instance->info.lutR[l_current];
+		pDst[24*x+0] = l_palette[l_current].blue;
+		pDst[24*x+1] = l_palette[l_current].green;
+		pDst[24*x+2] = l_palette[l_current].red;
 		
 		l_current = (l_value >> 6) & 0x01;
-		pDst[24*x+3] = instance->info.lutB[l_current];
-		pDst[24*x+4] = instance->info.lutG[l_current];
-		pDst[24*x+5] = instance->info.lutR[l_current];
+		pDst[24*x+3] = l_palette[l_current].blue;
+		pDst[24*x+4] = l_palette[l_current].green;
+		pDst[24*x+5] = l_palette[l_current].red;
 		
 		l_current = (l_value >> 5) & 0x01;
-		pDst[24*x+6] = instance->info.lutB[l_current];
-		pDst[24*x+7] = instance->info.lutG[l_current];
-		pDst[24*x+8] = instance->info.lutR[l_current];
+		pDst[24*x+6] = l_palette[l_current].blue;
+		pDst[24*x+7] = l_palette[l_current].green;
+		pDst[24*x+8] = l_palette[l_current].red;
 		
 		l_current = (l_value >> 4) & 0x01;
-		pDst[24*x+9] = instance->info.lutB[l_current];
-		pDst[24*x+10] = instance->info.lutG[l_current];
-		pDst[24*x+11] = instance->info.lutR[l_current];
+		pDst[24*x+9] = l_palette[l_current].blue;
+		pDst[24*x+10] = l_palette[l_current].green;
+		pDst[24*x+11] = l_palette[l_current].red;
 		
 		l_current = (l_value >> 3) & 0x01;
-		pDst[24*x+12] = instance->info.lutB[l_current];
-		pDst[24*x+13] = instance->info.lutG[l_current];
-		pDst[24*x+14] = instance->info.lutR[l_current];
+		pDst[24*x+12] = l_palette[l_current].blue;
+		pDst[24*x+13] = l_palette[l_current].green;
+		pDst[24*x+14] = l_palette[l_current].red;
 		
 		l_current = (l_value >> 2) & 0x01;
-		pDst[24*x+15] = instance->info.lutB[l_current];
-		pDst[24*x+16] = instance->info.lutG[l_current];
-		pDst[24*x+17] = instance->info.lutR[l_current];
+		pDst[24*x+15] = l_palette[l_current].blue;
+		pDst[24*x+16] = l_palette[l_current].green;
+		pDst[24*x+17] = l_palette[l_current].red;
 		
 		l_current = (l_value >> 1) & 0x01;
-		pDst[24*x+18] = instance->info.lutB[l_current];
-		pDst[24*x+19] = instance->info.lutG[l_current];
-		pDst[24*x+20] = instance->info.lutR[l_current];
+		pDst[24*x+18] = l_palette[l_current].blue;
+		pDst[24*x+19] = l_palette[l_current].green;
+		pDst[24*x+20] = l_palette[l_current].red;
 		
 		l_current = (l_value >> 0) & 0x01;
-		pDst[24*x+21] = instance->info.lutB[l_current];
-		pDst[24*x+22] = instance->info.lutG[l_current];
-		pDst[24*x+23] = instance->info.lutR[l_current];
+		pDst[24*x+21] = l_palette[l_current].blue;
+		pDst[24*x+22] = l_palette[l_current].green;
+		pDst[24*x+23] = l_palette[l_current].red;
 	}
 	
 	if (l_width & 7U) {
@@ -384,45 +386,45 @@ YABMP_IAPI(void, yabmp_pal1_to_bgr24, (const yabmp* instance, const yabmp_uint8*
 		int l_remaining = (int)l_width & 7U;
 		
 		l_current = (l_value >> 7) & 0x01;
-		pDst[24*x+0] = instance->info.lutB[l_current];
-		pDst[24*x+1] = instance->info.lutG[l_current];
-		pDst[24*x+2] = instance->info.lutR[l_current];
+		pDst[24*x+0] = l_palette[l_current].blue;
+		pDst[24*x+1] = l_palette[l_current].green;
+		pDst[24*x+2] = l_palette[l_current].red;
 		
 		if (l_remaining > 1) {
 			l_current = (l_value >> 6) & 0x01;
-			pDst[24*x+3] = instance->info.lutB[l_current];
-			pDst[24*x+4] = instance->info.lutG[l_current];
-			pDst[24*x+5] = instance->info.lutR[l_current];
+			pDst[24*x+3] = l_palette[l_current].blue;
+			pDst[24*x+4] = l_palette[l_current].green;
+			pDst[24*x+5] = l_palette[l_current].red;
 		}
 		if (l_remaining > 2) {
 			l_current = (l_value >> 5) & 0x01;
-			pDst[24*x+6] = instance->info.lutB[l_current];
-			pDst[24*x+7] = instance->info.lutG[l_current];
-			pDst[24*x+8] = instance->info.lutR[l_current];
+			pDst[24*x+6] = l_palette[l_current].blue;
+			pDst[24*x+7] = l_palette[l_current].green;
+			pDst[24*x+8] = l_palette[l_current].red;
 		}
 		if (l_remaining > 3) {
 			l_current = (l_value >> 4) & 0x01;
-			pDst[24*x+9] = instance->info.lutB[l_current];
-			pDst[24*x+10] = instance->info.lutG[l_current];
-			pDst[24*x+11] = instance->info.lutR[l_current];
+			pDst[24*x+9] = l_palette[l_current].blue;
+			pDst[24*x+10] = l_palette[l_current].green;
+			pDst[24*x+11] = l_palette[l_current].red;
 		}
 		if (l_remaining > 4) {
 			l_current = (l_value >> 3) & 0x01;
-			pDst[24*x+12] = instance->info.lutB[l_current];
-			pDst[24*x+13] = instance->info.lutG[l_current];
-			pDst[24*x+14] = instance->info.lutR[l_current];
+			pDst[24*x+12] = l_palette[l_current].blue;
+			pDst[24*x+13] = l_palette[l_current].green;
+			pDst[24*x+14] = l_palette[l_current].red;
 		}
 		if (l_remaining > 5) {
 			l_current = (l_value >> 2) & 0x01;
-			pDst[24*x+15] = instance->info.lutB[l_current];
-			pDst[24*x+16] = instance->info.lutG[l_current];
-			pDst[24*x+17] = instance->info.lutR[l_current];
+			pDst[24*x+15] = l_palette[l_current].blue;
+			pDst[24*x+16] = l_palette[l_current].green;
+			pDst[24*x+17] = l_palette[l_current].red;
 		}
 		if (l_remaining > 6) {
 			l_current = (l_value >> 1) & 0x01;
-			pDst[24*x+18] = instance->info.lutB[l_current];
-			pDst[24*x+19] = instance->info.lutG[l_current];
-			pDst[24*x+20] = instance->info.lutR[l_current];
+			pDst[24*x+18] = l_palette[l_current].blue;
+			pDst[24*x+19] = l_palette[l_current].green;
+			pDst[24*x+20] = l_palette[l_current].red;
 		}
 	}
 }
@@ -430,11 +432,13 @@ YABMP_IAPI(void, yabmp_pal1_to_bgr24, (const yabmp* instance, const yabmp_uint8*
 YABMP_IAPI(void, yabmp_pal2_to_bgr24, (const yabmp* instance, const yabmp_uint8* pSrc, yabmp_uint8* pDst ))
 {
 	yabmp_uint32 x, l_width;
+	const yabmp_color *l_palette;
 	
 	assert(instance != NULL);
 	assert(pSrc != NULL);
 	assert(pDst != NULL);
 	
+	l_palette = instance->info2.palette;
 	l_width = (yabmp_uint32)instance->info.core.width;
 	
 	for(x = 0U; x < l_width / 4U; ++x)
@@ -443,24 +447,24 @@ YABMP_IAPI(void, yabmp_pal2_to_bgr24, (const yabmp* instance, const yabmp_uint8*
 		yabmp_uint8 l_current;
 		
 		l_current = (l_value >> 6) & 0x03;
-		pDst[12*x+0] = instance->info.lutB[l_current];
-		pDst[12*x+1] = instance->info.lutG[l_current];
-		pDst[12*x+2] = instance->info.lutR[l_current];
+		pDst[12*x+0] = l_palette[l_current].blue;
+		pDst[12*x+1] = l_palette[l_current].green;
+		pDst[12*x+2] = l_palette[l_current].red;
 		
 		l_current = (l_value >> 4) & 0x03;
-		pDst[12*x+3] = instance->info.lutB[l_current];
-		pDst[12*x+4] = instance->info.lutG[l_current];
-		pDst[12*x+5] = instance->info.lutR[l_current];
+		pDst[12*x+3] = l_palette[l_current].blue;
+		pDst[12*x+4] = l_palette[l_current].green;
+		pDst[12*x+5] = l_palette[l_current].red;
 		
 		l_current = (l_value >> 2) & 0x03;
-		pDst[12*x+6] = instance->info.lutB[l_current];
-		pDst[12*x+7] = instance->info.lutG[l_current];
-		pDst[12*x+8] = instance->info.lutR[l_current];
+		pDst[12*x+6] = l_palette[l_current].blue;
+		pDst[12*x+7] = l_palette[l_current].green;
+		pDst[12*x+8] = l_palette[l_current].red;
 		
 		l_current = (l_value >> 0) & 0x03;
-		pDst[12*x+9] = instance->info.lutB[l_current];
-		pDst[12*x+10] = instance->info.lutG[l_current];
-		pDst[12*x+11] = instance->info.lutR[l_current];
+		pDst[12*x+9] = l_palette[l_current].blue;
+		pDst[12*x+10] = l_palette[l_current].green;
+		pDst[12*x+11] = l_palette[l_current].red;
 	}
 	
 	if (l_width & 3U) {
@@ -469,21 +473,21 @@ YABMP_IAPI(void, yabmp_pal2_to_bgr24, (const yabmp* instance, const yabmp_uint8*
 		int l_remaining = (int)l_width & 3U;
 		
 		l_current = (l_value >> 6) & 0x03;
-		pDst[12*x+0] = instance->info.lutB[l_current];
-		pDst[12*x+1] = instance->info.lutG[l_current];
-		pDst[12*x+2] = instance->info.lutR[l_current];
+		pDst[12*x+0] = l_palette[l_current].blue;
+		pDst[12*x+1] = l_palette[l_current].green;
+		pDst[12*x+2] = l_palette[l_current].red;
 		
 		if (l_remaining > 1) {
 			l_current = (l_value >> 4) & 0x03;
-			pDst[12*x+3] = instance->info.lutB[l_current];
-			pDst[12*x+4] = instance->info.lutG[l_current];
-			pDst[12*x+5] = instance->info.lutR[l_current];
+			pDst[12*x+3] = l_palette[l_current].blue;
+			pDst[12*x+4] = l_palette[l_current].green;
+			pDst[12*x+5] = l_palette[l_current].red;
 		}
 		if (l_remaining > 2) {
 			l_current = (l_value >> 2) & 0x03;
-			pDst[12*x+6] = instance->info.lutB[l_current];
-			pDst[12*x+7] = instance->info.lutG[l_current];
-			pDst[12*x+8] = instance->info.lutR[l_current];
+			pDst[12*x+6] = l_palette[l_current].blue;
+			pDst[12*x+7] = l_palette[l_current].green;
+			pDst[12*x+8] = l_palette[l_current].red;
 		}
 	}
 }
@@ -491,11 +495,13 @@ YABMP_IAPI(void, yabmp_pal2_to_bgr24, (const yabmp* instance, const yabmp_uint8*
 YABMP_IAPI(void, yabmp_pal4_to_bgr24, (const yabmp* instance, const yabmp_uint8* pSrc, yabmp_uint8* pDst ))
 {
 	yabmp_uint32 x, l_width;
+	const yabmp_color *l_palette;
 	
 	assert(instance != NULL);
 	assert(pSrc != NULL);
 	assert(pDst != NULL);
 	
+	l_palette = instance->info2.palette;
 	l_width = (yabmp_uint32)instance->info.core.width;
 	
 	for(x = 0U; x < l_width / 2U; ++x)
@@ -505,52 +511,56 @@ YABMP_IAPI(void, yabmp_pal4_to_bgr24, (const yabmp* instance, const yabmp_uint8*
 		
 		l_value >>= 4;
 		
-		pDst[6*x+0] = instance->info.lutB[l_value];
-		pDst[6*x+1] = instance->info.lutG[l_value];
-		pDst[6*x+2] = instance->info.lutR[l_value];
+		pDst[6*x+0] = l_palette[l_value].blue;
+		pDst[6*x+1] = l_palette[l_value].green;
+		pDst[6*x+2] = l_palette[l_value].red;
 		
-		pDst[6*x+3] = instance->info.lutB[l_value_lo];
-		pDst[6*x+4] = instance->info.lutG[l_value_lo];
-		pDst[6*x+5] = instance->info.lutR[l_value_lo];
+		pDst[6*x+3] = l_palette[l_value_lo].blue;
+		pDst[6*x+4] = l_palette[l_value_lo].green;
+		pDst[6*x+5] = l_palette[l_value_lo].red;
 	}
 	
 	if (l_width & 1U) {
 		yabmp_uint8 l_value = pSrc[x] >> 4;
 		
-		pDst[6*x+0] = instance->info.lutB[l_value];
-		pDst[6*x+1] = instance->info.lutG[l_value];
-		pDst[6*x+2] = instance->info.lutR[l_value];
+		pDst[6*x+0] = l_palette[l_value].blue;
+		pDst[6*x+1] = l_palette[l_value].green;
+		pDst[6*x+2] = l_palette[l_value].red;
 	}
 }
 
 YABMP_IAPI(void, yabmp_pal8_to_bgr24, (const yabmp* instance, const yabmp_uint8* pSrc, yabmp_uint8* pDst ))
 {
 	yabmp_uint32 x, l_width;
+	const yabmp_color *l_palette;
 	
 	assert(instance != NULL);
 	assert(pSrc != NULL);
 	assert(pDst != NULL);
 	
+	l_palette = instance->info2.palette;
 	l_width      = (yabmp_uint32)instance->info.core.width;
 	
 	for(x = 0U; x < l_width; ++x)
 	{
 		yabmp_uint8 l_value = pSrc[x];
 		
-		pDst[3*x+0] = instance->info.lutB[l_value];
-		pDst[3*x+1] = instance->info.lutG[l_value];
-		pDst[3*x+2] = instance->info.lutR[l_value];
+		pDst[3*x+0] = l_palette[l_value].blue;
+		pDst[3*x+1] = l_palette[l_value].green;
+		pDst[3*x+2] = l_palette[l_value].red;
 	}
 }
 
 YABMP_IAPI(void, yabmp_pal1_to_y8, (const yabmp* instance, const yabmp_uint8* pSrc, yabmp_uint8* pDst ))
 {
 	yabmp_uint32 x, l_width;
+	const yabmp_color *l_palette;
 	
 	assert(instance != NULL);
 	assert(pSrc != NULL);
 	assert(pDst != NULL);
 	
+	l_palette = instance->info2.palette;
 	l_width = (yabmp_uint32)instance->info.core.width;
 	
 	for(x = 0U; x < l_width / 8U; ++x)
@@ -559,28 +569,28 @@ YABMP_IAPI(void, yabmp_pal1_to_y8, (const yabmp* instance, const yabmp_uint8* pS
 		yabmp_uint8 l_current;
 		
 		l_current = (l_value >> 7) & 0x01;
-		pDst[8*x+0] = instance->info.lutB[l_current];
+		pDst[8*x+0] = l_palette[l_current].blue;
 		
 		l_current = (l_value >> 6) & 0x01;
-		pDst[8*x+1] = instance->info.lutB[l_current];
+		pDst[8*x+1] = l_palette[l_current].blue;
 		
 		l_current = (l_value >> 5) & 0x01;
-		pDst[8*x+2] = instance->info.lutB[l_current];
+		pDst[8*x+2] = l_palette[l_current].blue;
 		
 		l_current = (l_value >> 4) & 0x01;
-		pDst[8*x+3] = instance->info.lutB[l_current];
+		pDst[8*x+3] = l_palette[l_current].blue;
 		
 		l_current = (l_value >> 3) & 0x01;
-		pDst[8*x+4] = instance->info.lutB[l_current];
+		pDst[8*x+4] = l_palette[l_current].blue;
 		
 		l_current = (l_value >> 2) & 0x01;
-		pDst[8*x+5] = instance->info.lutB[l_current];
+		pDst[8*x+5] = l_palette[l_current].blue;
 		
 		l_current = (l_value >> 1) & 0x01;
-		pDst[8*x+6] = instance->info.lutB[l_current];
+		pDst[8*x+6] = l_palette[l_current].blue;
 		
 		l_current = (l_value >> 0) & 0x01;
-		pDst[8*x+7] = instance->info.lutB[l_current];
+		pDst[8*x+7] = l_palette[l_current].blue;
 	}
 	
 	if (l_width & 7U) {
@@ -589,31 +599,31 @@ YABMP_IAPI(void, yabmp_pal1_to_y8, (const yabmp* instance, const yabmp_uint8* pS
 		int l_remaining = (int)l_width & 7U;
 		
 		l_current = (l_value >> 7) & 0x01;
-		pDst[8*x+0] = instance->info.lutB[l_current];
+		pDst[8*x+0] = l_palette[l_current].blue;
 		
 		if (l_remaining > 1) {
 			l_current = (l_value >> 6) & 0x01;
-			pDst[8*x+1] = instance->info.lutB[l_current];
+			pDst[8*x+1] = l_palette[l_current].blue;
 		}
 		if (l_remaining > 2) {
 			l_current = (l_value >> 5) & 0x01;
-			pDst[8*x+2] = instance->info.lutB[l_current];
+			pDst[8*x+2] = l_palette[l_current].blue;
 		}
 		if (l_remaining > 3) {
 			l_current = (l_value >> 4) & 0x01;
-			pDst[8*x+3] = instance->info.lutB[l_current];
+			pDst[8*x+3] = l_palette[l_current].blue;
 		}
 		if (l_remaining > 4) {
 			l_current = (l_value >> 3) & 0x01;
-			pDst[8*x+4] = instance->info.lutB[l_current];
+			pDst[8*x+4] = l_palette[l_current].blue;
 		}
 		if (l_remaining > 5) {
 			l_current = (l_value >> 2) & 0x01;
-			pDst[8*x+5] = instance->info.lutB[l_current];
+			pDst[8*x+5] = l_palette[l_current].blue;
 		}
 		if (l_remaining > 6) {
 			l_current = (l_value >> 1) & 0x01;
-			pDst[8*x+6] = instance->info.lutB[l_current];
+			pDst[8*x+6] = l_palette[l_current].blue;
 		}
 	}
 }
@@ -621,11 +631,13 @@ YABMP_IAPI(void, yabmp_pal1_to_y8, (const yabmp* instance, const yabmp_uint8* pS
 YABMP_IAPI(void, yabmp_pal2_to_y8, (const yabmp* instance, const yabmp_uint8* pSrc, yabmp_uint8* pDst ))
 {
 	yabmp_uint32 x, l_width;
+	const yabmp_color *l_palette;
 	
 	assert(instance != NULL);
 	assert(pSrc != NULL);
 	assert(pDst != NULL);
 	
+	l_palette = instance->info2.palette;
 	l_width = (yabmp_uint32)instance->info.core.width;
 	
 	for(x = 0U; x < l_width / 4U; ++x)
@@ -634,16 +646,16 @@ YABMP_IAPI(void, yabmp_pal2_to_y8, (const yabmp* instance, const yabmp_uint8* pS
 		yabmp_uint8 l_current;
 		
 		l_current = (l_value >> 6) & 0x03;
-		pDst[4*x+0] = instance->info.lutB[l_current];
+		pDst[4*x+0] = l_palette[l_current].blue;
 		
 		l_current = (l_value >> 4) & 0x03;
-		pDst[4*x+1] = instance->info.lutB[l_current];
+		pDst[4*x+1] = l_palette[l_current].blue;
 		
 		l_current = (l_value >> 2) & 0x03;
-		pDst[4*x+2] = instance->info.lutB[l_current];
+		pDst[4*x+2] = l_palette[l_current].blue;
 		
 		l_current = (l_value >> 0) & 0x03;
-		pDst[4*x+3] = instance->info.lutB[l_current];
+		pDst[4*x+3] = l_palette[l_current].blue;
 	}
 	
 	if (l_width & 3U) {
@@ -652,15 +664,15 @@ YABMP_IAPI(void, yabmp_pal2_to_y8, (const yabmp* instance, const yabmp_uint8* pS
 		int l_remaining = (int)l_width & 3U;
 		
 		l_current = (l_value >> 6) & 0x03;
-		pDst[4*x+0] = instance->info.lutB[l_current];
+		pDst[4*x+0] = l_palette[l_current].blue;
 		
 		if (l_remaining > 1) {
 			l_current = (l_value >> 4) & 0x03;
-			pDst[4*x+1] = instance->info.lutB[l_current];
+			pDst[4*x+1] = l_palette[l_current].blue;
 		}
 		if (l_remaining > 2) {
 			l_current = (l_value >> 2) & 0x03;
-			pDst[4*x+2] = instance->info.lutB[l_current];
+			pDst[4*x+2] = l_palette[l_current].blue;
 		}
 	}
 }
@@ -668,11 +680,13 @@ YABMP_IAPI(void, yabmp_pal2_to_y8, (const yabmp* instance, const yabmp_uint8* pS
 YABMP_IAPI(void, yabmp_pal4_to_y8, (const yabmp* instance, const yabmp_uint8* pSrc, yabmp_uint8* pDst ))
 {
 	yabmp_uint32 x, l_width;
+	const yabmp_color *l_palette;
 	
 	assert(instance != NULL);
 	assert(pSrc != NULL);
 	assert(pDst != NULL);
 	
+	l_palette = instance->info2.palette;
 	l_width = (yabmp_uint32)instance->info.core.width;
 	
 	for(x = 0U; x < l_width / 2U; ++x)
@@ -681,33 +695,33 @@ YABMP_IAPI(void, yabmp_pal4_to_y8, (const yabmp* instance, const yabmp_uint8* pS
 		yabmp_uint8 l_value_lo = l_value & 0x0F;
 		
 		l_value >>= 4;
-		
-		pDst[2*x+0] = instance->info.lutB[l_value];
-		
-		pDst[2*x+1] = instance->info.lutB[l_value_lo];
+		pDst[2*x+0] = l_palette[l_value].blue;
+		pDst[2*x+1] = l_palette[l_value_lo].blue;
 	}
 	
 	if (l_width & 1U) {
 		yabmp_uint8 l_value = pSrc[x] >> 4;
 		
-		pDst[2*x+0] = instance->info.lutB[l_value];
+		pDst[2*x+0] = l_palette[l_value].blue;
 	}
 }
 
 YABMP_IAPI(void, yabmp_pal8_to_y8, (const yabmp* instance, const yabmp_uint8* pSrc, yabmp_uint8* pDst ))
 {
 	yabmp_uint32 x, l_width;
+	const yabmp_color *l_palette;
 	
 	assert(instance != NULL);
 	assert(pSrc != NULL);
 	assert(pDst != NULL);
 	
-	l_width      = (yabmp_uint32)instance->info.core.width;
+	l_palette = instance->info2.palette;
+	l_width = (yabmp_uint32)instance->info.core.width;
 	
 	for(x = 0U; x < l_width; ++x)
 	{
 		yabmp_uint8 l_value = pSrc[x];
 		
-		pDst[x] = instance->info.lutB[l_value];
+		pDst[x] = l_palette[l_value].blue;
 	}
 }
