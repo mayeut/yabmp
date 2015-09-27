@@ -25,33 +25,24 @@
 #include <assert.h>
 #include "yabmp_printinfo.h"
 
-int yabmp_printinfo(FILE* outstream, yabmp* bmp_reader, const yabmp_info* info)
+void yabmp_printinfo(FILE* outstream, yabmp* bmp_reader, const yabmp_info* info)
 {
 	yabmp_uint32 l_width, l_height, l_compression, l_res_x, l_res_y;
 	unsigned int l_bpp, l_scan_direction, l_color_mask;
 	unsigned int l_blue_bits, l_green_bits, l_red_bits, l_alpha_bits;
+	
+	assert(outstream != NULL);
+	assert(bmp_reader != NULL);
+	assert(info != NULL);
 
-	if (yabmp_get_dimensions(bmp_reader, info, &l_width, &l_height) != YABMP_OK) {
-		return 1;
-	}
-	if (yabmp_get_pixels_per_meter(bmp_reader, info, &l_res_x, &l_res_y) != YABMP_OK) {
-		return 1;
-	}
-	if (yabmp_get_bpp(bmp_reader, info, &l_bpp) != YABMP_OK) {
-		return 1;
-	}
-	if (yabmp_get_color_mask(bmp_reader, info, &l_color_mask) != YABMP_OK) {
-		return 1;
-	}
-	if (yabmp_get_compression(bmp_reader, info, &l_compression) != YABMP_OK) {
-		return 1;
-	}
-	if (yabmp_get_scan_direction(bmp_reader, info, &l_scan_direction) != YABMP_OK) {
-		return 1;
-	}
-	if (yabmp_get_bits(bmp_reader, info, &l_blue_bits, &l_green_bits, &l_red_bits, &l_alpha_bits) != YABMP_OK) {
-		return 1;
-	}
+	/* Those calls can't fail with proper arguments */
+	(void)yabmp_get_dimensions(bmp_reader, info, &l_width, &l_height);
+	(void)yabmp_get_pixels_per_meter(bmp_reader, info, &l_res_x, &l_res_y);
+	(void)yabmp_get_bpp(bmp_reader, info, &l_bpp);
+	(void)yabmp_get_color_mask(bmp_reader, info, &l_color_mask);
+	(void)yabmp_get_compression(bmp_reader, info, &l_compression);
+	(void)yabmp_get_scan_direction(bmp_reader, info, &l_scan_direction);
+	(void)yabmp_get_bits(bmp_reader, info, &l_blue_bits, &l_green_bits, &l_red_bits, &l_alpha_bits);
 		
 	fprintf(outstream, "Dimensions (WxH): %" YABMP_PRIu32 "x%" YABMP_PRIu32 "\n", l_width, l_height);
 	if ((l_res_x != 0U) || (l_res_y != 0U)) {
@@ -84,9 +75,7 @@ int yabmp_printinfo(FILE* outstream, yabmp* bmp_reader, const yabmp_info* info)
 		case YABMP_COMPRESSION_BITFIELDS:
 			{
 				yabmp_uint32 blue_mask, green_mask, red_mask, alpha_mask;
-				if (yabmp_get_bitfields(bmp_reader, info, &blue_mask, &green_mask, &red_mask, &alpha_mask) != YABMP_OK) {
-					return 1;
-				}
+				(void)yabmp_get_bitfields(bmp_reader, info, &blue_mask, &green_mask, &red_mask, &alpha_mask);
 				fprintf(outstream, "Compression: BITFIELDS B:0x%08" YABMP_PRIX32 " G:0x%08" YABMP_PRIX32 " R:0x%08" YABMP_PRIX32 " A:0x%08" YABMP_PRIX32 "\n", blue_mask, green_mask, red_mask, alpha_mask);
 			}
 			break;
@@ -105,5 +94,4 @@ int yabmp_printinfo(FILE* outstream, yabmp* bmp_reader, const yabmp_info* info)
 			fputs("Scan direction: UNKNOWN\n", outstream);
 			break;
 	}
-	return 0;
 }

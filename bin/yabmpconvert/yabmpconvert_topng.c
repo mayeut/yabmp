@@ -70,27 +70,18 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader, 
 	FILE* l_output = NULL;
 	int l_png_bit_depth = 8; /* default to 8 bits */
 	
-	if(yabmp_get_dimensions(bmp_reader, bmp_info, &l_width, &l_height) != YABMP_OK) {
-		return EXIT_FAILURE;
-	}
-	if (yabmp_get_pixels_per_meter(bmp_reader, bmp_info, &l_res_x, &l_res_y) != YABMP_OK) {
-		return EXIT_FAILURE;
-	}
-	if(yabmp_get_bpp(bmp_reader, bmp_info, &l_bpp) != YABMP_OK) {
-		return EXIT_FAILURE;
-	}
-	if(yabmp_get_color_mask(bmp_reader, bmp_info, &l_color_mask) != YABMP_OK) {
-		return EXIT_FAILURE;
-	}
-	if(yabmp_get_compression(bmp_reader, bmp_info, &l_compression) != YABMP_OK) {
-		return EXIT_FAILURE;
-	}
-	if(yabmp_get_scan_direction(bmp_reader, bmp_info, &l_scan_direction) != YABMP_OK) {
-		return EXIT_FAILURE;
-	}
-	if(yabmp_get_bits(bmp_reader, bmp_info, &blue_bits, &green_bits, &red_bits, &alpha_bits) != YABMP_OK) {
-		return EXIT_FAILURE;
-	}
+	assert(parameters != NULL);
+	assert(bmp_reader != NULL);
+	assert(bmp_info != NULL);
+	
+	/* Those calls can't fail with proper arguments */
+	(void)yabmp_get_dimensions(bmp_reader, bmp_info, &l_width, &l_height);
+	(void)yabmp_get_pixels_per_meter(bmp_reader, bmp_info, &l_res_x, &l_res_y);
+	(void)yabmp_get_bpp(bmp_reader, bmp_info, &l_bpp);
+	(void)yabmp_get_color_mask(bmp_reader, bmp_info, &l_color_mask);
+	(void)yabmp_get_compression(bmp_reader, bmp_info, &l_compression);
+	(void)yabmp_get_scan_direction(bmp_reader, bmp_info, &l_scan_direction);
+	(void)yabmp_get_bits(bmp_reader, bmp_info, &blue_bits, &green_bits, &red_bits, &alpha_bits);
 	
 	if ((blue_bits > 16U) || (green_bits > 16U) || (red_bits > 16U) || (alpha_bits > 16U)) {
 		if (!parameters->quiet) {

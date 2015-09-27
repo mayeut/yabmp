@@ -209,9 +209,7 @@ int main(int argc, char* argv[])
 			result = 1;
 			goto FREE_INSTANCE;
 		}
-		if (yabmp_printinfo(outStream, l_reader, l_info) != 0) {
-			result = 1;
-		}
+		yabmp_printinfo(outStream, l_reader, l_info);
 FREE_INSTANCE:
 		yabmp_destroy_reader(&l_reader, &l_info);
 		if (result) {

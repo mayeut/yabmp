@@ -254,7 +254,20 @@ YABMP_API(yabmp_status, yabmp_set_input_file, (
 	yabmp* reader,
 	const char* path
 ));
-		
+
+
+/**
+ * Creates an information object.
+ *
+ * @param[in]  instance Pointer to the reader/writer object.
+ * @param[out] info     Pointer to the information object.
+ *
+ * @return
+ * #YABMP_OK on success.\n
+ * #YABMP_ERR_INVALID_ARGS when invalid arguments are provided.\n
+ * #YABMP_ERR_ALLOCATION on allocation failure.
+ *
+ */
 YABMP_API(yabmp_status, yabmp_create_info, (yabmp* instance, yabmp_info ** info));
 
 YABMP_API(yabmp_status, yabmp_read_info, (yabmp* reader, yabmp_info * info));
