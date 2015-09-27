@@ -254,10 +254,8 @@ int main(int argc, char* argv[])
 			goto FREE_INSTANCE;
 		}
 		if ((params.input_file[0] == '-') && (params.input_file[1] == '\0')) {
-			if (yabmp_set_input_stream(l_bmp_reader, stdin, yabmp_file_read, params.no_seek_fn ? NULL : yabmp_file_seek, NULL) != YABMP_OK) {
-				result = EXIT_FAILURE;
-				goto FREE_INSTANCE;
-			}
+			/* This can't fail with proper arguments */
+			(void)yabmp_set_input_stream(l_bmp_reader, stdin, yabmp_file_read, params.no_seek_fn ? NULL : yabmp_file_seek, NULL);
 		} else {
 			if (yabmp_set_input_file(l_bmp_reader, params.input_file) != YABMP_OK) {
 				result = EXIT_FAILURE;

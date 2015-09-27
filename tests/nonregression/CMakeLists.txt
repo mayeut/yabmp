@@ -44,6 +44,7 @@ function(yabmp_add_test file)
   
 	if(MY_TEST_STDINOUT)
 		set(NAME_SUFFIX2 "-stdinout")
+		list(APPEND OTHER_ARGS "-v")
 		if(MY_TEST_NOSEEK)
 			set(NAME_SUFFIX2 "${NAME_SUFFIX2}-no-seek")
 			list(APPEND OTHER_ARGS "--no-seek")

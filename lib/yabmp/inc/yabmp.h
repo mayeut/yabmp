@@ -212,7 +212,24 @@ YABMP_API(yabmp_status, yabmp_create_reader, (
  *
  */
 YABMP_API(void, yabmp_destroy_reader, (yabmp** reader, yabmp_info** info));
-		
+
+/**
+ * Sets input stream.
+ *
+ * @param[in]  reader         Pointer to the reader object.
+ * @param[in]  stream_context User context that will be provided to \a read_fn, \a seek_fn & \a close_fn when called.
+ * @param[in]  read_fn        Callback that will be called to read data from input stream.
+ * @param[in]  seek_fn        Callback that will be called to seek in the input stream. Optional, can be NULL (see remarks).
+ * @param[in]  close_fn       Callback that will be called to close the input stream. Optional, can be NULL.
+ *
+ * @return
+ * #YABMP_OK on success.\n
+ * #YABMP_ERR_INVALID_ARGS when invalid arguments are provided.
+ *
+ * @remarks
+ *   If \a seek_fn is NULL, it won't be possible to use #yabmp_set_invert_scan_direction.
+ *
+ */
 YABMP_API(yabmp_status, yabmp_set_input_stream, (
 	yabmp* reader,
 	void* stream_context,
@@ -220,6 +237,19 @@ YABMP_API(yabmp_status, yabmp_set_input_stream, (
 	yabmp_stream_seek_cb  seek_fn,
 	yabmp_stream_close_cb close_fn
 ));
+		
+/**
+ * Sets input file.
+ *
+ * @param[in]  reader Pointer to the reader object.
+ * @param[in]  path   Path to the file to be opened.
+ *
+ * @return
+ * #YABMP_OK on success.\n
+ * #YABMP_ERR_INVALID_ARGS when invalid arguments are provided.\n
+ * #YABMP_ERR_UNKNOW if the file can't be opened.
+ *
+ */
 YABMP_API(yabmp_status, yabmp_set_input_file, (
 	yabmp* reader,
 	const char* path

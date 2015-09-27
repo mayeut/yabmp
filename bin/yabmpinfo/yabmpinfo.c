@@ -197,10 +197,8 @@ int main(int argc, char* argv[])
 			goto FREE_INSTANCE;
 		}
 		if ((input[0] == '-') && (input[1] == '\0')) {
-			if (yabmp_set_input_stream(l_reader, stdin, yabmp_file_read, NULL, NULL) != YABMP_OK) {
-				result = 1;
-				goto FREE_INSTANCE;
-			}
+			/* This can't fail with proper arguments */
+			(void)yabmp_set_input_stream(l_reader, stdin, yabmp_file_read, NULL, NULL);
 		} else {
 			if (yabmp_set_input_file(l_reader, input) != YABMP_OK) {
 				result = 1;
