@@ -37,39 +37,14 @@
 #define YABMP_SCAN_MASK  (YABMP_SCAN_TOP_DOWN)
 
 typedef struct {
-	yabmp_uint16 type;       /* 'BM' for Win Bitmap, 'BA' for OS/2 */
 	yabmp_uint32 fileSize;   /* File size in bytes         */
-	yabmp_uint16 reserved1;  /* Reserved                   */
-	yabmp_uint16 reserved2;  /* Reserved                   */
 	yabmp_uint32 dataOffset; /* Image data offset in bytes */
 } yabmp_file_header;
 
 typedef struct {
-	yabmp_uint32 size;                /* Size of the dib header */
-	yabmp_uint32 width;               /* Width of the image in pixels */
-	yabmp_uint32 height;              /* Heigth of the image in pixels */
-	yabmp_uint16 colorPlaneCount;     /* Number of color planes */
-	yabmp_uint16 bpp;                 /* Number of bits per pixels */
-} yabmp_dib_core_info;
-
-typedef struct {
-	yabmp_uint32 compression;         /* Compression method */
 	yabmp_uint32 rawDataSize;         /* Size of the raw data in bytes */
-	yabmp_uint32 resXppm;             /* Horizontal resolution in pixels/meter */
-	yabmp_uint32 resYppm;             /* Vertical resolution in pixels/meter */
 	yabmp_uint32 pltColorCount;       /* Number of colors in the palette */
-	yabmp_uint32 importantColorCount; /* Number of important color */
 } yabmp_dib_v1_info;
-
-typedef struct {
-	yabmp_uint32 redMask;             /* Red channel bit mask */
-	yabmp_uint32 greenMask;           /* Green channel bit mask */
-	yabmp_uint32 blueMask;            /* Blue channel bit mask */
-} yabmp_dib_v2_info;
-
-typedef struct {
-	yabmp_uint32 alphaMask;           /* Red channel bit mask */
-} yabmp_dib_v3_info;
 
 typedef struct {
 	yabmp_uint32 colorSpaceType;   /* Color space type */
@@ -91,10 +66,7 @@ typedef struct
 {
 	/* FILE cache */
 	yabmp_file_header   file;
-	yabmp_dib_core_info core;
 	yabmp_dib_v1_info   v1;
-	yabmp_dib_v2_info   v2;
-	yabmp_dib_v3_info   v3;
 	yabmp_dib_v4_info   v4;
 	yabmp_dib_v5_info   v5;
 	

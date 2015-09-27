@@ -62,17 +62,10 @@ YABMP_IAPI(void, yabmp_bf32u_to_bgr24, (const yabmp* instance, const yabmp_uint3
 	assert(pSrc != NULL);
 	assert(pDst != NULL);
 	
-	l_width      = (yabmp_uint32)instance->info.core.width;
-	l_blue_mask  = instance->info.v2.blueMask;
-	l_green_mask = instance->info.v2.greenMask;
-	l_red_mask   = instance->info.v2.redMask;
-	
-	if ((l_blue_mask | l_green_mask | l_red_mask) == 0U) {
-		/* default color mask - no compression */
-		l_blue_mask  = 0x0000FFU;
-		l_green_mask = 0x00FF00U;
-		l_red_mask   = 0xFF0000U;
-	}
+	l_width      = (yabmp_uint32)instance->info2.width;
+	l_blue_mask  = instance->info2.mask_blue;
+	l_green_mask = instance->info2.mask_green;
+	l_red_mask   = instance->info2.mask_red;
 	
 	yabmp_bitfield_get_shift_and_bits(l_blue_mask, &l_blue_shift, &l_dummy_bits);
 	yabmp_bitfield_get_shift_and_bits(l_green_mask, &l_green_shift, &l_dummy_bits);
@@ -100,10 +93,10 @@ YABMP_IAPI(void, yabmp_bf32u_to_bgr48, (const yabmp* instance, const yabmp_uint3
 	assert(pSrc != NULL);
 	assert(pDst != NULL);
 	
-	l_width      = (yabmp_uint32)instance->info.core.width;
-	l_blue_mask  = instance->info.v2.blueMask;
-	l_green_mask = instance->info.v2.greenMask;
-	l_red_mask   = instance->info.v2.redMask;
+	l_width      = (yabmp_uint32)instance->info2.width;
+	l_blue_mask  = instance->info2.mask_blue;
+	l_green_mask = instance->info2.mask_green;
+	l_red_mask   = instance->info2.mask_red;
 	
 	yabmp_bitfield_get_shift_and_bits(l_blue_mask, &l_blue_shift, &l_dummy_bits);
 	yabmp_bitfield_get_shift_and_bits(l_green_mask, &l_green_shift, &l_dummy_bits);
@@ -131,11 +124,11 @@ YABMP_IAPI(void, yabmp_bf32u_to_bgra32, (const yabmp* instance, const yabmp_uint
 	assert(pSrc != NULL);
 	assert(pDst != NULL);
 	
-	l_width      = (yabmp_uint32)instance->info.core.width;
-	l_blue_mask  = instance->info.v2.blueMask;
-	l_green_mask = instance->info.v2.greenMask;
-	l_red_mask   = instance->info.v2.redMask;
-	l_alpha_mask = instance->info.v3.alphaMask;
+	l_width      = (yabmp_uint32)instance->info2.width;
+	l_blue_mask  = instance->info2.mask_blue;
+	l_green_mask = instance->info2.mask_green;
+	l_red_mask   = instance->info2.mask_red;
+	l_alpha_mask = instance->info2.mask_alpha;
 	
 	yabmp_bitfield_get_shift_and_bits(l_blue_mask, &l_blue_shift, &l_dummy_bits);
 	yabmp_bitfield_get_shift_and_bits(l_green_mask, &l_green_shift, &l_dummy_bits);
@@ -165,11 +158,11 @@ YABMP_IAPI(void, yabmp_bf32u_to_bgra64, (const yabmp* instance, const yabmp_uint
 	assert(pSrc != NULL);
 	assert(pDst != NULL);
 	
-	l_width      = (yabmp_uint32)instance->info.core.width;
-	l_blue_mask  = instance->info.v2.blueMask;
-	l_green_mask = instance->info.v2.greenMask;
-	l_red_mask   = instance->info.v2.redMask;
-	l_alpha_mask = instance->info.v3.alphaMask;
+	l_width      = (yabmp_uint32)instance->info2.width;
+	l_blue_mask  = instance->info2.mask_blue;
+	l_green_mask = instance->info2.mask_green;
+	l_red_mask   = instance->info2.mask_red;
+	l_alpha_mask = instance->info2.mask_alpha;
 	
 	yabmp_bitfield_get_shift_and_bits(l_blue_mask, &l_blue_shift, &l_dummy_bits);
 	yabmp_bitfield_get_shift_and_bits(l_green_mask, &l_green_shift, &l_dummy_bits);
@@ -199,17 +192,10 @@ YABMP_IAPI(void, yabmp_bf16u_to_bgr24, (const yabmp* instance, const yabmp_uint1
 	assert(pSrc != NULL);
 	assert(pDst != NULL);
 	
-	l_width      = (yabmp_uint32)instance->info.core.width;
-	l_blue_mask  = (yabmp_uint16)instance->info.v2.blueMask;
-	l_green_mask = (yabmp_uint16)instance->info.v2.greenMask;
-	l_red_mask   = (yabmp_uint16)instance->info.v2.redMask;
-	
-	if ((l_blue_mask | l_green_mask | l_red_mask) == 0U) {
-		/* default color mask - no compression */
-		l_blue_mask  = 0x001FU;
-		l_green_mask = 0x03E0U;
-		l_red_mask   = 0x7C00U;
-	}
+	l_width      = (yabmp_uint32)instance->info2.width;
+	l_blue_mask  = (yabmp_uint16)instance->info2.mask_blue;
+	l_green_mask = (yabmp_uint16)instance->info2.mask_green;
+	l_red_mask   = (yabmp_uint16)instance->info2.mask_red;
 	
 	yabmp_bitfield_get_shift_and_bits((yabmp_uint32)l_blue_mask, &l_blue_shift, &l_dummy_bits);
 	yabmp_bitfield_get_shift_and_bits((yabmp_uint32)l_green_mask, &l_green_shift, &l_dummy_bits);
@@ -236,10 +222,10 @@ YABMP_IAPI(void, yabmp_bf16u_to_bgr48, (const yabmp* instance, const yabmp_uint1
 	assert(pSrc != NULL);
 	assert(pDst != NULL);
 	
-	l_width      = (yabmp_uint32)instance->info.core.width;
-	l_blue_mask  = (yabmp_uint16)instance->info.v2.blueMask;
-	l_green_mask = (yabmp_uint16)instance->info.v2.greenMask;
-	l_red_mask   = (yabmp_uint16)instance->info.v2.redMask;
+	l_width      = (yabmp_uint32)instance->info2.width;
+	l_blue_mask  = (yabmp_uint16)instance->info2.mask_blue;
+	l_green_mask = (yabmp_uint16)instance->info2.mask_green;
+	l_red_mask   = (yabmp_uint16)instance->info2.mask_red;
 	
 	yabmp_bitfield_get_shift_and_bits((yabmp_uint32)l_blue_mask, &l_blue_shift, &l_dummy_bits);
 	yabmp_bitfield_get_shift_and_bits((yabmp_uint32)l_green_mask, &l_green_shift, &l_dummy_bits);
@@ -266,11 +252,11 @@ YABMP_IAPI(void, yabmp_bf16u_to_bgra32, (const yabmp* instance, const yabmp_uint
 	assert(pSrc != NULL);
 	assert(pDst != NULL);
 	
-	l_width      = (yabmp_uint32)instance->info.core.width;
-	l_blue_mask  = (yabmp_uint16)instance->info.v2.blueMask;
-	l_green_mask = (yabmp_uint16)instance->info.v2.greenMask;
-	l_red_mask   = (yabmp_uint16)instance->info.v2.redMask;
-	l_alpha_mask = (yabmp_uint16)instance->info.v3.alphaMask;
+	l_width      = (yabmp_uint32)instance->info2.width;
+	l_blue_mask  = (yabmp_uint16)instance->info2.mask_blue;
+	l_green_mask = (yabmp_uint16)instance->info2.mask_green;
+	l_red_mask   = (yabmp_uint16)instance->info2.mask_red;
+	l_alpha_mask = (yabmp_uint16)instance->info2.mask_alpha;
 	
 	yabmp_bitfield_get_shift_and_bits((yabmp_uint32)l_blue_mask, &l_blue_shift, &l_dummy_bits);
 	yabmp_bitfield_get_shift_and_bits((yabmp_uint32)l_green_mask, &l_green_shift, &l_dummy_bits);
@@ -300,11 +286,11 @@ YABMP_IAPI(void, yabmp_bf16u_to_bgra64, (const yabmp* instance, const yabmp_uint
 	assert(pSrc != NULL);
 	assert(pDst != NULL);
 	
-	l_width      = (yabmp_uint32)instance->info.core.width;
-	l_blue_mask  = (yabmp_uint16)instance->info.v2.blueMask;
-	l_green_mask = (yabmp_uint16)instance->info.v2.greenMask;
-	l_red_mask   = (yabmp_uint16)instance->info.v2.redMask;
-	l_alpha_mask = (yabmp_uint16)instance->info.v3.alphaMask;
+	l_width      = (yabmp_uint32)instance->info2.width;
+	l_blue_mask  = (yabmp_uint16)instance->info2.mask_blue;
+	l_green_mask = (yabmp_uint16)instance->info2.mask_green;
+	l_red_mask   = (yabmp_uint16)instance->info2.mask_red;
+	l_alpha_mask = (yabmp_uint16)instance->info2.mask_alpha;
 	
 	yabmp_bitfield_get_shift_and_bits((yabmp_uint32)l_blue_mask, &l_blue_shift, &l_dummy_bits);
 	yabmp_bitfield_get_shift_and_bits((yabmp_uint32)l_green_mask, &l_green_shift, &l_dummy_bits);
@@ -332,7 +318,7 @@ YABMP_IAPI(void, yabmp_pal1_to_bgr24, (const yabmp* instance, const yabmp_uint8*
 	assert(pDst != NULL);
 	
 	l_palette = instance->info2.palette;
-	l_width = (yabmp_uint32)instance->info.core.width;
+	l_width = (yabmp_uint32)instance->info2.width;
 	
 	for(x = 0U; x < l_width / 8U; ++x)
 	{
@@ -439,7 +425,7 @@ YABMP_IAPI(void, yabmp_pal2_to_bgr24, (const yabmp* instance, const yabmp_uint8*
 	assert(pDst != NULL);
 	
 	l_palette = instance->info2.palette;
-	l_width = (yabmp_uint32)instance->info.core.width;
+	l_width = (yabmp_uint32)instance->info2.width;
 	
 	for(x = 0U; x < l_width / 4U; ++x)
 	{
@@ -502,7 +488,7 @@ YABMP_IAPI(void, yabmp_pal4_to_bgr24, (const yabmp* instance, const yabmp_uint8*
 	assert(pDst != NULL);
 	
 	l_palette = instance->info2.palette;
-	l_width = (yabmp_uint32)instance->info.core.width;
+	l_width = (yabmp_uint32)instance->info2.width;
 	
 	for(x = 0U; x < l_width / 2U; ++x)
 	{
@@ -539,7 +525,7 @@ YABMP_IAPI(void, yabmp_pal8_to_bgr24, (const yabmp* instance, const yabmp_uint8*
 	assert(pDst != NULL);
 	
 	l_palette = instance->info2.palette;
-	l_width      = (yabmp_uint32)instance->info.core.width;
+	l_width      = (yabmp_uint32)instance->info2.width;
 	
 	for(x = 0U; x < l_width; ++x)
 	{
@@ -561,7 +547,7 @@ YABMP_IAPI(void, yabmp_pal1_to_y8, (const yabmp* instance, const yabmp_uint8* pS
 	assert(pDst != NULL);
 	
 	l_palette = instance->info2.palette;
-	l_width = (yabmp_uint32)instance->info.core.width;
+	l_width = (yabmp_uint32)instance->info2.width;
 	
 	for(x = 0U; x < l_width / 8U; ++x)
 	{
@@ -638,7 +624,7 @@ YABMP_IAPI(void, yabmp_pal2_to_y8, (const yabmp* instance, const yabmp_uint8* pS
 	assert(pDst != NULL);
 	
 	l_palette = instance->info2.palette;
-	l_width = (yabmp_uint32)instance->info.core.width;
+	l_width = (yabmp_uint32)instance->info2.width;
 	
 	for(x = 0U; x < l_width / 4U; ++x)
 	{
@@ -687,7 +673,7 @@ YABMP_IAPI(void, yabmp_pal4_to_y8, (const yabmp* instance, const yabmp_uint8* pS
 	assert(pDst != NULL);
 	
 	l_palette = instance->info2.palette;
-	l_width = (yabmp_uint32)instance->info.core.width;
+	l_width = (yabmp_uint32)instance->info2.width;
 	
 	for(x = 0U; x < l_width / 2U; ++x)
 	{
@@ -716,7 +702,7 @@ YABMP_IAPI(void, yabmp_pal8_to_y8, (const yabmp* instance, const yabmp_uint8* pS
 	assert(pDst != NULL);
 	
 	l_palette = instance->info2.palette;
-	l_width = (yabmp_uint32)instance->info.core.width;
+	l_width = (yabmp_uint32)instance->info2.width;
 	
 	for(x = 0U; x < l_width; ++x)
 	{
