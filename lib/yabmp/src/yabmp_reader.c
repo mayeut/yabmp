@@ -436,6 +436,7 @@ static yabmp_status local_read_info_no_validation(yabmp* reader)
 	if (l_info->core.bpp <= 8U) {
 		const yabmp_uint32 l_maxColorCount = 1U << l_info->core.bpp;
 		yabmp_uint32 l_colorCount = l_info->v1.pltColorCount;
+		yabmp_uint32 l_total_color_count = l_colorCount;
 		unsigned int l_isColorPalette = 0U;
 		yabmp_uint32 i;
 		
@@ -447,6 +448,7 @@ static yabmp_status local_read_info_no_validation(yabmp* reader)
 			} else {
 				l_colorCount = l_maxColorCount;
 			}
+			l_total_color_count = l_colorCount;
 		}
 		else if (l_colorCount > l_maxColorCount) {
 			yabmp_send_warning(reader, "Invalid palette found (%" YABMP_PRIu32 " entries). Ignoring some values.", l_colorCount);
@@ -475,20 +477,28 @@ static yabmp_status local_read_info_no_validation(yabmp* reader)
 				l_isColorPalette |= (l_palette[i].blue ^ l_palette[i].green) | (l_palette[i].green ^ l_palette[i].red);
 			}
 		}
-		/* ignore values over 256U */
-		for (; i < l_info->v1.pltColorCount; ++i) {
-			yabmp_uint32 l_value;
-			/* We can't be in BITMAPCOREHEADER case here */
-			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &l_value));
+		/* Ignore values over l_colorCount */
+		/* We can't be in BITMAPCOREHEADER case here, palette entry is 4 bytes */
+		l_total_color_count -= l_colorCount;
+		if (l_total_color_count > 0U) {
+			if (l_total_color_count > (YABMP_UINT32_MAX / 4U)) {
+				yabmp_send_error(reader, "Overflow detected.");
+				return YABMP_ERR_UNKNOW;
+			}
+			YABMP_SIMPLE_CHECK(yabmp_stream_skip(reader, l_total_color_count * 4U));
 		}
 		if (l_isColorPalette == 0U) {
 			l_info->colorMask &= ~(yabmp_uint32)YABMP_COLOR_MASK_COLOR;
 		}
 		l_info->colorMask |= YABMP_COLOR_MASK_PALETTE;
-	} else if (l_info->v1.pltColorCount > 0) {
+	}
+	else if (l_info->v1.pltColorCount > 0) {
 		yabmp_send_warning(reader, "Ignoring palette in true color image.");
-		/* We can't be in BITMAPCOREHEADER case here */
-		/* TODO overflow check */
+		/* We can't be in BITMAPCOREHEADER case here, palette entry is 4 bytes */
+		if (l_info->v1.pltColorCount > (YABMP_UINT32_MAX / 4U)) {
+			yabmp_send_error(reader, "Overflow detected.");
+			return YABMP_ERR_UNKNOW;
+		}
 		YABMP_SIMPLE_CHECK(yabmp_stream_skip(reader, l_info->v1.pltColorCount * 4U));
 	}
 	if (l_info->v3.alphaMask != 0U) {

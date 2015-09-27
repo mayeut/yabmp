@@ -48,10 +48,12 @@ typedef unsigned short yabmp_uint16;
 typedef unsigned int yabmp_uint32;
 #	define YABMP_PRIu32 "u"
 # define YABMP_PRIX32 "X"
+#	define YABMP_UINT32_MAX UINT_MAX
 #elif ULONG_MAX == 4294967295
 typedef unsigned long int yabmp_uint32;
 #	define YABMP_PRIu32 "lu"
 # define YABMP_PRIX32 "lX"
+#	define YABMP_UINT32_MAX ULONG_MAX
 #else
 #	error "yabmp requires 32 bit unsigned integer"
 #endif
