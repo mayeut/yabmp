@@ -141,7 +141,7 @@ typedef size_t (*yabmp_stream_write_cb)(void* context, const void * ptr, size_t 
  * @return #YABMP_OK if successful.
  *
  * @see
- *   yabmp_set_input_stream
+ *   yabmp_set_input_stream\n
  *   yabmp_set_output_stream
  */
 typedef yabmp_status (*yabmp_stream_seek_cb) (void* context, yabmp_uint32 offset);
@@ -151,7 +151,7 @@ typedef yabmp_status (*yabmp_stream_seek_cb) (void* context, yabmp_uint32 offset
  * @param[in] context User stream context provided in #yabmp_set_input_stream or #yabmp_set_output_stream.
  *
  * @see
- *   yabmp_set_input_stream
+ *   yabmp_set_input_stream\n
  *   yabmp_set_output_stream
  */
 typedef void (*yabmp_stream_close_cb) (void* context);
@@ -269,7 +269,27 @@ YABMP_API(yabmp_status, yabmp_set_input_file, (
  */
 YABMP_API(yabmp_status, yabmp_create_info, (yabmp* instance, yabmp_info ** info));
 
+/**
+ * Reads image information from the input stream.
+ *
+ * An input stream must have been set for this \a reader object using #yabmp_set_input_stream or #yabmp_set_input_file.
+ *
+ * @param[in]  reader  Pointer to the reader object.
+ * @param[out] info    Pointer to the information object.
+ *
+ * @return
+ * #YABMP_OK on success.\n
+ * #YABMP_ERR_INVALID_ARGS when invalid arguments are provided.\n
+ * #YABMP_ERR_UNKNOW in other failure cases.
+ *
+ * @see
+ *   yabmp_set_input_stream\n
+ *   yabmp_set_input_file
+ *
+ */
 YABMP_API(yabmp_status, yabmp_read_info, (yabmp* reader, yabmp_info * info));
+		
+
 YABMP_API(yabmp_status, yabmp_read_row, (yabmp* reader, void* row, size_t row_size));
 YABMP_API(yabmp_status, yabmp_get_dimensions, (const yabmp* instance, const yabmp_info* info, yabmp_uint32* width, yabmp_uint32* height));
 YABMP_API(yabmp_status, yabmp_get_pixels_per_meter, (const yabmp* instance, const yabmp_info* info, yabmp_uint32* x, yabmp_uint32* y));
