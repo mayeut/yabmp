@@ -105,10 +105,13 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader, 
 	switch (l_color_mask)
 	{
 		case YABMP_COLOR_MASK_COLOR:
+			l_png_color_mask = PNG_COLOR_TYPE_RGB;
+			break;
+		case YABMP_COLOR_MASK_BITFIELDS |YABMP_COLOR_MASK_COLOR:
 			yabmp_set_expand_to_bgrx(bmp_reader); /* always expand to BGR(A) */
 			l_png_color_mask = PNG_COLOR_TYPE_RGB;
 			break;
-		case YABMP_COLOR_MASK_COLOR | YABMP_COLOR_MASK_ALPHA:
+		case YABMP_COLOR_MASK_BITFIELDS |YABMP_COLOR_MASK_COLOR | YABMP_COLOR_MASK_ALPHA:
 			yabmp_set_expand_to_bgrx(bmp_reader); /* always expand to BGR(A) */
 			l_png_color_mask = PNG_COLOR_TYPE_RGB_ALPHA;
 			break;
@@ -145,7 +148,6 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader, 
 		case YABMP_SCAN_BOTTOM_UP:
 			switch (l_compression) {
 				case YABMP_COMPRESSION_NONE:
-				case YABMP_COMPRESSION_BITFIELDS:
 					if (parameters->no_seek_fn) {
 						/* no seek for stdin */
 						l_need_full_image = 1;

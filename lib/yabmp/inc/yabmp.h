@@ -43,14 +43,14 @@
 #define YABMP_SCAN_BOTTOM_UP 0U /**< Image scan direction is Bottom-Up. */
 #define YABMP_SCAN_TOP_DOWN  1U /**< Image scan direction is Top-Down. */
 		
-#define YABMP_COLOR_MASK_PALETTE 1U /**< Image uses a palette.   */
-#define YABMP_COLOR_MASK_COLOR   2U /**< Image is a color image. */
-#define YABMP_COLOR_MASK_ALPHA   4U /**< Image has an alpha channel. */
+#define YABMP_COLOR_MASK_PALETTE   1U /**< Image uses a palette.       */
+#define YABMP_COLOR_MASK_COLOR     2U /**< Image is a color image.     */
+#define YABMP_COLOR_MASK_ALPHA     4U /**< Image has an alpha channel. */
+#define YABMP_COLOR_MASK_BITFIELDS 8U /**< Image uses bitfields.       */
 		
 #define YABMP_COMPRESSION_NONE      0U /**< Image data is not compressed. */
 #define YABMP_COMPRESSION_RLE8      1U /**< Image data is compressed using RLE8 algorithm. */
 #define YABMP_COMPRESSION_RLE4      2U /**< Image data is compressed using RLE4 algorithm. */
-#define YABMP_COMPRESSION_BITFIELDS 3U /**< Image data uses bitfields to store/read components. */
 
 /**
  * Return codes

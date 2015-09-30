@@ -2,6 +2,7 @@ Dimensions (WxH): 127x64
 Pixels Per Meter (XxY): 2835x2835
 Bits Per Pixel: 32
 Bits Per Channel: B8.G12.R8.A4
-Color mask:  COLOR ALPHA
-Compression: BITFIELDS B:0x000000FF G:0x0FFF0000 R:0x0000FF00 A:0xF0000000
+Color mask:  BITFIELDS COLOR ALPHA
+Bitfields: B:0x000000FF G:0x0FFF0000 R:0x0000FF00 A:0xF0000000
+Compression: NONE
 Scan direction: BOTTOM-UP

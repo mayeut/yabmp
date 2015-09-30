@@ -54,6 +54,9 @@ void yabmp_printinfo(FILE* outstream, yabmp* bmp_reader, const yabmp_info* info)
 	if ((l_color_mask & YABMP_COLOR_MASK_PALETTE) != 0U) {
 		fputs(" PALETTE", outstream);
 	}
+	if ((l_color_mask & YABMP_COLOR_MASK_BITFIELDS) != 0U) {
+		fputs(" BITFIELDS", outstream);
+	}
 	if ((l_color_mask & YABMP_COLOR_MASK_COLOR) != 0U) {
 		fputs(" COLOR", outstream);
 	}
@@ -61,6 +64,12 @@ void yabmp_printinfo(FILE* outstream, yabmp* bmp_reader, const yabmp_info* info)
 		fputs(" ALPHA", outstream);
 	}
 	fputc('\n', outstream);
+	
+	if ((l_color_mask & YABMP_COLOR_MASK_BITFIELDS) != 0U) {
+		yabmp_uint32 blue_mask, green_mask, red_mask, alpha_mask;
+		(void)yabmp_get_bitfields(bmp_reader, info, &blue_mask, &green_mask, &red_mask, &alpha_mask);
+		fprintf(outstream, "Bitfields: B:0x%08" YABMP_PRIX32 " G:0x%08" YABMP_PRIX32 " R:0x%08" YABMP_PRIX32 " A:0x%08" YABMP_PRIX32 "\n", blue_mask, green_mask, red_mask, alpha_mask);
+	}
 		
 	switch (l_compression) {
 		case YABMP_COMPRESSION_NONE:
@@ -71,13 +80,6 @@ void yabmp_printinfo(FILE* outstream, yabmp* bmp_reader, const yabmp_info* info)
 			break;
 		case YABMP_COMPRESSION_RLE8:
 			fputs("Compression: RLE8\n", outstream);
-			break;
-		case YABMP_COMPRESSION_BITFIELDS:
-			{
-				yabmp_uint32 blue_mask, green_mask, red_mask, alpha_mask;
-				(void)yabmp_get_bitfields(bmp_reader, info, &blue_mask, &green_mask, &red_mask, &alpha_mask);
-				fprintf(outstream, "Compression: BITFIELDS B:0x%08" YABMP_PRIX32 " G:0x%08" YABMP_PRIX32 " R:0x%08" YABMP_PRIX32 " A:0x%08" YABMP_PRIX32 "\n", blue_mask, green_mask, red_mask, alpha_mask);
-			}
 			break;
 		default:
 			fputs("Compression: UNKNOWN\n", outstream);

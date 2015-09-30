@@ -137,7 +137,6 @@ YABMP_API(yabmp_status, yabmp_get_compression, (const yabmp* instance, const yab
 	/* TODO, deal with OS/2 diff */
 	switch (info->compression) {
 		case YABMP_COMPRESSION_NONE:
-		case YABMP_COMPRESSION_BITFIELDS: /* Bit fields */
 		case YABMP_COMPRESSION_RLE4:
 		case YABMP_COMPRESSION_RLE8:
 			*compression = info->compression; /* initialized to 0 if only core header */
@@ -158,18 +157,16 @@ YABMP_API(yabmp_status, yabmp_get_bitfields, (const yabmp* instance, const yabmp
 		yabmp_send_error(instance, "NULL info or NULL *_mask.");
 		return YABMP_ERR_INVALID_ARGS;
 	}
-	/* TODO, deal with OS/2 diff */
-	switch (info->compression) {
-		case YABMP_COMPRESSION_BITFIELDS: /* Bit fields */
-			*blue_mask = info->mask_blue;
-			*green_mask = info->mask_green;
-			*red_mask = info->mask_red;
-			*alpha_mask = info->mask_alpha; /* 0 if not initialised */
-			break;
-		default:
-			yabmp_send_error(instance, "Compression is not bitfields");
-			return YABMP_ERR_UNKNOW;
+	
+	if (((info->flags >> YABMP_COLOR_SHIFT) & YABMP_COLOR_MASK_BITFIELDS) == 0U) {
+		yabmp_send_error(instance, "No bitfields.");
+		return YABMP_ERR_UNKNOW;
 	}
+	
+	*blue_mask = info->mask_blue;
+	*green_mask = info->mask_green;
+	*red_mask = info->mask_red;
+	*alpha_mask = info->mask_alpha; /* 0 if not initialised */
 	return YABMP_OK;
 }
 

@@ -31,7 +31,7 @@
 #define YABMP_FILE_TYPE(a, b) ((yabmp_uint16)a | (((yabmp_uint16)b) << 8))
 
 #define YABMP_COLOR_SHIFT 0
-#define YABMP_COLOR_MASK  (YABMP_COLOR_MASK_PALETTE | YABMP_COLOR_MASK_COLOR | YABMP_COLOR_MASK_ALPHA)
+#define YABMP_COLOR_MASK  (YABMP_COLOR_MASK_PALETTE | YABMP_COLOR_MASK_COLOR | YABMP_COLOR_MASK_ALPHA | YABMP_COLOR_MASK_BITFIELDS)
 
 #define YABMP_SCAN_SHIFT 4
 #define YABMP_SCAN_MASK  (YABMP_SCAN_TOP_DOWN)
@@ -71,7 +71,6 @@ typedef struct
 	yabmp_dib_v5_info   v5;
 	
 	/* Computed cache */
-	yabmp_uint32 colorMask;
 	yabmp_uint8  expanded_bpp; /* maximum bit count for one color when expanded (8, 16 or 32) */
 } yabmp_bmpinfo;
 
