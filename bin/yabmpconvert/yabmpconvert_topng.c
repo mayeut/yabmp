@@ -78,7 +78,8 @@ static void YABMP_PNGCBAPI custom_png_free(png_structp context, png_voidp ptr)
 int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader, yabmp_info* bmp_info)
 {
 	int result = EXIT_FAILURE; /* default is fail */
-	void* l_buffer = NULL;
+	void* volatile l_buffer = NULL; /* volatile needed because of long jump */
+	void* l_buffer_cache;
 	size_t l_buffer_size;
 	int32_t i;
 	yabmp_uint32 l_width, l_height;
@@ -288,12 +289,12 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader, 
 	l_buffer_size = png_get_rowbytes(l_png_writer, l_png_info);
 	if (l_need_full_image) {
 		/* TODO check overflow */
-		l_buffer = parameters->malloc ? parameters->malloc(NULL, l_buffer_size * (size_t)l_height) : malloc(l_buffer_size * (size_t)l_height);
+		l_buffer = l_buffer_cache = parameters->malloc ? parameters->malloc(NULL, l_buffer_size * (size_t)l_height) : malloc(l_buffer_size * (size_t)l_height);
 	}
 	else {
-		l_buffer = parameters->malloc ? parameters->malloc(NULL, l_buffer_size): malloc(l_buffer_size);
+		l_buffer = l_buffer_cache = parameters->malloc ? parameters->malloc(NULL, l_buffer_size): malloc(l_buffer_size);
 	}
-	if (l_buffer == NULL) {
+	if (l_buffer_cache == NULL) {
 		if (!parameters->quiet) {
 			fprintf(stderr, "ERROR: can't allocate buffer for 1 line\n");
 		}
@@ -306,7 +307,7 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader, 
 			yabmp_uint8* buffer8u;
 		} l_current_row;
 		
-		l_current_row.buffer = l_buffer;
+		l_current_row.buffer = l_buffer_cache;
 		for (i = 0; i < l_height; ++i) {
 			if (yabmp_read_row(bmp_reader, l_current_row.buffer, l_buffer_size) != YABMP_OK) {
 				goto BADEND;
@@ -320,13 +321,13 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader, 
 	}
 	else {
 		for (i = 0; i < l_height; ++i) {
-			if (yabmp_read_row(bmp_reader, l_buffer, l_buffer_size) != YABMP_OK) {
+			if (yabmp_read_row(bmp_reader, l_buffer_cache, l_buffer_size) != YABMP_OK) {
 				goto BADEND;
 			}
-			png_write_row(l_png_writer, l_buffer);
+			png_write_row(l_png_writer, l_buffer_cache);
 		}
 	}
-	parameters->free ? parameters->free(NULL, l_buffer) : free(l_buffer);
+	parameters->free ? parameters->free(NULL, l_buffer_cache) : free(l_buffer_cache);
 	l_buffer = NULL;
 		
 	png_write_end(l_png_writer, NULL);
@@ -341,8 +342,9 @@ BADEND:
 			(void)remove(parameters->output_file);
 		}
 	}
-	if (l_buffer != NULL) {
-		parameters->free ? parameters->free(NULL, l_buffer) : free(l_buffer);
+	l_buffer_cache = l_buffer;
+	if (l_buffer_cache != NULL) {
+		parameters->free ? parameters->free(NULL, l_buffer_cache) : free(l_buffer_cache);
 		l_buffer = NULL;
 	}
 	return result;
