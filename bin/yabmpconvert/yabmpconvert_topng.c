@@ -37,6 +37,12 @@
 #	define YABMP_PNGCBAPI PNGAPI
 #endif
 
+#if defined(PNG_SMALL_SIZE_T)
+#	define YABMP_PNG_ALLOC_SIZE_T png_alloc_size_t
+#else
+#	define YABMP_PNG_ALLOC_SIZE_T png_size_t
+#endif
+
 static void YABMP_PNGCBAPI print_png_error(png_structp png_struct, png_const_charp message)
 {
 	(void)png_struct;
@@ -46,6 +52,27 @@ static void YABMP_PNGCBAPI print_png_warning(png_structp png_struct, png_const_c
 {
 	(void)png_struct;
 	fprintf(stderr, "PNG WARNING: %s\n", message);
+}
+
+static png_voidp YABMP_PNGCBAPI custom_png_malloc(png_structp context, YABMP_PNG_ALLOC_SIZE_T size)
+{
+	const yabmpconvert_parameters* params = (const yabmpconvert_parameters*)png_get_mem_ptr(context);
+	
+	if (params->malloc) {
+		return params->malloc(NULL, size);
+	}
+	return malloc(size);
+}
+static void YABMP_PNGCBAPI custom_png_free(png_structp context, png_voidp ptr)
+{
+	const yabmpconvert_parameters* params = (const yabmpconvert_parameters*)png_get_mem_ptr(context);
+	
+	if (params->free) {
+		params->free(NULL, ptr);
+	}
+	else {
+		free(ptr);
+	}
 }
 
 int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader, yabmp_info* bmp_info)
@@ -184,7 +211,7 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader, 
 		}
 	}
 	
-	l_png_writer = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, print_png_error, print_png_warning);
+	l_png_writer = png_create_write_struct_2(PNG_LIBPNG_VER_STRING, NULL, print_png_error, print_png_warning, (png_voidp)parameters, custom_png_malloc, custom_png_free);
 	if (l_png_writer == NULL) {
 		if (!parameters->quiet) {
 			fprintf(stderr, "ERROR: can't create PNG struct\n");
@@ -261,10 +288,10 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader, 
 	l_buffer_size = png_get_rowbytes(l_png_writer, l_png_info);
 	if (l_need_full_image) {
 		/* TODO check overflow */
-		l_buffer = malloc(l_buffer_size * (size_t)l_height);
+		l_buffer = parameters->malloc ? parameters->malloc(NULL, l_buffer_size * (size_t)l_height) : malloc(l_buffer_size * (size_t)l_height);
 	}
 	else {
-		l_buffer = malloc(l_buffer_size);
+		l_buffer = parameters->malloc ? parameters->malloc(NULL, l_buffer_size): malloc(l_buffer_size);
 	}
 	if (l_buffer == NULL) {
 		if (!parameters->quiet) {
@@ -299,7 +326,7 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader, 
 			png_write_row(l_png_writer, l_buffer);
 		}
 	}
-	free(l_buffer);
+	parameters->free ? parameters->free(NULL, l_buffer) : free(l_buffer);
 	l_buffer = NULL;
 		
 	png_write_end(l_png_writer, NULL);
@@ -315,7 +342,7 @@ BADEND:
 		}
 	}
 	if (l_buffer != NULL) {
-		free(l_buffer);
+		parameters->free ? parameters->free(NULL, l_buffer) : free(l_buffer);
 		l_buffer = NULL;
 	}
 	return result;

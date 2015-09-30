@@ -31,12 +31,15 @@ typedef struct
 {
 	const char* input_file;
 	const char* output_file;
+	yabmp_malloc_cb malloc;
+	yabmp_free_cb free;
 	unsigned int version:1;
 	unsigned int help:1;
 	unsigned int quiet:1;
 	unsigned int expand_palette:1;
 	unsigned int keep_gray_palette:1;
 	unsigned int no_seek_fn:1;
+	
 } yabmpconvert_parameters;
 
 int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader, yabmp_info* bmp_info);

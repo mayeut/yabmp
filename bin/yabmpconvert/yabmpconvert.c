@@ -164,17 +164,18 @@ int main(int argc, char* argv[])
 	/* env options */
 	use_custom_malloc = getenv("YABMP_USE_CUSTOM_MALLOC");
 	if (use_custom_malloc != NULL) {
-		if (use_custom_malloc[0] == '\0') {
-			use_custom_malloc = NULL;
-		}
-		else if ((use_custom_malloc[0] == '0') && (use_custom_malloc[1] == '\0')) {
+		if ((use_custom_malloc[0] == '0') && (use_custom_malloc[1] == '\0')) {
 			use_custom_malloc = NULL;
 		}
 	}
 	
 	memset(&params, 0, sizeof(params));
-	optparse_init(&optparse, argv);
+	if (use_custom_malloc != NULL) {
+		params.malloc = custom_malloc;
+		params.free = custom_free;
+	}
 	
+	optparse_init(&optparse, argv);
 	while ((option = optparse_long(&optparse, options, NULL)) != -1) {
 		switch (option) {
 			case 'i':
