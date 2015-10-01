@@ -191,7 +191,6 @@ YABMP_API(yabmp_status, yabmp_read_info, (yabmp* reader, yabmp_info* info))
 		reader->info2.bpc_red = 8;
 		reader->info2.bpc_alpha = 0;
 	}
-	
 	memcpy(info, &(reader->info2), sizeof(struct yabmp_info_struct));
 	
 	return YABMP_OK;

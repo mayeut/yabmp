@@ -48,6 +48,12 @@
 #define YABMP_COLOR_MASK_ALPHA     4U /**< Image has an alpha channel. */
 #define YABMP_COLOR_MASK_BITFIELDS 8U /**< Image uses bitfields.       */
 		
+#define YABMP_COLOR_TYPE_BGR             (YABMP_COLOR_MASK_COLOR)
+#define YABMP_COLOR_TYPE_PALETTE         (YABMP_COLOR_MASK_COLOR | YABMP_COLOR_MASK_PALETTE)
+#define YABMP_COLOR_TYPE_GRAY_PALETTE    (YABMP_COLOR_MASK_PALETTE)
+#define YABMP_COLOR_TYPE_BITFIELDS       (YABMP_COLOR_MASK_COLOR | YABMP_COLOR_MASK_BITFIELDS)
+#define YABMP_COLOR_TYPE_BITFIELDS_ALPHA (YABMP_COLOR_MASK_COLOR | YABMP_COLOR_MASK_BITFIELDS | YABMP_COLOR_MASK_ALPHA)
+		
 #define YABMP_COMPRESSION_NONE      0U /**< Image data is not compressed. */
 #define YABMP_COMPRESSION_RLE8      1U /**< Image data is compressed using RLE8 algorithm. */
 #define YABMP_COMPRESSION_RLE4      2U /**< Image data is compressed using RLE4 algorithm. */
@@ -288,14 +294,36 @@ YABMP_API(yabmp_status, yabmp_create_info, (yabmp* instance, yabmp_info ** info)
  *
  */
 YABMP_API(yabmp_status, yabmp_read_info, (yabmp* reader, yabmp_info * info));
-		
 
+/**
+ * Reads a row of image data from the input stream.
+ *
+ * Image information must have been read for this \a reader object using #yabmp_read_info.
+ *
+ * @param[in]  reader   Pointer to the reader object.
+ * @param[in]  row      Pointer to the buffer that will receive image data.
+ * @param[in]  row_size Size of the \a row buffer in bytes.
+ *
+ * @return
+ * #YABMP_OK on success.\n
+ * #YABMP_ERR_INVALID_ARGS when invalid arguments are provided.\n
+ * #YABMP_ERR_ALLOCATION on allocation failure.
+ * #YABMP_ERR_UNKNOW in other failure cases.
+ *
+ * @see
+ *   yabmp_read_info\n
+ *   yabmp_set_invert_scan_direction\n
+ *   yabmp_set_expand_to_bgrx\n
+ *   yabmp_set_expand_to_grayscale\n
+ *
+ */
 YABMP_API(yabmp_status, yabmp_read_row, (yabmp* reader, void* row, size_t row_size));
+
 YABMP_API(yabmp_status, yabmp_get_dimensions, (const yabmp* instance, const yabmp_info* info, yabmp_uint32* width, yabmp_uint32* height));
-YABMP_API(yabmp_status, yabmp_get_pixels_per_meter, (const yabmp* instance, const yabmp_info* info, yabmp_uint32* x, yabmp_uint32* y));
-YABMP_API(yabmp_status, yabmp_get_bpp, (const yabmp* instance, const yabmp_info* info, unsigned int* bpp));
-YABMP_API(yabmp_status, yabmp_get_color_mask, (const yabmp* instance, const yabmp_info* info, unsigned int* color_mask));
-YABMP_API(yabmp_status, yabmp_get_compression, (const yabmp* instance, const yabmp_info* info, yabmp_uint32* compression));
+YABMP_API(yabmp_status, yabmp_get_pixels_per_meter, (const yabmp* instance, const yabmp_info* info, yabmp_uint32* ppm_x, yabmp_uint32* ppm_y));
+YABMP_API(yabmp_status, yabmp_get_bit_depth, (const yabmp* instance, const yabmp_info* info, unsigned int* bit_depth));
+YABMP_API(yabmp_status, yabmp_get_color_type, (const yabmp* instance, const yabmp_info* info, unsigned int* color_type));
+YABMP_API(yabmp_status, yabmp_get_compression_type, (const yabmp* instance, const yabmp_info* info, yabmp_uint32* compression));
 YABMP_API(yabmp_status, yabmp_get_scan_direction, (const yabmp* instance, const yabmp_info* info, unsigned int* scan_direction));
 YABMP_API(yabmp_status, yabmp_get_bitfields, (const yabmp* instance, const yabmp_info* info, yabmp_uint32* blue_mask, yabmp_uint32* green_mask, yabmp_uint32 * red_mask, yabmp_uint32 * alpha_mask));
 YABMP_API(yabmp_status, yabmp_get_bits, (const yabmp* instance, const yabmp_info* info, unsigned int* blue_bits, unsigned int* green_bits, unsigned int * red_bits, unsigned int * alpha_bits));

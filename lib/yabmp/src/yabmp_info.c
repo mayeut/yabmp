@@ -75,42 +75,49 @@ YABMP_API(yabmp_status, yabmp_get_dimensions, (const yabmp* instance, const yabm
 	
 	return YABMP_OK;
 }
-YABMP_API(yabmp_status, yabmp_get_pixels_per_meter, (const yabmp* instance, const yabmp_info* info, yabmp_uint32* x, yabmp_uint32* y))
+YABMP_API(yabmp_status, yabmp_get_pixels_per_meter, (const yabmp* instance, const yabmp_info* info, yabmp_uint32* ppm_x, yabmp_uint32* ppm_y))
 {
 	YABMP_CHECK_INSTANCE(instance);
 	
-	if ((info == NULL) || (x == NULL) || (y == NULL)) {
-		yabmp_send_error(instance, "NULL info or NULL x or NULL y.");
+	if ((info == NULL) || (ppm_x == NULL) || (ppm_y == NULL)) {
+		yabmp_send_error(instance, "NULL info or NULL ppm_x or NULL ppm_y.");
 		return YABMP_ERR_INVALID_ARGS;
 	}
 	
-	*x = info->res_ppm_x;
-	*y = info->res_ppm_y;
+	*ppm_x = info->res_ppm_x;
+	*ppm_y = info->res_ppm_y;
 
 	return YABMP_OK;
 }
 
-YABMP_API(yabmp_status, yabmp_get_bpp, (const yabmp* instance, const yabmp_info* info, unsigned int* bpp))
+YABMP_API(yabmp_status, yabmp_get_bit_depth, (const yabmp* instance, const yabmp_info* info, unsigned int* bit_depth))
 {
 	YABMP_CHECK_INSTANCE(instance);
 	
-	if ((info == NULL) || (bpp == NULL)) {
-		yabmp_send_error(instance, "NULL info or NULL bpp.");
+	if ((info == NULL) || (bit_depth == NULL)) {
+		yabmp_send_error(instance, "NULL info or NULL bit_depth.");
 		return YABMP_ERR_INVALID_ARGS;
 	}
-	*bpp = info->bpp;
+	
+	/* For now modify this here... */
+	if (info->bpp == 24U) {
+		*bit_depth = 8U;
+	}
+	else {
+		*bit_depth = info->bpp;
+	}
 	return YABMP_OK;
 }
 
-YABMP_API(yabmp_status, yabmp_get_color_mask, (const yabmp* instance, const yabmp_info* info, unsigned int * color_mask))
+YABMP_API(yabmp_status, yabmp_get_color_type, (const yabmp* instance, const yabmp_info* info, unsigned int * color_type))
 {
 	YABMP_CHECK_INSTANCE(instance);
 	
-	if ((info == NULL) || (color_mask == NULL)) {
-		yabmp_send_error(instance, "NULL info or NULL color_mask.");
+	if ((info == NULL) || (color_type == NULL)) {
+		yabmp_send_error(instance, "NULL info or NULL color_type.");
 		return YABMP_ERR_INVALID_ARGS;
 	}
-	*color_mask = (info->flags >> YABMP_COLOR_SHIFT) & YABMP_COLOR_MASK;
+	*color_type = (info->flags >> YABMP_COLOR_SHIFT) & YABMP_COLOR_MASK;
 	return YABMP_OK;
 }
 
@@ -119,19 +126,19 @@ YABMP_API(yabmp_status, yabmp_get_scan_direction, (const yabmp* instance, const 
 	YABMP_CHECK_INSTANCE(instance);
 	
 	if ((info == NULL) || (scan_direction == NULL)) {
-		yabmp_send_error(instance, "NULL info or NULL colorMask.");
+		yabmp_send_error(instance, "NULL info or NULL scan_direction.");
 		return YABMP_ERR_INVALID_ARGS;
 	}
 	*scan_direction = (info->flags >> YABMP_SCAN_SHIFT) & YABMP_SCAN_MASK;
 	return YABMP_OK;
 }
 
-YABMP_API(yabmp_status, yabmp_get_compression, (const yabmp* instance, const yabmp_info* info, yabmp_uint32* compression))
+YABMP_API(yabmp_status, yabmp_get_compression_type, (const yabmp* instance, const yabmp_info* info, yabmp_uint32* compression_type))
 {
 	YABMP_CHECK_INSTANCE(instance);
 	
-	if ((info == NULL) || (compression == NULL)) {
-		yabmp_send_error(instance, "NULL info or NULL compression.");
+	if ((info == NULL) || (compression_type == NULL)) {
+		yabmp_send_error(instance, "NULL info or NULL compression_type.");
 		return YABMP_ERR_INVALID_ARGS;
 	}
 	/* TODO, deal with OS/2 diff */
@@ -139,11 +146,11 @@ YABMP_API(yabmp_status, yabmp_get_compression, (const yabmp* instance, const yab
 		case YABMP_COMPRESSION_NONE:
 		case YABMP_COMPRESSION_RLE4:
 		case YABMP_COMPRESSION_RLE8:
-			*compression = info->compression; /* initialized to 0 if only core header */
+			*compression_type = info->compression; /* initialized to 0 if only core header */
 			break;
 		default:
 			yabmp_send_warning(instance, "Unsupported compression %" YABMP_PRIu32 ".", info->compression);
-			*compression = info->compression; /* initialized to 0 if only core header */
+			*compression_type = info->compression; /* initialized to 0 if only core header */
 			break;
 	}
 	return YABMP_OK;

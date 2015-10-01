@@ -27,8 +27,8 @@
 
 void yabmp_printinfo(FILE* outstream, yabmp* bmp_reader, const yabmp_info* info)
 {
-	yabmp_uint32 l_width, l_height, l_compression, l_res_x, l_res_y;
-	unsigned int l_bpp, l_scan_direction, l_color_mask;
+	yabmp_uint32 l_width, l_height, l_compression_type, l_res_x, l_res_y;
+	unsigned int l_bit_depth, l_scan_direction, l_color_type;
 	unsigned int l_blue_bits, l_green_bits, l_red_bits, l_alpha_bits;
 	
 	assert(outstream != NULL);
@@ -38,9 +38,9 @@ void yabmp_printinfo(FILE* outstream, yabmp* bmp_reader, const yabmp_info* info)
 	/* Those calls can't fail with proper arguments */
 	(void)yabmp_get_dimensions(bmp_reader, info, &l_width, &l_height);
 	(void)yabmp_get_pixels_per_meter(bmp_reader, info, &l_res_x, &l_res_y);
-	(void)yabmp_get_bpp(bmp_reader, info, &l_bpp);
-	(void)yabmp_get_color_mask(bmp_reader, info, &l_color_mask);
-	(void)yabmp_get_compression(bmp_reader, info, &l_compression);
+	(void)yabmp_get_bit_depth(bmp_reader, info, &l_bit_depth);
+	(void)yabmp_get_color_type(bmp_reader, info, &l_color_type);
+	(void)yabmp_get_compression_type(bmp_reader, info, &l_compression_type);
 	(void)yabmp_get_scan_direction(bmp_reader, info, &l_scan_direction);
 	(void)yabmp_get_bits(bmp_reader, info, &l_blue_bits, &l_green_bits, &l_red_bits, &l_alpha_bits);
 		
@@ -48,30 +48,30 @@ void yabmp_printinfo(FILE* outstream, yabmp* bmp_reader, const yabmp_info* info)
 	if ((l_res_x != 0U) || (l_res_y != 0U)) {
 		fprintf(outstream, "Pixels Per Meter (XxY): %" YABMP_PRIu32 "x%" YABMP_PRIu32 "\n", l_res_x, l_res_y);
 	}
-	fprintf(outstream, "Bits Per Pixel: %u\n", l_bpp);
+	fprintf(outstream, "Bit Depth: %u\n", l_bit_depth);
 	fprintf(outstream, "Bits Per Channel: B%u.G%u.R%u.A%u\n", l_blue_bits, l_green_bits, l_red_bits, l_alpha_bits);
 	fputs("Color mask: ", outstream);
-	if ((l_color_mask & YABMP_COLOR_MASK_PALETTE) != 0U) {
+	if ((l_color_type & YABMP_COLOR_MASK_PALETTE) != 0U) {
 		fputs(" PALETTE", outstream);
 	}
-	if ((l_color_mask & YABMP_COLOR_MASK_BITFIELDS) != 0U) {
+	if ((l_color_type & YABMP_COLOR_MASK_BITFIELDS) != 0U) {
 		fputs(" BITFIELDS", outstream);
 	}
-	if ((l_color_mask & YABMP_COLOR_MASK_COLOR) != 0U) {
+	if ((l_color_type & YABMP_COLOR_MASK_COLOR) != 0U) {
 		fputs(" COLOR", outstream);
 	}
-	if ((l_color_mask & YABMP_COLOR_MASK_ALPHA) != 0U) {
+	if ((l_color_type & YABMP_COLOR_MASK_ALPHA) != 0U) {
 		fputs(" ALPHA", outstream);
 	}
 	fputc('\n', outstream);
 	
-	if ((l_color_mask & YABMP_COLOR_MASK_BITFIELDS) != 0U) {
+	if ((l_color_type & YABMP_COLOR_MASK_BITFIELDS) != 0U) {
 		yabmp_uint32 blue_mask, green_mask, red_mask, alpha_mask;
 		(void)yabmp_get_bitfields(bmp_reader, info, &blue_mask, &green_mask, &red_mask, &alpha_mask);
 		fprintf(outstream, "Bitfields: B:0x%08" YABMP_PRIX32 " G:0x%08" YABMP_PRIX32 " R:0x%08" YABMP_PRIX32 " A:0x%08" YABMP_PRIX32 "\n", blue_mask, green_mask, red_mask, alpha_mask);
 	}
 		
-	switch (l_compression) {
+	switch (l_compression_type) {
 		case YABMP_COMPRESSION_NONE:
 			fputs("Compression: NONE\n", outstream);
 			break;

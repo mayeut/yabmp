@@ -1,6 +1,6 @@
 Dimensions (WxH): 127x64
 Pixels Per Meter (XxY): 2835x2835
-Bits Per Pixel: 32
+Bit Depth: 32
 Bits Per Channel: B5.G17.R6.A4
 Color mask:  BITFIELDS COLOR ALPHA
 Bitfields: B:0x0000001F G:0x003FFFE0 R:0x0FC00000 A:0xF0000000

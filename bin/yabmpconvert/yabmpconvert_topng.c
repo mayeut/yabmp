@@ -84,9 +84,9 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader, 
 	int32_t i;
 	yabmp_uint32 l_width, l_height;
 	yabmp_uint32 l_res_x, l_res_y;
-	unsigned int l_bpp;
-	unsigned int l_color_mask;
-	yabmp_uint32 l_compression;
+	unsigned int l_bit_depth;
+	unsigned int l_color_type;
+	yabmp_uint32 l_compression_type;
 	unsigned int l_scan_direction;
 	yabmp_uint32 l_png_color_mask;
 	int l_png_has_sBIT = 0;
@@ -105,9 +105,9 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader, 
 	/* Those calls can't fail with proper arguments */
 	(void)yabmp_get_dimensions(bmp_reader, bmp_info, &l_width, &l_height);
 	(void)yabmp_get_pixels_per_meter(bmp_reader, bmp_info, &l_res_x, &l_res_y);
-	(void)yabmp_get_bpp(bmp_reader, bmp_info, &l_bpp);
-	(void)yabmp_get_color_mask(bmp_reader, bmp_info, &l_color_mask);
-	(void)yabmp_get_compression(bmp_reader, bmp_info, &l_compression);
+	(void)yabmp_get_bit_depth(bmp_reader, bmp_info, &l_bit_depth);
+	(void)yabmp_get_color_type(bmp_reader, bmp_info, &l_color_type);
+	(void)yabmp_get_compression_type(bmp_reader, bmp_info, &l_compression_type);
 	(void)yabmp_get_scan_direction(bmp_reader, bmp_info, &l_scan_direction);
 	(void)yabmp_get_bits(bmp_reader, bmp_info, &blue_bits, &green_bits, &red_bits, &alpha_bits);
 	
@@ -130,35 +130,35 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader, 
 			l_png_has_sBIT = 1;
 	}
 	
-	switch (l_color_mask)
+	switch (l_color_type)
 	{
-		case YABMP_COLOR_MASK_COLOR:
+		case YABMP_COLOR_TYPE_BGR:
 			l_png_color_mask = PNG_COLOR_TYPE_RGB;
 			break;
-		case YABMP_COLOR_MASK_BITFIELDS |YABMP_COLOR_MASK_COLOR:
+		case YABMP_COLOR_TYPE_BITFIELDS:
 			yabmp_set_expand_to_bgrx(bmp_reader); /* always expand to BGR(A) */
 			l_png_color_mask = PNG_COLOR_TYPE_RGB;
 			break;
-		case YABMP_COLOR_MASK_BITFIELDS |YABMP_COLOR_MASK_COLOR | YABMP_COLOR_MASK_ALPHA:
+		case YABMP_COLOR_TYPE_BITFIELDS_ALPHA:
 			yabmp_set_expand_to_bgrx(bmp_reader); /* always expand to BGR(A) */
 			l_png_color_mask = PNG_COLOR_TYPE_RGB_ALPHA;
 			break;
-		case YABMP_COLOR_MASK_PALETTE | YABMP_COLOR_MASK_COLOR:
+		case YABMP_COLOR_TYPE_PALETTE:
 			if (parameters->expand_palette) {
 				yabmp_set_expand_to_bgrx(bmp_reader); /* expand to BGR(A) */
 				l_png_color_mask = PNG_COLOR_TYPE_RGB;
 			} else {
 				l_png_color_mask = PNG_COLOR_TYPE_PALETTE;
-				l_png_bit_depth = l_bpp;
+				l_png_bit_depth = l_bit_depth;
 			}
 			break;
-		case YABMP_COLOR_MASK_PALETTE:
+		case YABMP_COLOR_TYPE_GRAY_PALETTE:
 			if (parameters->expand_palette) {
 				yabmp_set_expand_to_bgrx(bmp_reader); /* always expand to BGR(A) */
 				l_png_color_mask = PNG_COLOR_TYPE_RGB;
 			} else if (parameters->keep_gray_palette) {
 				l_png_color_mask = PNG_COLOR_TYPE_PALETTE;
-				l_png_bit_depth = l_bpp;
+				l_png_bit_depth = l_bit_depth;
 			} else {
 				yabmp_set_expand_to_grayscale(bmp_reader); /* always expand to Y8 */
 				l_png_color_mask = PNG_COLOR_TYPE_GRAY;
@@ -174,7 +174,7 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader, 
 	switch (l_scan_direction)
 	{
 		case YABMP_SCAN_BOTTOM_UP:
-			switch (l_compression) {
+			switch (l_compression_type) {
 				case YABMP_COMPRESSION_NONE:
 					if (parameters->no_seek_fn) {
 						/* no seek for stdin */
@@ -189,7 +189,6 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader, 
 					l_need_full_image = 1;
 					break;
 			}
-			
 			break;
 		case YABMP_SCAN_TOP_DOWN:
 			break;
