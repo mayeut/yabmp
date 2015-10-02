@@ -328,7 +328,27 @@ YABMP_API(yabmp_status, yabmp_get_scan_direction, (const yabmp* instance, const 
 YABMP_API(yabmp_status, yabmp_get_bitfields, (const yabmp* instance, const yabmp_info* info, yabmp_uint32* blue_mask, yabmp_uint32* green_mask, yabmp_uint32 * red_mask, yabmp_uint32 * alpha_mask));
 YABMP_API(yabmp_status, yabmp_get_bits, (const yabmp* instance, const yabmp_info* info, unsigned int* blue_bits, unsigned int* green_bits, unsigned int * red_bits, unsigned int * alpha_bits));
 YABMP_API(yabmp_status, yabmp_get_palette, (const yabmp* instance, const yabmp_info* info, unsigned int * color_count, yabmp_color const** palette));
-		
+
+/**
+ * Invert scan direction.
+ *
+ * Image rows will be read in the opposite direction as what's reported by #yabmp_get_scan_direction.
+ * This requires a seek function to be set when calling #yabmp_set_input_stream.
+ * Inverting scan direction is only supported for #YABMP_COMPRESSION_NONE compression type.
+ *
+ * @param[in]  instance Pointer to the reader object.
+ *
+ * @return
+ * #YABMP_OK on success.\n
+ * #YABMP_ERR_INVALID_ARGS when invalid arguments are provided.\n
+ * #YABMP_ERR_UNKNOW when no seek function is set or compression type is not #YABMP_COMPRESSION_NONE.
+ *
+ * @see
+ *   yabmp_get_scan_direction\n
+ *   yabmp_get_compression_type\n
+ *   yabmp_set_input_stream
+ *
+ */
 YABMP_API(yabmp_status, yabmp_set_invert_scan_direction, (yabmp* instance));
 YABMP_API(yabmp_status, yabmp_set_expand_to_bgrx, (yabmp* instance));
 YABMP_API(yabmp_status, yabmp_set_expand_to_grayscale, (yabmp* instance));
