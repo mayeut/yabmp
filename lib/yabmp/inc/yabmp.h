@@ -350,6 +350,18 @@ YABMP_API(yabmp_status, yabmp_get_palette, (const yabmp* instance, const yabmp_i
  *
  */
 YABMP_API(yabmp_status, yabmp_set_invert_scan_direction, (yabmp* instance));
+/**
+ * Expand to BGR(A).
+ *
+ * Image rows will be read in BGR(A) format.
+ *
+ * @param[in]  instance Pointer to the reader object.
+ *
+ * @return
+ * #YABMP_OK on success.\n
+ * #YABMP_ERR_INVALID_ARGS when invalid arguments are provided.\n
+ *
+ */
 YABMP_API(yabmp_status, yabmp_set_expand_to_bgrx, (yabmp* instance));
 YABMP_API(yabmp_status, yabmp_set_expand_to_grayscale, (yabmp* instance));
 		
