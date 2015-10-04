@@ -47,8 +47,10 @@
 #define YABMP_COLOR_MASK_COLOR     2U /**< Image is a color image.     */
 #define YABMP_COLOR_MASK_ALPHA     4U /**< Image has an alpha channel. */
 #define YABMP_COLOR_MASK_BITFIELDS 8U /**< Image uses bitfields.       */
-		
+
+#define YABMP_COLOR_TYPE_GRAY            (0U)
 #define YABMP_COLOR_TYPE_BGR             (YABMP_COLOR_MASK_COLOR)
+#define YABMP_COLOR_TYPE_BGR_ALPHA       (YABMP_COLOR_MASK_COLOR | YABMP_COLOR_MASK_ALPHA)
 #define YABMP_COLOR_TYPE_PALETTE         (YABMP_COLOR_MASK_COLOR | YABMP_COLOR_MASK_PALETTE)
 #define YABMP_COLOR_TYPE_GRAY_PALETTE    (YABMP_COLOR_MASK_PALETTE)
 #define YABMP_COLOR_TYPE_BITFIELDS       (YABMP_COLOR_MASK_COLOR | YABMP_COLOR_MASK_BITFIELDS)
@@ -328,7 +330,9 @@ YABMP_API(yabmp_status, yabmp_get_scan_direction, (const yabmp* instance, const 
 YABMP_API(yabmp_status, yabmp_get_bitfields, (const yabmp* instance, const yabmp_info* info, yabmp_uint32* blue_mask, yabmp_uint32* green_mask, yabmp_uint32 * red_mask, yabmp_uint32 * alpha_mask));
 YABMP_API(yabmp_status, yabmp_get_bits, (const yabmp* instance, const yabmp_info* info, unsigned int* blue_bits, unsigned int* green_bits, unsigned int * red_bits, unsigned int * alpha_bits));
 YABMP_API(yabmp_status, yabmp_get_palette, (const yabmp* instance, const yabmp_info* info, unsigned int * color_count, yabmp_color const** palette));
-
+YABMP_API(yabmp_status, yabmp_get_rowbytes, (const yabmp* instance, const yabmp_info* info, size_t* row_bytes));
+YABMP_API(yabmp_status, yabmp_read_update_info, (const yabmp* reader, yabmp_info* info));
+		
 /**
  * Invert scan direction.
  *

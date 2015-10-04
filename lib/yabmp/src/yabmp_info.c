@@ -100,11 +100,21 @@ YABMP_API(yabmp_status, yabmp_get_bit_depth, (const yabmp* instance, const yabmp
 	}
 	
 	/* For now modify this here... */
-	if (info->bpp == 24U) {
-		*bit_depth = 8U;
-	}
-	else {
-		*bit_depth = info->bpp;
+	switch ((info->flags>> YABMP_COLOR_SHIFT) & YABMP_COLOR_MASK) {
+		case YABMP_COLOR_TYPE_BGR:
+			*bit_depth = info->bpp / 3U;
+			break;
+		case YABMP_COLOR_TYPE_BGR_ALPHA:
+			*bit_depth = info->bpp / 4U;
+			break;
+		case YABMP_COLOR_TYPE_GRAY:
+		case YABMP_COLOR_TYPE_PALETTE:
+		case YABMP_COLOR_TYPE_GRAY_PALETTE:
+		case YABMP_COLOR_TYPE_BITFIELDS:
+		case YABMP_COLOR_TYPE_BITFIELDS_ALPHA:
+		default:
+			*bit_depth = info->bpp;
+			break;
 	}
 	return YABMP_OK;
 }
@@ -208,6 +218,70 @@ YABMP_API(yabmp_status, yabmp_get_palette, (const yabmp* instance, const yabmp_i
 
 	*color_count = info->num_palette;
 	*palette     = info->palette;
+	
+	return YABMP_OK;
+}
+
+YABMP_API(yabmp_status, yabmp_get_rowbytes, (const yabmp* instance, const yabmp_info* info, size_t* row_bytes))
+{
+	YABMP_CHECK_INSTANCE(instance);
+	
+	if ((info == NULL) || (row_bytes == NULL)) {
+		yabmp_send_error(instance, "NULL info or NULL row_bytes.");
+		return YABMP_ERR_INVALID_ARGS;
+	}
+	
+	*row_bytes = info->rowbytes;
+	return YABMP_OK;
+}
+YABMP_API(yabmp_status, yabmp_read_update_info, (const yabmp* reader, yabmp_info* info))
+{
+	YABMP_CHECK_READER(reader);
+	
+	if (info == NULL) {
+		yabmp_send_error(reader, "NULL info.");
+		return YABMP_ERR_INVALID_ARGS;
+	}
+	if (reader->transforms & YABMP_TRANSFORM_EXPAND) {
+		unsigned int c = 3U;
+		yabmp_uint8 l_color_type = YABMP_COLOR_TYPE_BGR;
+		info->flags &= ~(YABMP_COLOR_MASK << YABMP_COLOR_SHIFT);
+		if ((reader->info2.flags  >> YABMP_COLOR_SHIFT) & YABMP_COLOR_MASK_ALPHA) {
+			l_color_type |= YABMP_COLOR_MASK_ALPHA;
+			c++;
+		}
+		info->flags |= l_color_type << YABMP_COLOR_SHIFT;
+		info->bpp = (yabmp_uint8)(reader->info.expanded_bpp * c);
+		info->mask_alpha  = 0U;
+		info->mask_blue   = 0U;
+		info->mask_green  = 0U;
+		info->mask_red    = 0U;
+		info->num_palette = 0U;
+	}
+	else if (reader->transforms & YABMP_TRANSFORM_GRAYSCALE) {
+		info->flags &= ~(YABMP_COLOR_MASK << YABMP_COLOR_SHIFT);
+		info->flags |= YABMP_COLOR_TYPE_GRAY << YABMP_COLOR_SHIFT;
+		info->bpp = 8U;
+		info->mask_alpha  = 0U;
+		info->mask_blue   = 0U;
+		info->mask_green  = 0U;
+		info->mask_red    = 0U;
+		info->num_palette = 0U;
+	}
+	if (reader->transforms & YABMP_TRANSFORM_SCAN_ORDER) {
+		yabmp_uint8 l_scan_flags = ((info->flags >> YABMP_SCAN_SHIFT) & YABMP_SCAN_MASK) ^ YABMP_SCAN_MASK;
+		info->flags &= ~(YABMP_SCAN_MASK << YABMP_SCAN_SHIFT);
+		info->flags |= l_scan_flags << YABMP_SCAN_SHIFT;
+	}
+	
+	
+	/* Update row bytes */
+	{
+		size_t l_row_bytes = reader->info2.width;
+		l_row_bytes = ((l_row_bytes * (size_t)info->bpp) + 7U) & ~(size_t)7U;
+		l_row_bytes /= 8U;
+		info->rowbytes = l_row_bytes;
+	}
 	
 	return YABMP_OK;
 }

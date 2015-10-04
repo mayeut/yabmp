@@ -173,6 +173,7 @@ YABMP_API(yabmp_status, yabmp_read_info, (yabmp* reader, yabmp_info* info))
 	YABMP_SIMPLE_CHECK(local_read_info_no_validation(reader));
 	YABMP_SIMPLE_CHECK(local_valid_info(reader));
 	
+	/* Update BPC */
 	if (((reader->info2.flags >> YABMP_COLOR_SHIFT) & YABMP_COLOR_MASK_BITFIELDS) != 0U)
 	{
 		unsigned int l_dummy_shift, l_bits;
@@ -191,6 +192,15 @@ YABMP_API(yabmp_status, yabmp_read_info, (yabmp* reader, yabmp_info* info))
 		reader->info2.bpc_red = 8;
 		reader->info2.bpc_alpha = 0;
 	}
+	
+	/* Update row bytes */
+	{
+		size_t l_row_bytes = reader->info2.width;
+		l_row_bytes = ((l_row_bytes * (size_t)reader->info2.bpp) + 7U) & ~(size_t)7U;
+		l_row_bytes /= 8U;
+		reader->info2.rowbytes = l_row_bytes;
+	}
+	
 	memcpy(info, &(reader->info2), sizeof(struct yabmp_info_struct));
 	
 	return YABMP_OK;
@@ -893,9 +903,8 @@ static yabmp_status local_setup_read(yabmp* reader)
 			break;
 	}
 	
-	l_row_bytes = reader->info2.width;
-	
 	/* TODO overflow check */
+	l_row_bytes = reader->info2.width;
 	l_row_bytes = ((l_row_bytes * (yabmp_uint32)reader->info2.bpp) + 7U) & ~(yabmp_uint32)7U;
 	l_row_bytes /= 8U;
 	

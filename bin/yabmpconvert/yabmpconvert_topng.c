@@ -96,73 +96,42 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader, 
 	png_structp l_png_writer = NULL;
 	png_infop l_png_info = NULL;
 	FILE* l_output = NULL;
-	int l_png_bit_depth = 8; /* default to 8 bits */
 	
 	assert(parameters != NULL);
 	assert(bmp_reader != NULL);
 	assert(bmp_info != NULL);
 	
 	/* Those calls can't fail with proper arguments */
-	(void)yabmp_get_dimensions(bmp_reader, bmp_info, &l_width, &l_height);
-	(void)yabmp_get_pixels_per_meter(bmp_reader, bmp_info, &l_res_x, &l_res_y);
-	(void)yabmp_get_bit_depth(bmp_reader, bmp_info, &l_bit_depth);
 	(void)yabmp_get_color_type(bmp_reader, bmp_info, &l_color_type);
 	(void)yabmp_get_compression_type(bmp_reader, bmp_info, &l_compression_type);
 	(void)yabmp_get_scan_direction(bmp_reader, bmp_info, &l_scan_direction);
-	(void)yabmp_get_bits(bmp_reader, bmp_info, &blue_bits, &green_bits, &red_bits, &alpha_bits);
 	
-	if ((blue_bits > 16U) || (green_bits > 16U) || (red_bits > 16U) || (alpha_bits > 16U)) {
-		if (!parameters->quiet) {
-			fprintf(stderr, "ERROR: PNG does not support more than 16 bits per channel\n");
-		}
-		return EXIT_FAILURE;
-	}
-	
-	if ((blue_bits > 8U) || (green_bits > 8U) || (red_bits > 8U) || (alpha_bits > 8U)) {
-		l_png_bit_depth = 16;
-	}
-	
-	if (
-		(blue_bits != l_png_bit_depth) ||
-		(green_bits != l_png_bit_depth) ||
-		(red_bits != l_png_bit_depth) ||
-		((alpha_bits != l_png_bit_depth) && (alpha_bits != 0))) {
-			l_png_has_sBIT = 1;
-	}
-	
+	/* Check transforms needed */
 	switch (l_color_type)
 	{
 		case YABMP_COLOR_TYPE_BGR:
-			l_png_color_mask = PNG_COLOR_TYPE_RGB;
 			break;
 		case YABMP_COLOR_TYPE_BITFIELDS:
 			yabmp_set_expand_to_bgrx(bmp_reader); /* always expand to BGR(A) */
-			l_png_color_mask = PNG_COLOR_TYPE_RGB;
 			break;
 		case YABMP_COLOR_TYPE_BITFIELDS_ALPHA:
 			yabmp_set_expand_to_bgrx(bmp_reader); /* always expand to BGR(A) */
-			l_png_color_mask = PNG_COLOR_TYPE_RGB_ALPHA;
 			break;
 		case YABMP_COLOR_TYPE_PALETTE:
 			if (parameters->expand_palette) {
 				yabmp_set_expand_to_bgrx(bmp_reader); /* expand to BGR(A) */
-				l_png_color_mask = PNG_COLOR_TYPE_RGB;
 			} else {
 				l_png_color_mask = PNG_COLOR_TYPE_PALETTE;
-				l_png_bit_depth = l_bit_depth;
 			}
 			break;
 		case YABMP_COLOR_TYPE_GRAY_PALETTE:
 			if (parameters->expand_palette) {
 				yabmp_set_expand_to_bgrx(bmp_reader); /* always expand to BGR(A) */
-				l_png_color_mask = PNG_COLOR_TYPE_RGB;
 			} else if (parameters->keep_gray_palette) {
 				l_png_color_mask = PNG_COLOR_TYPE_PALETTE;
-				l_png_bit_depth = l_bit_depth;
 			} else {
 				yabmp_set_expand_to_grayscale(bmp_reader); /* always expand to Y8 */
 				l_png_color_mask = PNG_COLOR_TYPE_GRAY;
-				l_png_bit_depth = 8;
 			}
 			break;
 		default:
@@ -198,6 +167,45 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader, 
 			}
 			return EXIT_FAILURE;
 	}
+	/* Update infos & set PNG parameters */
+	yabmp_read_update_info(bmp_reader, bmp_info);
+	
+	(void)yabmp_get_color_type(bmp_reader, bmp_info, &l_color_type);
+	(void)yabmp_get_dimensions(bmp_reader, bmp_info, &l_width, &l_height);
+	(void)yabmp_get_pixels_per_meter(bmp_reader, bmp_info, &l_res_x, &l_res_y);
+	(void)yabmp_get_bit_depth(bmp_reader, bmp_info, &l_bit_depth);
+	(void)yabmp_get_bits(bmp_reader, bmp_info, &blue_bits, &green_bits, &red_bits, &alpha_bits);
+	
+	switch (l_color_type)
+	{
+		case YABMP_COLOR_TYPE_BGR:
+			l_png_color_mask = PNG_COLOR_TYPE_RGB;
+			break;
+		case YABMP_COLOR_TYPE_BGR_ALPHA:
+			l_png_color_mask = PNG_COLOR_TYPE_RGB_ALPHA;
+			break;
+		case YABMP_COLOR_TYPE_PALETTE:
+		case YABMP_COLOR_TYPE_GRAY_PALETTE:
+				l_png_color_mask = PNG_COLOR_TYPE_PALETTE;
+			break;
+		case YABMP_COLOR_TYPE_GRAY:
+				l_png_color_mask = PNG_COLOR_TYPE_GRAY;
+			break;
+		default:
+			if (!parameters->quiet) {
+				fprintf(stderr, "ERROR: Transcoding not supported.\n");
+			}
+			return EXIT_FAILURE;
+	}
+	
+	if (
+			(blue_bits != l_bit_depth) ||
+			(green_bits != l_bit_depth) ||
+			(red_bits != l_bit_depth) ||
+			((alpha_bits != l_bit_depth) && (alpha_bits != 0))) {
+		l_png_has_sBIT = 1;
+	}
+	
 	if ((parameters->output_file[0] == '-') && (parameters->output_file[1] == '\0')) {
 		l_output = stdout;
 	}
@@ -224,7 +232,7 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader, 
 	png_init_io(l_png_writer, l_output);
 	l_png_info = png_create_info_struct(l_png_writer); /* errors here will generate long jump */
 		
-	png_set_IHDR(l_png_writer, l_png_info, l_width, l_height, l_png_bit_depth, l_png_color_mask, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+	png_set_IHDR(l_png_writer, l_png_info, l_width, l_height, (int)l_bit_depth, l_png_color_mask, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
 	
 	if ((l_res_x != 0U) || (l_res_y != 0U)) {
 		png_set_pHYs(l_png_writer, l_png_info, l_res_x, l_res_y, PNG_RESOLUTION_METER);
@@ -280,12 +288,22 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader, 
 		default:
 			break;
 	}
-	if (l_png_bit_depth == 16) {
+	if (l_bit_depth == 16U) {
 		png_set_swap(l_png_writer);
 	}
 	
 	/* Now deal with the image */
 	l_buffer_size = png_get_rowbytes(l_png_writer, l_png_info);
+	{
+		size_t l_check_buffer_size;
+		yabmp_get_rowbytes(bmp_reader, bmp_info, &l_check_buffer_size);
+		if (l_check_buffer_size != l_buffer_size) {
+			if (!parameters->quiet) {
+				fprintf(stderr, "ERROR: row bytes not matching between YABMP & PNG\n");
+			}
+			goto BADEND;
+		}
+	}
 	if (l_need_full_image) {
 		/* TODO check overflow */
 		l_buffer = l_buffer_cache = parameters->malloc ? parameters->malloc(NULL, l_buffer_size * (size_t)l_height) : malloc(l_buffer_size * (size_t)l_height);

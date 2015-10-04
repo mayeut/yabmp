@@ -76,6 +76,7 @@ typedef struct
 
 struct yabmp_info_struct
 {
+	size_t       rowbytes;     /* Number of bytes needed for 1 line */
 	yabmp_uint32 width;        /* Width of the image in pixels  */
 	yabmp_uint32 height;       /* Heigth of the image in pixels */
 	yabmp_uint32 res_ppm_x;    /* Horizontal resolution in pixels/meter */
