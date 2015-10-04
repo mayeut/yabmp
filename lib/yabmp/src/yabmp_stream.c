@@ -198,3 +198,84 @@ YABMP_IAPI(yabmp_status, yabmp_stream_skip, (yabmp* instance, yabmp_uint32 count
 BADEND:
 	return l_status;
 }
+
+/* Input memory stream */
+typedef struct
+{
+	yabmp*             reader;
+	const yabmp_uint8* data;
+	const yabmp_uint8* current;
+	size_t             data_size;
+} yabmp_input_memory_stream;
+
+static size_t yabmp_memory_read (void* context, void * ptr, size_t size)
+{
+	yabmp_input_memory_stream* l_context = (yabmp_input_memory_stream*)context;
+	size_t l_remaining;
+	
+	assert(l_context != NULL);
+	
+	l_remaining = l_context->data_size - (size_t)(l_context->current - l_context->data);
+	if (size > l_remaining) {
+		size = l_remaining;
+	}
+	if (size) {
+		memcpy(ptr, l_context->current, size);
+		l_context->current += size;
+	}
+	return size;
+}
+
+static yabmp_status yabmp_memory_seek(void* context, yabmp_uint32 offset)
+{
+	yabmp_input_memory_stream* l_context = (yabmp_input_memory_stream*)context;
+	
+	assert(l_context != NULL);
+	
+	if ((size_t)offset > l_context->data_size) {
+		return YABMP_ERR_UNKNOW;
+	}
+	l_context->current = l_context->data + offset;
+	return YABMP_OK;
+}
+static void yabmp_memory_close(void* context)
+{
+	yabmp_input_memory_stream* l_context = (yabmp_input_memory_stream*)context;
+	yabmp* l_reader = NULL;
+	assert(l_context != NULL);
+	l_reader = l_context->reader;
+	yabmp_free(l_reader, l_context);
+}
+
+YABMP_API(yabmp_status, yabmp_set_input_memory, (yabmp* reader, const void* data, size_t data_size))
+{
+	yabmp_status l_status = YABMP_OK;
+	yabmp_input_memory_stream* l_context = NULL;
+	YABMP_CHECK_READER(reader);
+	
+	if (data == NULL) {
+		yabmp_send_error(reader, "data is NULL");
+		return YABMP_ERR_INVALID_ARGS;
+	}
+	
+	l_context = (yabmp_input_memory_stream*)yabmp_malloc(reader, sizeof(*l_context));
+	if (l_context == NULL) {
+		l_status = YABMP_ERR_ALLOCATION;
+		goto BADEND;
+	}
+	
+	l_context->reader = reader;
+	l_context->data = data;
+	l_context->current = data;
+	l_context->data_size = data_size;
+	
+	l_status = yabmp_set_input_stream(reader, (void*)l_context, yabmp_memory_read, yabmp_memory_seek, yabmp_memory_close);
+	if (l_status == YABMP_OK) {
+		l_context = NULL;
+	}
+BADEND:
+	if (l_context != NULL) {
+		yabmp_free(reader, l_context);
+	}
+	return l_status;
+}

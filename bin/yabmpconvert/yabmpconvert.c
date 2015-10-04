@@ -156,16 +156,27 @@ int main(int argc, char* argv[])
 		{ 0 }
 	};
 	const char* use_custom_malloc = NULL;
+	const char* use_memory_stream = NULL;
 	int result = EXIT_SUCCESS;
 	yabmpconvert_parameters params;
 	struct optparse optparse;
 	int option;
+	void* input_data = NULL;
+	size_t input_data_size = 0U;
+	
+	argv[0] = (char*)get_appname(argv[0]);
 	
 	/* env options */
 	use_custom_malloc = getenv("YABMP_USE_CUSTOM_MALLOC");
 	if (use_custom_malloc != NULL) {
 		if ((use_custom_malloc[0] == '0') && (use_custom_malloc[1] == '\0')) {
 			use_custom_malloc = NULL;
+		}
+	}
+	use_memory_stream = getenv("YABMP_USE_MEMORY_STREAM");
+	if (use_memory_stream != NULL) {
+		if ((use_memory_stream[0] == '0') && (use_memory_stream[1] == '\0')) {
+			use_memory_stream = NULL;
 		}
 	}
 	
@@ -203,8 +214,8 @@ int main(int argc, char* argv[])
 				params.no_seek_fn = 1;
 				break;
 			case '?':
-				fprintf(stderr, "%s: %s\n", get_appname(argv[0]), optparse.errmsg);
-				print_usage(stderr, get_appname(argv[0]));
+				fprintf(stderr, "%s: %s\n", argv[0], optparse.errmsg);
+				print_usage(stderr, argv[0]);
 				result = 1;
 				goto BADEND;
 		}
@@ -216,10 +227,10 @@ int main(int argc, char* argv[])
 		if (!params.help && (params.output_file != NULL) && (strcmp(params.output_file, "-") == 0)) {
 			stream = stderr;
 		}
-		fprintf(stream, "%s %s\n", get_appname(argv[0]), yabmp_get_version_string());
+		fprintf(stream, "%s %s\n", argv[0], yabmp_get_version_string());
 	}
 	if (params.help) {
-		print_usage(stdout, get_appname(argv[0]));
+		print_usage(stdout, argv[0]);
 		goto BADEND;
 	}
 	
@@ -229,8 +240,53 @@ int main(int argc, char* argv[])
 		}
 		else {
 			if (!params.quiet) {
-				fprintf(stderr, "%s: missing input or output file\n", get_appname(argv[0]));
-				print_usage(stderr, get_appname(argv[0]));
+				fprintf(stderr, "%s: missing input or output file\n", argv[0]);
+				print_usage(stderr, argv[0]);
+			}
+			result = EXIT_FAILURE;
+			goto BADEND;
+		}
+	}
+	
+	if (use_memory_stream != NULL) {
+		FILE* l_file = NULL;
+		if (!params.quiet) {
+			fprintf(stderr, "Using memory stream\n");
+		}
+		if ((params.input_file[0] == '-') && (params.input_file[1] == '\0')) {
+			if (!params.quiet) {
+				fprintf(stderr, "Can't use memory stream with stdin\n");
+			}
+			result = EXIT_FAILURE;
+			goto BADEND;
+		}
+		l_file = fopen(params.input_file, "rb");
+		if (l_file == NULL) {
+			if (!params.quiet) {
+				fprintf(stderr, "Can't open file '%s'\n", params.input_file);
+			}
+			result = EXIT_FAILURE;
+			goto BADEND;
+		}
+		if (fseek(l_file, 0, SEEK_END) == 0)
+		{
+			long l_len = ftell(l_file);
+			if (l_len > 0) {
+				input_data_size = (size_t)l_len;
+				rewind(l_file);
+				input_data = malloc(input_data_size);
+				if (input_data != NULL) {
+					if (fread(input_data, 1U, input_data_size, l_file) != input_data_size) {
+						free(input_data);
+						input_data = NULL;
+					}
+				}
+			}
+		}
+		fclose(l_file);
+		if (input_data == NULL) {
+			if (!params.quiet) {
+				fprintf(stderr, "Couldn't read file '%s'\n", params.input_file);
 			}
 			result = EXIT_FAILURE;
 			goto BADEND;
@@ -254,7 +310,13 @@ int main(int argc, char* argv[])
 			result = EXIT_FAILURE;
 			goto FREE_INSTANCE;
 		}
-		if ((params.input_file[0] == '-') && (params.input_file[1] == '\0')) {
+		if (input_data != NULL) {
+			if (yabmp_set_input_memory(l_bmp_reader, input_data, input_data_size) != YABMP_OK) {
+				result = EXIT_FAILURE;
+				goto FREE_INSTANCE;
+			}
+		}
+		else if ((params.input_file[0] == '-') && (params.input_file[1] == '\0')) {
 			/* This can't fail with proper arguments */
 			(void)yabmp_set_input_stream(l_bmp_reader, stdin, yabmp_file_read, params.no_seek_fn ? NULL : yabmp_file_seek, NULL);
 		} else {
@@ -289,6 +351,9 @@ FREE_INSTANCE:
 	}
 	
 BADEND:
+	if (input_data != NULL) {
+		free(input_data);
+	}
 	return result;
 }
 

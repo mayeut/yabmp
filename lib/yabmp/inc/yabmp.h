@@ -262,6 +262,20 @@ YABMP_API(yabmp_status, yabmp_set_input_file, (
 	yabmp* reader,
 	const char* path
 ));
+		
+/**
+ * Sets input file.
+ *
+ * @param[in]  reader Pointer to the reader object.
+ * @param[in]  data   Pointer to the data block used for reading.
+ *
+ * @return
+ * #YABMP_OK on success.\n
+ * #YABMP_ERR_INVALID_ARGS when invalid arguments are provided.\n
+ * #YABMP_ERR_UNKNOW if the file can't be opened.
+ *
+ */
+YABMP_API(yabmp_status, yabmp_set_input_memory, (yabmp* reader, const void* data, size_t data_size));
 
 /**
  * Creates an information object.

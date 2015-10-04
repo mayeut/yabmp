@@ -52,6 +52,8 @@ script:
   - make
   - ctest --output-on-failure
   - YABMP_USE_CUSTOM_MALLOC=1 ctest --output-on-failure
+  - YABMP_USE_MEMORY_STREAM=1 ctest --output-on-failure
+  - YABMP_USE_CUSTOM_MALLOC=1 YABMP_USE_MEMORY_STREAM=1 ctest --output-on-failure
   
 after_success:
   - if [ "${LDFLAGS}" == "-coverage" ]; then ../tools/travis-coverage.sh ; fi
