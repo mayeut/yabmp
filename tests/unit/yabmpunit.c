@@ -157,6 +157,7 @@ int main(int argc, char* argv[])
 		yabmp* l_reader = NULL;
 		yabmp_uint32 l_v0, l_v1, l_v2, l_v3;
 		unsigned int l_v4, l_v5, l_v6, l_v7;
+		size_t l_v8;
 		yabmp_color const *l_lut;
 		
 		result |= (yabmp_create_reader(&l_reader, NULL, print_error, print_warning, NULL, NULL, NULL) == YABMP_OK) ? EXIT_SUCCESS : EXIT_FAILURE;
@@ -200,6 +201,12 @@ int main(int argc, char* argv[])
 		result |= (yabmp_get_palette(NULL, NULL, &l_v4, &l_lut) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
 		result |= (yabmp_get_palette(l_reader, NULL, NULL, &l_lut) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
 		result |= (yabmp_get_palette(l_reader, NULL, &l_v4, NULL) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		
+		result |= (yabmp_get_rowbytes(NULL, NULL, &l_v8) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_rowbytes(l_reader, NULL, NULL) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_rowbytes(l_reader, NULL, &l_v8) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		
+		result |= (yabmp_read_update_info(l_reader, NULL) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
 		
 		yabmp_destroy_reader(&l_reader, NULL);
 	}
