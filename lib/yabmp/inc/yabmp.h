@@ -359,10 +359,23 @@ YABMP_API(yabmp_status, yabmp_set_invert_scan_direction, (yabmp* instance));
  *
  * @return
  * #YABMP_OK on success.\n
- * #YABMP_ERR_INVALID_ARGS when invalid arguments are provided.\n
+ * #YABMP_ERR_INVALID_ARGS when invalid arguments are provided.
  *
  */
 YABMP_API(yabmp_status, yabmp_set_expand_to_bgrx, (yabmp* instance));
+/**
+ * Expand to grayscale.
+ *
+ * Image rows will be read in Y8 format. This transform only works with #YABMP_COLOR_TYPE_GRAY_PALETTE images.
+ *
+ * @param[in]  instance Pointer to the reader object.
+ *
+ * @return
+ * #YABMP_OK on success.\n
+ * #YABMP_ERR_INVALID_ARGS when invalid arguments are provided.\n
+ * #YABMP_ERR_UNKNOW when color type is not #YABMP_COLOR_TYPE_GRAY_PALETTE.
+ *
+ */
 YABMP_API(yabmp_status, yabmp_set_expand_to_grayscale, (yabmp* instance));
 		
 #ifdef __cplusplus
