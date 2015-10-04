@@ -891,26 +891,19 @@ static yabmp_status local_setup_read(yabmp* reader)
 	}
 	
 	switch (reader->info2.compression) {
-		case YABMP_COMPRESSION_NONE:
-		case YABMP_COMPRESSION_RLE8:
-			break;
 		case YABMP_COMPRESSION_RLE4:
 			l_rle4_factor = 2U;
 			break;
+		case YABMP_COMPRESSION_NONE:
+		case YABMP_COMPRESSION_RLE8:
 		default:
-			reader->input_row_bytes  = 0U;
-			reader->input_step_bytes = 0U;
 			break;
 	}
 	
 	/* TODO overflow check */
-	l_row_bytes = reader->info2.width;
-	l_row_bytes = ((l_row_bytes * (yabmp_uint32)reader->info2.bpp) + 7U) & ~(yabmp_uint32)7U;
-	l_row_bytes /= 8U;
-	
-	reader->input_row_bytes  = l_row_bytes;
-	reader->transformed_row_bytes = l_row_bytes; /* no transforms */
-	reader->input_step_bytes = (l_row_bytes * l_rle4_factor + 3U) & ~(yabmp_uint32)3U;
+	reader->input_row_bytes  = reader->info2.rowbytes;
+	reader->transformed_row_bytes = reader->info2.rowbytes; /* no transforms */
+	reader->input_step_bytes = (reader->info2.rowbytes * l_rle4_factor + 3U) & ~(yabmp_uint32)3U;
 	
 	if (reader->transforms & YABMP_TRANSFORM_SCAN_ORDER) {
 		YABMP_SIMPLE_CHECK(yabmp_stream_skip(reader, reader->input_step_bytes * (yabmp_uint32)(reader->info2.height - 1U)));
@@ -941,9 +934,9 @@ static yabmp_status local_setup_read(yabmp* reader)
 			/* TODO 32bpp */
 			yabmp_uint32 l_Bpc = reader->info.expanded_bpp / 8U;
 			if ((reader->info2.flags >> YABMP_COLOR_SHIFT) & YABMP_COLOR_MASK_ALPHA) {
-				reader->transformed_row_bytes = 4 * reader->info2.width * l_Bpc;
+				reader->transformed_row_bytes = 4U * reader->info2.width * l_Bpc;
 			} else {
-				reader->transformed_row_bytes = 3 * reader->info2.width * l_Bpc;
+				reader->transformed_row_bytes = 3U * reader->info2.width * l_Bpc;
 			}
 		}
 		else if (reader->transforms & YABMP_TRANSFORM_GRAYSCALE) {
