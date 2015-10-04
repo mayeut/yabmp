@@ -869,7 +869,6 @@ static yabmp_status local_rle8_decode_row(yabmp* instance, yabmp_uint8* row)
 
 static yabmp_status local_setup_read(yabmp* reader)
 {
-	yabmp_uint32 l_row_bytes = 0U;
 	yabmp_uint32 l_rle4_factor = 1U;
 	assert(reader != NULL);
 	
