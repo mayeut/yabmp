@@ -58,6 +58,3 @@ script:
 after_success:
   - if [ "${LDFLAGS}" == "-coverage" ]; then ../tools/travis-coverage.sh ; fi
 
-cache:
-  directories:
-    - $HOME/cmake-install
