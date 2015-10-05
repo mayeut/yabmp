@@ -41,10 +41,14 @@ addons:
     packages:
       - gcc-multilib
       - zlib1g-dev:i386
+      
+cache:
+  directories:
+    - $HOME/cmake-install
 
 install:
   - ./tools/travis-install.sh
-  - export PATH=${PWD}/cmake-install/bin:$PATH
+  - export PATH=${HOME}/cmake-install/bin:$PATH
   - mkdir build && cd build
 
 script:

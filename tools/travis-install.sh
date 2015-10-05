@@ -20,15 +20,19 @@ trap exit_handler EXIT
 trap exit ERR
 
 # We need a newer version of cmake than travis-ci provides
-echo "Retrieving CMake 3.3.2"
-if [ "${TRAVIS_OS_NAME:-}" == "linux" ] || uname -s | grep -i Linux &> /dev/null; then
-	wget -qO - http://www.cmake.org/files/v3.3/cmake-3.3.2-Linux-x86_64.tar.gz | tar -xz
-	# copy to a directory that will not changed every version
-	mv cmake-3.3.2-Linux-x86_64 cmake-install
-elif [ "${TRAVIS_OS_NAME:-}" == "osx" ] || uname -s | grep -i Darwin &> /dev/null; then
-	wget -qO - http://www.cmake.org/files/v3.3/cmake-3.3.2-Darwin-universal.tar.gz | tar -xz
-	# copy to a directory that will not changed every version
-	mv cmake-3.3.2-Darwin-universal/CMake.app/Contents cmake-install
+if [ -d "${HOME}/cmake-install" ]; then
+	echo "Using $(${HOME}/cmake-install/bin/cmake --version | head -1) from cache"
 else
-	echo "OS not supported" && exit 1
+	echo "Retrieving CMake 3.3.2"
+	if [ "${TRAVIS_OS_NAME:-}" == "linux" ] || uname -s | grep -i Linux &> /dev/null; then
+		wget -qO - http://www.cmake.org/files/v3.3/cmake-3.3.2-Linux-x86_64.tar.gz | tar -xz
+		# copy to a directory that will not changed every version
+		mv cmake-3.3.2-Linux-x86_64 ${HOME}/cmake-install
+	elif [ "${TRAVIS_OS_NAME:-}" == "osx" ] || uname -s | grep -i Darwin &> /dev/null; then
+		wget -qO - http://www.cmake.org/files/v3.3/cmake-3.3.2-Darwin-universal.tar.gz | tar -xz
+		# copy to a directory that will not changed every version
+		mv cmake-3.3.2-Darwin-universal/CMake.app/Contents ${HOME}/cmake-install
+	else
+		echo "OS not supported" && exit 1
+	fi
 fi
