@@ -15,7 +15,8 @@ Most of the time, BMP format is simple. However, yabmp aims to provide a robust 
 Anyone. As the yabmp code is released under [The MIT License][link-license], anyone can use or modify the code, even for commercial applications.
 See [LICENSE][link-license] for license and copyright information.
 
-[badge-license]: https://img.shields.io/badge/license-MIT_License-blue.svg "License"
+[comment-license]: https://img.shields.io/github/license/mayeut/yabmp.svg "https://img.shields.io/badge/license-MIT_License-blue.svg"
+[badge-license]: https://img.shields.io/github/license/mayeut/yabmp.svg "License"
 [link-license]: https://github.com/mayeut/yabmp/blob/master/LICENSE "License"
 [badge-build]: https://travis-ci.org/mayeut/yabmp.svg?branch=master "Build Status"
 [link-build]: https://travis-ci.org/mayeut/yabmp "Build Status"
