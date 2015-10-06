@@ -1,8 +1,4 @@
-[![Build Status](https://travis-ci.org/mayeut/yabmp.svg?branch=master)](https://travis-ci.org/mayeut/yabmp)
-[![codecov.io](http://codecov.io/github/mayeut/yabmp/coverage.svg?branch=master)](http://codecov.io/github/mayeut/yabmp?branch=master)
-[![Coverity Scan Build Status](https://scan.coverity.com/projects/6405/badge.svg)](https://scan.coverity.com/projects/mayeut-yabmp)
-
-# yabmp
+# yabmp [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/mayeut/yabmp/blob/master/LICENSE) [![Build Status](https://travis-ci.org/mayeut/yabmp.svg?branch=master)](https://travis-ci.org/mayeut/yabmp) [![codecov.io](http://codecov.io/github/mayeut/yabmp/coverage.svg?branch=master)](http://codecov.io/github/mayeut/yabmp?branch=master) [![Coverity Scan Build Status](https://scan.coverity.com/projects/6405/badge.svg)](https://scan.coverity.com/projects/mayeut-yabmp)
 
 **This is still a work in progress**
 
