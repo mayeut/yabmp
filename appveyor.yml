@@ -17,10 +17,15 @@ install:
 build_script:
 - cmd: >-
     "%CI_VSCOMNTOOLS%..\..\VC\vcvarsall.bat" %CI_BUILD_PLATFORM%
+
     mkdir build
+
     cd build
+
     cmake -G "NMake Makefiles" -DYABMP_BUILD_PNG:BOOL=YES -DYABMP_BUILD_ZLIB:BOOL=YES -DCMAKE_BUILD_TYPE=Release ../
+
     nmake
+
     ctest --output-on-failure
 test: off
 deploy: off
