@@ -1,4 +1,4 @@
-# yabmp [![badge-license]][link-license] [![badge-build]][link-build] [![badge-coverage]][link-coverage] [![badge-coverity]][link-coverity]
+# yabmp [![badge-license]][link-license] [![badge-build]][link-build] [![badge-msvc-build]][link-msvc-build]  [![badge-coverage]][link-coverage] [![badge-coverity]][link-coverity]
 
 **This is still a work in progress**
 
@@ -16,10 +16,12 @@ Anyone. As the yabmp code is released under [The MIT License][link-license], any
 See [LICENSE][link-license] for license and copyright information.
 
 [comment-license]: https://img.shields.io/github/license/mayeut/yabmp.svg "https://img.shields.io/badge/license-MIT_License-blue.svg"
-[badge-license]: https://img.shields.io/github/license/mayeut/yabmp.svg "License"
+[badge-license]: https://img.shields.io/badge/license-MIT_License-blue.svg "License"
 [link-license]: https://github.com/mayeut/yabmp/blob/master/LICENSE "License"
 [badge-build]: https://travis-ci.org/mayeut/yabmp.svg?branch=master "Build Status"
 [link-build]: https://travis-ci.org/mayeut/yabmp "Build Status"
+[badge-msvc-build]: https://ci.appveyor.com/api/projects/status/github/mayeut/yabmp?branch=master&svg=true "Windows Build Status"
+[link-msvc-build]: https://ci.appveyor.com/project/mayeut/yabmp/branch/master "Windows Build Status"
 [badge-coverage]: http://codecov.io/github/mayeut/yabmp/coverage.svg?branch=master "Code Coverage"
 [link-coverage]: http://codecov.io/github/mayeut/yabmp?branch=master "Code Coverage"
 [badge-coverity]: https://scan.coverity.com/projects/6405/badge.svg "Coverity Scan Build Status"
