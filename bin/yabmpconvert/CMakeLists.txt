@@ -28,12 +28,12 @@ endif()
 add_test(NAME yabmpconvert-version-1 COMMAND yabmpconvert -v)
 # --version prints correct version
 add_test(NAME yabmpconvert-version-2 COMMAND yabmpconvert --version)
-set_tests_properties(yabmpconvert-version-2 PROPERTIES PASS_REGULAR_EXPRESSION "^yabmpconvert ${YABMP_VERSION_MAJOR}.${YABMP_VERSION_MINOR}.${YABMP_VERSION_PATCH}\n$")
+set_tests_properties(yabmpconvert-version-2 PROPERTIES PASS_REGULAR_EXPRESSION "^$<TARGET_FILE_NAME:yabmpconvert> ${YABMP_VERSION_MAJOR}.${YABMP_VERSION_MINOR}.${YABMP_VERSION_PATCH}\n$")
 # --help exit code 0
 add_test(NAME yabmpconvert-help-1 COMMAND yabmpconvert --help)
 # -hv prints correct version & help
 add_test(NAME yabmpconvert-help-2 COMMAND yabmpconvert -hv)
-set_tests_properties(yabmpconvert-help-2 PROPERTIES PASS_REGULAR_EXPRESSION "^yabmpconvert ${YABMP_VERSION_MAJOR}.${YABMP_VERSION_MINOR}.${YABMP_VERSION_PATCH}\nusage")
+set_tests_properties(yabmpconvert-help-2 PROPERTIES PASS_REGULAR_EXPRESSION "^$<TARGET_FILE_NAME:yabmpconvert> ${YABMP_VERSION_MAJOR}.${YABMP_VERSION_MINOR}.${YABMP_VERSION_PATCH}\nusage")
 # error
 add_test(NAME yabmpconvert-error-1 COMMAND yabmpconvert)
 set_tests_properties(yabmpconvert-error-1 PROPERTIES WILL_FAIL TRUE)

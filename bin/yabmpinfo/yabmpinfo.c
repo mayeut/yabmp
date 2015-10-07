@@ -30,6 +30,11 @@
 #include <optparse.h>
 #include "../common/yabmp_printinfo.h"
 
+#if defined(_MSC_VER)
+#	include <io.h>
+#	include <fcntl.h>
+#endif
+
 static void print_error(void* context, const char* message)
 {
 	(void)context;
@@ -81,6 +86,21 @@ static void print_usage(FILE* stream, const char* app)
 		"  -v, --version: print version before info\n"
 		"  -q, --quiet:   no error/warning printed\n"
 		"  -o, --output:  output filename\n", app, app, app);
+}
+
+static void stream_setmode_binary(FILE* stream, unsigned int quiet)
+{
+#if defined(_MSC_VER)
+	if (_setmode (fileno(stream), _O_BINARY) == -1) {
+		if (!quiet) {
+			fprintf(stderr, "Can't set stdin mode to binary\n");
+		}
+		exit(EXIT_FAILURE);
+	}
+#else
+	(void)stream;
+	(void)quiet;
+#endif
 }
 
 int main(int argc, char* argv[])
@@ -197,6 +217,7 @@ int main(int argc, char* argv[])
 			goto FREE_INSTANCE;
 		}
 		if ((input[0] == '-') && (input[1] == '\0')) {
+			stream_setmode_binary(stdin, flags.quiet);
 			/* This can't fail with proper arguments */
 			(void)yabmp_set_input_stream(l_reader, stdin, yabmp_file_read, NULL, NULL);
 		} else {

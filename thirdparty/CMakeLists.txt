@@ -57,7 +57,7 @@ if (YABMP_BUILD_ZLIB)
 	endif()
 	
 	#we use predefined file
-	#configure_file(	${CMAKE_CURRENT_SOURCE_DIR}/zlib/zconf.h.cmakein ${CMAKE_CURRENT_BINARY_DIR}/zlib/zconf.h @ONLY)
+	#configure_file(${CMAKE_CURRENT_SOURCE_DIR}/zlib/zconf.h.cmakein ${CMAKE_CURRENT_BINARY_DIR}/zlib/zconf.h @ONLY)
 	
 	file(INSTALL ${CMAKE_CURRENT_SOURCE_DIR}/zlib/zlib.h DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/zlib)
 	file(INSTALL ${CMAKE_CURRENT_SOURCE_DIR}/zlib/zconf.h DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/zlib)
@@ -163,7 +163,7 @@ if (YABMP_BUILD_PNG)
 		${CMAKE_CURRENT_SOURCE_DIR}/libpng/pngwutil.c
 	)
 	add_library(pngstatic STATIC ${PNG_SRCS} ${PNG_PUBLIC_HDRS} ${PNG_PRIVATE_HDRS})
-	target_include_directories(pngstatic PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/libpng)
+	target_include_directories(pngstatic PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/libpng ${ZLIB_INCLUDE_DIR})
 	if(PNG_PRIVATE_DEFS)
 		target_compile_definitions(pngstatic PRIVATE ${PNG_PRIVATE_DEFS} ${ZLIB_PUBLIC_DEFS})
 	endif(PNG_PRIVATE_DEFS)
@@ -175,7 +175,6 @@ if (YABMP_BUILD_PNG)
 elseif("${PNG_LIBRARY}" STREQUAL "pngstatic")
 	unset(PNG_LIBRARY         CACHE)
 	unset(PNG_PNG_INCLUDE_DIR CACHE)
- 
 endif(YABMP_BUILD_PNG)
 
 # Build optparse

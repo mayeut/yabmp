@@ -29,6 +29,11 @@
 #include <yabmp.h>
 #include <png.h>
 
+#if defined(_MSC_VER)
+#	include <io.h>
+#	include <fcntl.h>
+#endif
+
 #include "yabmpconvert.h"
 
 #if defined(PNGCBAPI)
@@ -75,13 +80,27 @@ static void YABMP_PNGCBAPI custom_png_free(png_structp context, png_voidp ptr)
 	}
 }
 
+static void stream_setmode_binary(FILE* stream, unsigned int quiet)
+{
+#if defined(_MSC_VER)
+	if (_setmode (fileno(stream), _O_BINARY) == -1) {
+		if (!quiet) {
+			fprintf(stderr, "Can't set stdin mode to binary\n");
+		}
+		exit(EXIT_FAILURE);
+	}
+#else
+	(void)stream;
+	(void)quiet;
+#endif
+}
+
 int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader, yabmp_info* bmp_info)
 {
 	int result = EXIT_FAILURE; /* default is fail */
 	void* volatile l_buffer = NULL; /* volatile needed because of long jump */
 	void* l_buffer_cache;
 	size_t l_buffer_size;
-	int32_t i;
 	yabmp_uint32 l_width, l_height;
 	yabmp_uint32 l_res_x, l_res_y;
 	unsigned int l_bit_depth;
@@ -207,6 +226,7 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader, 
 	}
 	
 	if ((parameters->output_file[0] == '-') && (parameters->output_file[1] == '\0')) {
+		stream_setmode_binary(stdout, parameters->quiet);
 		l_output = stdout;
 	}
 	else {
@@ -323,21 +343,23 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader, 
 			void* buffer;
 			yabmp_uint8* buffer8u;
 		} l_current_row;
+		yabmp_uint32 i;
 		
 		l_current_row.buffer = l_buffer_cache;
-		for (i = 0; i < l_height; ++i) {
+		for (i = 0U; i < l_height; ++i) {
 			if (yabmp_read_row(bmp_reader, l_current_row.buffer, l_buffer_size) != YABMP_OK) {
 				goto BADEND;
 			}
 			l_current_row.buffer8u += l_buffer_size;
 		}
-		for (i = 0; i < l_height; ++i) {
+		for (i = 0U; i < l_height; ++i) {
 			l_current_row.buffer8u -= l_buffer_size;
 			png_write_row(l_png_writer, l_current_row.buffer);
 		}
 	}
 	else {
-		for (i = 0; i < l_height; ++i) {
+		yabmp_uint32 i;
+		for (i = 0U; i < l_height; ++i) {
 			if (yabmp_read_row(bmp_reader, l_buffer_cache, l_buffer_size) != YABMP_OK) {
 				goto BADEND;
 			}
