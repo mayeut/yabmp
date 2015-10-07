@@ -1,6 +1,6 @@
 # Main CMakeLists.txt to build yabmp using CMake (www.cmake.org)
 
-cmake_minimum_required(VERSION 3.3.1)
+cmake_minimum_required(VERSION 3.1.2)
 
 # --------------------------------------------------------------------------
 # Path to additional CMake modules
