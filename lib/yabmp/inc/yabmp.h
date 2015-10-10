@@ -48,13 +48,13 @@
 #define YABMP_COLOR_MASK_ALPHA     4U /**< Image has an alpha channel. */
 #define YABMP_COLOR_MASK_BITFIELDS 8U /**< Image uses bitfields.       */
 
-#define YABMP_COLOR_TYPE_GRAY            (0U)
-#define YABMP_COLOR_TYPE_BGR             (YABMP_COLOR_MASK_COLOR)
-#define YABMP_COLOR_TYPE_BGR_ALPHA       (YABMP_COLOR_MASK_COLOR | YABMP_COLOR_MASK_ALPHA)
-#define YABMP_COLOR_TYPE_PALETTE         (YABMP_COLOR_MASK_COLOR | YABMP_COLOR_MASK_PALETTE)
-#define YABMP_COLOR_TYPE_GRAY_PALETTE    (YABMP_COLOR_MASK_PALETTE)
-#define YABMP_COLOR_TYPE_BITFIELDS       (YABMP_COLOR_MASK_COLOR | YABMP_COLOR_MASK_BITFIELDS)
-#define YABMP_COLOR_TYPE_BITFIELDS_ALPHA (YABMP_COLOR_MASK_COLOR | YABMP_COLOR_MASK_BITFIELDS | YABMP_COLOR_MASK_ALPHA)
+#define YABMP_COLOR_TYPE_GRAY            (0U) /**< Grayscale image type. */
+#define YABMP_COLOR_TYPE_BGR             (YABMP_COLOR_MASK_COLOR)  /**< Color image type. */
+#define YABMP_COLOR_TYPE_BGR_ALPHA       (YABMP_COLOR_MASK_COLOR | YABMP_COLOR_MASK_ALPHA) /**< Color with alpha channel image type. */
+#define YABMP_COLOR_TYPE_PALETTE         (YABMP_COLOR_MASK_COLOR | YABMP_COLOR_MASK_PALETTE) /**< Indexed color image type. */
+#define YABMP_COLOR_TYPE_GRAY_PALETTE    (YABMP_COLOR_MASK_PALETTE) /**< Indexed grayscale image type. */
+#define YABMP_COLOR_TYPE_BITFIELDS       (YABMP_COLOR_MASK_COLOR | YABMP_COLOR_MASK_BITFIELDS) /**< Bitfield color image type. */
+#define YABMP_COLOR_TYPE_BITFIELDS_ALPHA (YABMP_COLOR_MASK_COLOR | YABMP_COLOR_MASK_BITFIELDS | YABMP_COLOR_MASK_ALPHA) /**< Bitfield color with alpha image type. */
 		
 #define YABMP_COMPRESSION_NONE      0U /**< Image data is not compressed. */
 #define YABMP_COMPRESSION_RLE8      1U /**< Image data is compressed using RLE8 algorithm. */
