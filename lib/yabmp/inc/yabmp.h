@@ -335,6 +335,19 @@ YABMP_API(yabmp_status, yabmp_read_info, (yabmp* reader, yabmp_info * info));
  */
 YABMP_API(yabmp_status, yabmp_read_row, (yabmp* reader, void* row, size_t row_size));
 
+/**
+ * Gets width & height of the image.
+ *
+ * @param[in]  instance  Pointer to the reader/writer object.
+ * @param[in]  info      Pointer to the info object.
+ * @param[out] width     Width of the image.
+ * @param[out] height    Height of the image.
+ *
+ * @return
+ * #YABMP_OK on success.\n
+ * #YABMP_ERR_INVALID_ARGS when invalid arguments are provided.\n
+ *
+ */
 YABMP_API(yabmp_status, yabmp_get_dimensions, (const yabmp* instance, const yabmp_info* info, yabmp_uint32* width, yabmp_uint32* height));
 YABMP_API(yabmp_status, yabmp_get_pixels_per_meter, (const yabmp* instance, const yabmp_info* info, yabmp_uint32* ppm_x, yabmp_uint32* ppm_y));
 YABMP_API(yabmp_status, yabmp_get_bit_depth, (const yabmp* instance, const yabmp_info* info, unsigned int* bit_depth));
