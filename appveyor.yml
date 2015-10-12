@@ -3,7 +3,7 @@ branches:
   except:
   - coverity_scan
 skip_tags: true
-clone_depth: 5
+clone_depth: 50
 environment:
   matrix:
   - CI_BUILD_PLATFORM: x86

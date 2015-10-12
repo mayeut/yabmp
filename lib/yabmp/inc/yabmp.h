@@ -349,6 +349,20 @@ YABMP_API(yabmp_status, yabmp_read_row, (yabmp* reader, void* row, size_t row_si
  *
  */
 YABMP_API(yabmp_status, yabmp_get_dimensions, (const yabmp* instance, const yabmp_info* info, yabmp_uint32* width, yabmp_uint32* height));
+
+/**
+ * Gets image resolution in pixels/meter.
+ *
+ * @param[in]  instance  Pointer to the reader/writer object.
+ * @param[in]  info      Pointer to the info object.
+ * @param[out] ppm_x     Resolution along the X-axis.
+ * @param[out] ppm_y     Resolution along the Y-axis.
+ *
+ * @return
+ * #YABMP_OK on success.\n
+ * #YABMP_ERR_INVALID_ARGS when invalid arguments are provided.\n
+ *
+ */
 YABMP_API(yabmp_status, yabmp_get_pixels_per_meter, (const yabmp* instance, const yabmp_info* info, yabmp_uint32* ppm_x, yabmp_uint32* ppm_y));
 YABMP_API(yabmp_status, yabmp_get_bit_depth, (const yabmp* instance, const yabmp_info* info, unsigned int* bit_depth));
 YABMP_API(yabmp_status, yabmp_get_color_type, (const yabmp* instance, const yabmp_info* info, unsigned int* color_type));
