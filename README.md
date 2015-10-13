@@ -12,12 +12,12 @@ It aims to provide a [libpng](http://www.libpng.org/pub/png/libpng.html)-like in
 Most of the time, BMP format is simple. However, yabmp aims to provide a robust implementation in case of corrupted files, exotic formats, ...
 
 ## Who can use the code ?
-Anyone. As the yabmp code is released under the [MIT][link-license] license, anyone can use or modify the code, even for commercial applications.
+Anyone. As the yabmp code is released under the [MIT License][link-license], anyone can use or modify the code, even for commercial applications.
 See [LICENSE][link-license] for license and copyright information.
 
 [comment-license]: https://img.shields.io/github/license/mayeut/yabmp.svg "https://img.shields.io/badge/license-MIT-blue.svg"
-[badge-license]: https://img.shields.io/badge/license-MIT-blue.svg "License"
-[link-license]: https://github.com/mayeut/yabmp/blob/master/LICENSE "License"
+[badge-license]: https://img.shields.io/badge/license-MIT-blue.svg "MIT License"
+[link-license]: https://github.com/mayeut/yabmp/blob/master/LICENSE "MIT License"
 [badge-build]: https://travis-ci.org/mayeut/yabmp.svg?branch=master "Build Status"
 [link-build]: https://travis-ci.org/mayeut/yabmp "Build Status"
 [badge-msvc-build]: https://ci.appveyor.com/api/projects/status/github/mayeut/yabmp?branch=master&svg=true "Windows Build Status"
