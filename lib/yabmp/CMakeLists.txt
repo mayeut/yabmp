@@ -30,8 +30,11 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/inc/private/yabmp_config.h.cmake.in"
 add_library(${YABMP_LIBRARY_NAME} ${YABMP_SRCS})
 set_target_properties(${YABMP_LIBRARY_NAME} PROPERTIES ${YABMP_LIBRARY_PROPERTIES})
 target_include_directories(${YABMP_LIBRARY_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/inc" PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/inc/private")
-
-
+if(UNIX AND NOT APPLE)
+	if(BUILD_SHARED_LIBS)
+		target_link_libraries(${YABMP_LIBRARY_NAME} PRIVATE "-Wl,--version-script,${CMAKE_CURRENT_SOURCE_DIR}/versions.ldscript")
+	endif()
+endif()
 if(OPJ_USE_DSYMUTIL)
   if(BUILD_SHARED_LIBS)
     add_custom_command(TARGET ${YABMP_LIBRARY_NAME} POST_BUILD 
