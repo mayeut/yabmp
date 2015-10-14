@@ -15,10 +15,10 @@ matrix:
       compiler: gcc
       env: YABMP_BUILD_TYPE=Release CFLAGS="-m32 -march=i386"
       addons:
-      apt:
-        packages:
-          - gcc-multilib
-          - zlib1g-dev:i386
+        apt:
+          packages:
+            - gcc-multilib
+            - zlib1g-dev:i386
     - os: linux
       compiler: gcc
       env: YABMP_BUILD_TYPE=Debug CFLAGS="-m64 -O0 -g -coverage" LDFLAGS="-coverage"
