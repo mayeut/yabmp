@@ -68,6 +68,9 @@ struct yabmp_struct
 	yabmp_uint32 status; /* what have we done ? */
 	yabmp_uint32 transforms; /* transformations that need to be done */
 	
+	/* file info */
+	yabmp_uint32 data_offset; /* Image data offset in bytes */
+	
 	yabmp_bmpinfo info; /* info that get's read/written from/to bmp. User get's different info depending on transformation */ 
 	struct yabmp_info_struct info2;
 	

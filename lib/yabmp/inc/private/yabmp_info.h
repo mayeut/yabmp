@@ -37,16 +37,6 @@
 #define YABMP_SCAN_MASK  (YABMP_SCAN_TOP_DOWN)
 
 typedef struct {
-	yabmp_uint32 fileSize;   /* File size in bytes         */
-	yabmp_uint32 dataOffset; /* Image data offset in bytes */
-} yabmp_file_header;
-
-typedef struct {
-	yabmp_uint32 rawDataSize;         /* Size of the raw data in bytes */
-	yabmp_uint32 pltColorCount;       /* Number of colors in the palette */
-} yabmp_dib_v1_info;
-
-typedef struct {
 	yabmp_uint32 colorSpaceType;   /* Color space type */
 	yabmp_uint8  colorSpaceEP[36]; /* Color space end points */
 	yabmp_uint32 redGamma;         /* Red channel gamma */
@@ -65,13 +55,8 @@ typedef struct {
 typedef struct
 {
 	/* FILE cache */
-	yabmp_file_header   file;
-	yabmp_dib_v1_info   v1;
 	yabmp_dib_v4_info   v4;
 	yabmp_dib_v5_info   v5;
-	
-	/* Computed cache */
-	yabmp_uint8  expanded_bpp; /* maximum bit count for one color when expanded (8, 16 or 32) */
 } yabmp_bmpinfo;
 
 struct yabmp_info_struct
@@ -87,13 +72,14 @@ struct yabmp_info_struct
 	yabmp_uint32 mask_red;     /* red-channel bit mask */
 	yabmp_uint32 mask_alpha;   /* alpha-channel bit mask */
 	unsigned int num_palette;  /* Number of colors in the palette */
-	yabmp_uint8  bpp;          /* Number of bits per pixels */
+	yabmp_uint8  bpp;          /* Number of bits per pixel */
 	yabmp_uint8  bpc_blue;     /* blue-channel bpp */
 	yabmp_uint8  bpc_green;    /* green-channel bpp */
 	yabmp_uint8  bpc_red;      /* red-channel bpp */
 	yabmp_uint8  bpc_alpha;    /* alpha-channel bpp */
 	yabmp_uint8  flags;        /* color mask, top-down */
 	yabmp_color  palette[256]; /* palette */
+	yabmp_uint8  expanded_bps; /* maximum bit count for one color when expanded (8, 16 or 32) */
 };
 
 YABMP_IAPI(void, yabmp_init_info, (yabmp_info* info));

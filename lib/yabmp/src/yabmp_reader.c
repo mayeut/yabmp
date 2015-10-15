@@ -212,6 +212,7 @@ static yabmp_status local_read_info_no_validation(yabmp* reader)
 	yabmp_bmpinfo* l_info = NULL;
 	yabmp_uint16   l_data16u;
 	yabmp_uint32   l_header_size;
+	yabmp_uint32   l_palette_color_count = 0U;
 	int l_is_os2 = 0;
 	
 	YABMP_CHECK_READER(reader);
@@ -238,7 +239,7 @@ static yabmp_status local_read_info_no_validation(yabmp* reader)
 			yabmp_send_error(reader, "Unknown file type.");
 			return YABMP_ERR_UNKNOW;
 	}
-	YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(l_info->file.fileSize)));
+	YABMP_SIMPLE_CHECK(yabmp_stream_skip(reader, 4U)); /* skip file size */
 	YABMP_SIMPLE_CHECK(yabmp_stream_read_le_16u(reader, &l_data16u)); /* reserved1 */
 	if (l_data16u != 0U) {
 		yabmp_send_warning(reader, "Found invalid reserved value in stream.");
@@ -247,7 +248,7 @@ static yabmp_status local_read_info_no_validation(yabmp* reader)
 	if (l_data16u != 0U) {
 		yabmp_send_warning(reader, "Found invalid reserved value in stream.");
 	}
-	YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(l_info->file.dataOffset)));
+	YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(reader->data_offset)));
 	
 	/* read core info */
 	YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &l_header_size)); /* header size */
@@ -324,7 +325,7 @@ static yabmp_status local_read_info_no_validation(yabmp* reader)
 	}
 	if (l_header_size >= 24U)
 	{
-		YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(l_info->v1.rawDataSize)));
+		YABMP_SIMPLE_CHECK(yabmp_stream_skip(reader, 4U)); /* rawDataSize */
 	}
 	if (l_header_size >= 28U)
 	{
@@ -336,7 +337,7 @@ static yabmp_status local_read_info_no_validation(yabmp* reader)
 	}
 	if (l_header_size >= 36U)
 	{
-		YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(l_info->v1.pltColorCount)));
+		YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &l_palette_color_count));
 	}
 	if (l_header_size >= 40U)
 	{
@@ -354,7 +355,7 @@ static yabmp_status local_read_info_no_validation(yabmp* reader)
 	} else {
 		/* Not OS/2 */
 		if ((reader->info2.compression == 3U /* BI_BITFIELDS */) && (l_header_size < 52U)) {
-			if ((l_info->file.dataOffset > reader->stream_offset) && ((l_info->file.dataOffset - reader->stream_offset) >= 12U)) {
+			if ((reader->data_offset > reader->stream_offset) && ((reader->data_offset - reader->stream_offset) >= 12U)) {
 				l_header_size = 52U;
 			} else {
 				yabmp_send_error(reader, "Compression BMP bitfields found but masks aren't present.");
@@ -362,7 +363,7 @@ static yabmp_status local_read_info_no_validation(yabmp* reader)
 			}
 		}
 		if ((reader->info2.compression == 6U /* BI_ALPHABITFIELDS */) && (l_header_size == 40U)) {
-			if ((l_info->file.dataOffset > reader->stream_offset) && ((l_info->file.dataOffset - reader->stream_offset) >= 16U)) {
+			if ((reader->data_offset > reader->stream_offset) && ((reader->data_offset - reader->stream_offset) >= 16U)) {
 				l_header_size = 56U;
 				reader->info2.compression = 3U; /* BI_BITFIELDS */
 			} else {
@@ -417,16 +418,16 @@ static yabmp_status local_read_info_no_validation(yabmp* reader)
 	
 	if (reader->info2.bpp <= 8U) {
 		const yabmp_uint32 l_maxColorCount = 1U << reader->info2.bpp;
-		yabmp_uint32 l_colorCount = l_info->v1.pltColorCount;
+		yabmp_uint32 l_colorCount = l_palette_color_count;
 		yabmp_uint32 l_total_color_count = l_colorCount;
 		unsigned int l_isColorPalette = 0U;
 		yabmp_uint32 i;
 		
 		if (l_colorCount == 0U) {
 			/* Probably not valid, but such files have been seen in the wild. */
-			if ((l_header_size == 12U) && (l_info->file.dataOffset > (reader->stream_offset + 2U)) && (l_info->file.dataOffset < (reader->stream_offset + 3U*l_maxColorCount))) {
+			if ((l_header_size == 12U) && (reader->data_offset > (reader->stream_offset + 2U)) && (reader->data_offset < (reader->stream_offset + 3U*l_maxColorCount))) {
 				yabmp_send_warning(reader, "Data offset suggests wrong sized palette. Correcting palette size.");
-				l_colorCount = (l_info->file.dataOffset - reader->stream_offset) / 3U;
+				l_colorCount = (reader->data_offset - reader->stream_offset) / 3U;
 			} else {
 				l_colorCount = l_maxColorCount;
 			}
@@ -474,14 +475,14 @@ static yabmp_status local_read_info_no_validation(yabmp* reader)
 		}
 		reader->info2.flags |= YABMP_COLOR_MASK_PALETTE << YABMP_COLOR_SHIFT;
 	}
-	else if (l_info->v1.pltColorCount > 0) {
+	else if (l_palette_color_count > 0) {
 		yabmp_send_warning(reader, "Ignoring palette in true color image.");
 		/* We can't be in BITMAPCOREHEADER case here, palette entry is 4 bytes */
-		if (l_info->v1.pltColorCount > (YABMP_UINT32_MAX / 4U)) {
+		if (l_palette_color_count > (YABMP_UINT32_MAX / 4U)) {
 			yabmp_send_error(reader, "Overflow detected.");
 			return YABMP_ERR_UNKNOW;
 		}
-		YABMP_SIMPLE_CHECK(yabmp_stream_skip(reader, l_info->v1.pltColorCount * 4U));
+		YABMP_SIMPLE_CHECK(yabmp_stream_skip(reader, l_palette_color_count * 4U));
 	}
 	
 	/* Update alpha mask */
@@ -527,13 +528,12 @@ static yabmp_status local_read_info_no_validation(yabmp* reader)
 		yabmp_bitfield_get_shift_and_bits(reader->info2.mask_red,   &l_dummy_shift, &l_red_bits);
 		yabmp_bitfield_get_shift_and_bits(reader->info2.mask_alpha, &l_dummy_shift, &l_alpha_bits);
 		
-		l_info->expanded_bpp = 8U;
-		
+		reader->info2.expanded_bps = 8U;
 		if ((l_blue_bits > 16) || (l_green_bits > 16) || (l_red_bits > 16) || (l_alpha_bits > 16)) {
-			l_info->expanded_bpp = 32U;
+			reader->info2.expanded_bps = 32U;
 		}
 		else if ((l_blue_bits > 8) || (l_green_bits > 8) || (l_red_bits > 8) || (l_alpha_bits > 8)) {
-			l_info->expanded_bpp = 16U;
+			reader->info2.expanded_bps = 16U;
 		}
 		
 	}
@@ -881,12 +881,12 @@ static yabmp_status local_setup_read(yabmp* reader)
 		reader->input_row = NULL;
 	}
 	
-	if (reader->info.file.dataOffset < reader->stream_offset) {
+	if (reader->data_offset < reader->stream_offset) {
 		yabmp_send_error(reader, "Invalid data offset.");
 		return YABMP_ERR_UNKNOW;
 	}
-	if (reader->info.file.dataOffset > reader->stream_offset) {
-		YABMP_SIMPLE_CHECK(yabmp_stream_skip(reader, reader->info.file.dataOffset - reader->stream_offset));
+	if (reader->data_offset > reader->stream_offset) {
+		YABMP_SIMPLE_CHECK(yabmp_stream_skip(reader, reader->data_offset - reader->stream_offset));
 	}
 	
 	switch (reader->info2.compression) {
@@ -931,7 +931,7 @@ static yabmp_status local_setup_read(yabmp* reader)
 			/* BGR or BGR(A) */
 			/* TODO Check overflow */
 			/* TODO 32bpp */
-			yabmp_uint32 l_Bpc = reader->info.expanded_bpp / 8U;
+			yabmp_uint32 l_Bpc = reader->info2.expanded_bps / 8U;
 			if ((reader->info2.flags >> YABMP_COLOR_SHIFT) & YABMP_COLOR_MASK_ALPHA) {
 				reader->transformed_row_bytes = 4U * reader->info2.width * l_Bpc;
 			} else {
@@ -966,13 +966,13 @@ static yabmp_status local_setup_read(yabmp* reader)
 		}
 		else if (reader->info2.bpp == 16U) {
 			if ((reader->info2.flags >> YABMP_COLOR_SHIFT) & YABMP_COLOR_MASK_ALPHA) {
-				if (reader->info.expanded_bpp == 8U) {
+				if (reader->info2.expanded_bps == 8U) {
 					reader->transform_fn = (yabmp_transform_fn)yabmp_bf16u_to_bgra32;
 				} else {
 					reader->transform_fn = (yabmp_transform_fn)yabmp_bf16u_to_bgra64;
 				}
 			} else {
-				if (reader->info.expanded_bpp == 8U) {
+				if (reader->info2.expanded_bps == 8U) {
 					reader->transform_fn = (yabmp_transform_fn)yabmp_bf16u_to_bgr24;
 				} else {
 					reader->transform_fn = (yabmp_transform_fn)yabmp_bf16u_to_bgr48;
@@ -980,23 +980,23 @@ static yabmp_status local_setup_read(yabmp* reader)
 			}
 		} else if (reader->info2.bpp == 32U) {
 			if ((reader->info2.flags >> YABMP_COLOR_SHIFT) & YABMP_COLOR_MASK_ALPHA) {
-				if (reader->info.expanded_bpp == 8U) {
+				if (reader->info2.expanded_bps == 8U) {
 					reader->transform_fn = (yabmp_transform_fn)yabmp_bf32u_to_bgra32;
-				} else if (reader->info.expanded_bpp == 16U) {
+				} else if (reader->info2.expanded_bps == 16U) {
 					reader->transform_fn = (yabmp_transform_fn)yabmp_bf32u_to_bgra64;
 				} else {
 					/* TODO yabmp_bf32u_to_bgra128 ??? */
-					yabmp_send_error(reader, "Can't expand to %ubpp sample.", 4U * (unsigned int)reader->info.expanded_bpp);
+					yabmp_send_error(reader, "Can't expand to %ubpp sample.", 4U * (unsigned int)reader->info2.expanded_bps);
 					return YABMP_ERR_UNKNOW;
 				}
 			} else  {
-				if (reader->info.expanded_bpp == 8U) {
+				if (reader->info2.expanded_bps == 8U) {
 					reader->transform_fn = (yabmp_transform_fn)yabmp_bf32u_to_bgr24;
-				} else if (reader->info.expanded_bpp == 16U) {
+				} else if (reader->info2.expanded_bps == 16U) {
 					reader->transform_fn = (yabmp_transform_fn)yabmp_bf32u_to_bgr48;
 				} else {
 					/* TODO yabmp_bf32u_to_bgr96 ??? */
-					yabmp_send_error(reader, "Can't expand to %ubpp sample.", 3U * (unsigned int)reader->info.expanded_bpp);
+					yabmp_send_error(reader, "Can't expand to %ubpp sample.", 3U * (unsigned int)reader->info2.expanded_bps);
 					return YABMP_ERR_UNKNOW;
 				}
 			}
@@ -1118,7 +1118,7 @@ YABMP_API(yabmp_status, yabmp_set_expand_to_bgrx, (yabmp* instance))
 {
 	YABMP_CHECK_INSTANCE(instance);
 	
-	if (instance->info.expanded_bpp > 16U) {
+	if (instance->info2.expanded_bps > 16U) {
 		yabmp_send_error(instance, "yabmp_set_expand_to_bgrx is not valid for channel depth > 16.");
 		return YABMP_ERR_UNKNOW;
 	}

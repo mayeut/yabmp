@@ -251,7 +251,7 @@ YABMP_API(yabmp_status, yabmp_read_update_info, (const yabmp* reader, yabmp_info
 			c++;
 		}
 		info->flags |= l_color_type << YABMP_COLOR_SHIFT;
-		info->bpp = (yabmp_uint8)(reader->info.expanded_bpp * c);
+		info->bpp = (yabmp_uint8)(reader->info2.expanded_bps * c);
 		info->mask_alpha  = 0U;
 		info->mask_blue   = 0U;
 		info->mask_green  = 0U;
