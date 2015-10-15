@@ -178,13 +178,9 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader, 
 					break;
 			}
 			break;
+		default:
 		case YABMP_SCAN_TOP_DOWN:
 			break;
-		default:
-			if (!parameters->quiet) {
-				fprintf(stderr, "ERROR: Unknown scan direction.\n");
-			}
-			return EXIT_FAILURE;
 	}
 	/* Update infos & set PNG parameters */
 	yabmp_read_update_info(bmp_reader, bmp_info);
@@ -259,19 +255,14 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader, 
 	}
 	
 	if (l_png_color_mask == PNG_COLOR_TYPE_PALETTE) {
-		yabmp_uint32 i, l_num_palette;
+		unsigned int i, l_num_palette;
 		const yabmp_color *l_bmp_palette;
 		png_color l_png_palette[256];
 		
 		if(yabmp_get_palette(bmp_reader, bmp_info, &l_num_palette, &l_bmp_palette) != YABMP_OK) {
 			goto BADEND;
 		}
-		if (l_num_palette > 256U) {
-			if (!parameters->quiet) {
-				fprintf(stderr, "ERROR: palette with more than 256 entries not supported.\n");
-			}
-			goto BADEND;
-		}
+		assert(l_num_palette <= 256U);
 		for (i = 0U; i < l_num_palette; ++i) {
 			l_png_palette[i].blue  = l_bmp_palette[i].blue;
 			l_png_palette[i].green = l_bmp_palette[i].green;

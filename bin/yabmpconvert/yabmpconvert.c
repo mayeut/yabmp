@@ -112,7 +112,6 @@ static yabmp_status yabmp_file_seek(void* context, yabmp_uint32 offset)
 static const char* get_appname(const char* app)
 {
 	const char* l_firstResult = NULL;
-	const char* l_secondResult = NULL;
 	int l_offset = 1;
 	
 	l_firstResult = strrchr(app, '/');
@@ -120,12 +119,15 @@ static const char* get_appname(const char* app)
 		l_firstResult = app;
 		l_offset = 0;
 	}
-	l_secondResult = strrchr(l_firstResult, '\\');
-	
-	if(l_secondResult != NULL) {
-		l_firstResult = l_secondResult;
-		l_offset = 1;
+#if defined(WIN32)
+	{
+		const char* l_secondResult = strrchr(l_firstResult, '\\');
+		if(l_secondResult != NULL) {
+			l_firstResult = l_secondResult;
+			l_offset = 1;
+		}
 	}
+#endif
 	return l_firstResult + l_offset;
 }
 
@@ -268,59 +270,63 @@ int main(int argc, char* argv[])
 		}
 	}
 	
-	if (use_memory_stream != NULL) {
-		FILE* l_file = NULL;
-		if (!params.quiet) {
-			fprintf(stderr, "Using memory stream\n");
-		}
-		if ((params.input_file[0] == '-') && (params.input_file[1] == '\0')) {
-			if (!params.quiet) {
-				fprintf(stderr, "Can't use memory stream with stdin\n");
-			}
-			result = EXIT_FAILURE;
-			goto BADEND;
-		}
-		l_file = fopen(params.input_file, "rb");
-		if (l_file == NULL) {
-			if (!params.quiet) {
-				fprintf(stderr, "Can't open file '%s'\n", params.input_file);
-			}
-			result = EXIT_FAILURE;
-			goto BADEND;
-		}
-		if (fseek(l_file, 0, SEEK_END) == 0)
-		{
-			long l_len = ftell(l_file);
-			if (l_len > 0) {
-				input_data_size = (size_t)l_len;
-				rewind(l_file);
-				input_data = malloc(input_data_size);
-				if (input_data != NULL) {
-					if (fread(input_data, 1U, input_data_size, l_file) != input_data_size) {
-						free(input_data);
-						input_data = NULL;
-					}
-				}
-			}
-		}
-		fclose(l_file);
-		if (input_data == NULL) {
-			if (!params.quiet) {
-				fprintf(stderr, "Couldn't read file '%s'\n", params.input_file);
-			}
-			result = EXIT_FAILURE;
-			goto BADEND;
-		}
-	}
-	
 	if ((use_custom_malloc != NULL) && !params.quiet) {
 		fprintf(stderr, "Using custom allocation\n");
+	}
+	if ((use_memory_stream != NULL) && !params.quiet) {
+		fprintf(stderr, "Using memory stream\n");
 	}
 	
 	for (;;)
 	{
 		yabmp* l_bmp_reader = NULL;
 		yabmp_info* l_bmp_info = NULL;
+		
+		if (use_memory_stream != NULL) {
+			FILE* l_file = NULL;
+			if ((params.input_file[0] == '-') && (params.input_file[1] == '\0')) {
+				if (!params.quiet) {
+					fprintf(stderr, "Can't use memory stream with stdin\n");
+				}
+				result = EXIT_FAILURE;
+				goto BADEND;
+			}
+			l_file = fopen(params.input_file, "rb");
+			if (l_file == NULL) {
+				if (!params.quiet) {
+					fprintf(stderr, "Can't open file '%s'\n", params.input_file);
+				}
+				result = EXIT_FAILURE;
+				goto BADEND;
+			}
+			if (fseek(l_file, 0, SEEK_END) == 0)
+			{
+				long l_len = ftell(l_file);
+				if (l_len > 0) {
+					input_data_size = (size_t)l_len;
+					rewind(l_file);
+					if (use_custom_malloc != NULL) {
+						input_data = custom_malloc(NULL, input_data_size);
+					} else {
+						input_data = malloc(input_data_size);
+					}
+					if (input_data != NULL) {
+						if (fread(input_data, 1U, input_data_size, l_file) != input_data_size) {
+							free(input_data);
+							input_data = NULL;
+						}
+					}
+				}
+			}
+			fclose(l_file);
+			if (input_data == NULL) {
+				if (!params.quiet) {
+					fprintf(stderr, "Couldn't read file '%s'\n", params.input_file);
+				}
+				result = EXIT_FAILURE;
+				goto FREE_INSTANCE;
+			}
+		}
 		
 		if (yabmp_create_reader(&l_bmp_reader, NULL, params.quiet ? NULL : print_yabmp_error, params.quiet ? NULL : print_yabmp_warning, NULL, (use_custom_malloc != NULL) ? custom_malloc : NULL, (use_custom_malloc != NULL) ? custom_free : NULL) != YABMP_OK) {
 			result = EXIT_FAILURE;
@@ -354,6 +360,13 @@ int main(int argc, char* argv[])
 		result = convert_topng(&params, l_bmp_reader, l_bmp_info);
 FREE_INSTANCE:
 		yabmp_destroy_reader(&l_bmp_reader, &l_bmp_info);
+		if (input_data != NULL) {
+			if (use_custom_malloc != NULL) {
+				custom_free(NULL, input_data);
+			} else {
+				free(input_data);
+			}
+		}
 		if ((use_custom_malloc != NULL) && (result != 0)) {
 			if (allocation_current < allocation_max) {
 				break;
@@ -372,9 +385,6 @@ FREE_INSTANCE:
 	}
 	
 BADEND:
-	if (input_data != NULL) {
-		free(input_data);
-	}
 	return result;
 }
 

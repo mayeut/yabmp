@@ -58,7 +58,6 @@ static size_t yabmp_file_read (void* context, void * ptr, size_t size)
 static const char* yabmp_basename(const char* path)
 {
 	const char* l_firstResult = NULL;
-	const char* l_secondResult = NULL;
 	int l_offset = 1;
 	
 	l_firstResult = strrchr(path, '/');
@@ -66,12 +65,15 @@ static const char* yabmp_basename(const char* path)
 		l_firstResult = path;
 		l_offset = 0;
 	}
-	l_secondResult = strrchr(l_firstResult, '\\');
-	
-	if(l_secondResult != NULL) {
-		l_firstResult = l_secondResult;
-		l_offset = 1;
+#if defined(WIN32)
+	{
+		const char* l_secondResult = strrchr(l_firstResult, '\\');
+		if(l_secondResult != NULL) {
+			l_firstResult = l_secondResult;
+			l_offset = 1;
+		}
 	}
+#endif
 	return l_firstResult + l_offset;
 }
 
