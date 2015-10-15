@@ -312,7 +312,11 @@ int main(int argc, char* argv[])
 					}
 					if (input_data != NULL) {
 						if (fread(input_data, 1U, input_data_size, l_file) != input_data_size) {
-							free(input_data);
+							if (use_custom_malloc != NULL) {
+								custom_free(NULL, input_data);
+							} else {
+								free(input_data);
+							}
 							input_data = NULL;
 						}
 					}

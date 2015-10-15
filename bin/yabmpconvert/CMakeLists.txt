@@ -51,4 +51,7 @@ add_test(NAME yabmpconvert-error-7 COMMAND yabmpconvert -i - -o dummy/directory/
 set_tests_properties(yabmpconvert-error-7 PROPERTIES WILL_FAIL TRUE ENVIRONMENT YABMP_USE_MEMORY_STREAM=1)
 add_test(NAME yabmpconvert-error-8 COMMAND yabmpconvert -i dummy/directory/that/does/not/exist/file.txt -o -)
 set_tests_properties(yabmpconvert-error-8 PROPERTIES WILL_FAIL TRUE ENVIRONMENT YABMP_USE_MEMORY_STREAM=1)
+add_test(NAME yabmpconvert-error-9 COMMAND yabmpconvert -i dummy/directory/that/does/not/exist/file.txt -o -)
+set_tests_properties(yabmpconvert-error-9 PROPERTIES WILL_FAIL TRUE ENVIRONMENT YABMP_USE_MEMORY_STREAM=0)
+
 
