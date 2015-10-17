@@ -378,6 +378,26 @@ YABMP_API(yabmp_status, yabmp_get_pixels_per_meter, (const yabmp* instance, cons
  *
  */
 YABMP_API(yabmp_status, yabmp_get_bit_depth, (const yabmp* instance, const yabmp_info* info, unsigned int* bit_depth));
+/**
+ * Gets image color type.
+ *
+ * @param[in]  instance   Pointer to the reader/writer object.
+ * @param[in]  info       Pointer to the info object.
+ * @param[out] color_type Image color type.
+ *
+ * @return
+ * #YABMP_OK on success.\n
+ * #YABMP_ERR_INVALID_ARGS when invalid arguments are provided.\n
+ *
+ * @see
+ *   YABMP_COLOR_TYPE_GRAY\n
+ *   YABMP_COLOR_TYPE_BGR\n
+ *   YABMP_COLOR_TYPE_BGR_ALPHA\n
+ *   YABMP_COLOR_TYPE_PALETTE\n
+ *   YABMP_COLOR_TYPE_GRAY_PALETTE\n
+ *   YABMP_COLOR_TYPE_BITFIELDS\n
+ *   YABMP_COLOR_TYPE_BITFIELDS_ALPHA
+ */
 YABMP_API(yabmp_status, yabmp_get_color_type, (const yabmp* instance, const yabmp_info* info, unsigned int* color_type));
 YABMP_API(yabmp_status, yabmp_get_compression_type, (const yabmp* instance, const yabmp_info* info, yabmp_uint32* compression));
 YABMP_API(yabmp_status, yabmp_get_scan_direction, (const yabmp* instance, const yabmp_info* info, unsigned int* scan_direction));
