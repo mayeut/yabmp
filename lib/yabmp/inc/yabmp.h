@@ -399,6 +399,23 @@ YABMP_API(yabmp_status, yabmp_get_bit_depth, (const yabmp* instance, const yabmp
  *   YABMP_COLOR_TYPE_BITFIELDS_ALPHA
  */
 YABMP_API(yabmp_status, yabmp_get_color_type, (const yabmp* instance, const yabmp_info* info, unsigned int* color_type));
+		
+/**
+ * Gets image compression type.
+ *
+ * @param[in]  instance    Pointer to the reader/writer object.
+ * @param[in]  info        Pointer to the info object.
+ * @param[out] compression Image compression type.
+ *
+ * @return
+ * #YABMP_OK on success.\n
+ * #YABMP_ERR_INVALID_ARGS when invalid arguments are provided.\n
+ *
+ * @see
+ *   YABMP_COMPRESSION_NONE\n
+ *   YABMP_COMPRESSION_RLE8\n
+ *   YABMP_COMPRESSION_RLE4
+ */
 YABMP_API(yabmp_status, yabmp_get_compression_type, (const yabmp* instance, const yabmp_info* info, yabmp_uint32* compression));
 YABMP_API(yabmp_status, yabmp_get_scan_direction, (const yabmp* instance, const yabmp_info* info, unsigned int* scan_direction));
 YABMP_API(yabmp_status, yabmp_get_bitfields, (const yabmp* instance, const yabmp_info* info, yabmp_uint32* blue_mask, yabmp_uint32* green_mask, yabmp_uint32 * red_mask, yabmp_uint32 * alpha_mask));
