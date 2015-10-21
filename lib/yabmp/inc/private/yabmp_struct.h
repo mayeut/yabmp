@@ -75,7 +75,7 @@ struct yabmp_struct
 	struct yabmp_info_struct info2;
 	
 	yabmp_uint32 input_row_bytes;  /* input row size in bytes */
-	yabmp_uint32 input_step_bytes; /* intput step size in bytes */
+	yabmp_uint32 input_step_bytes; /* input step size in bytes */
 	yabmp_uint32 transformed_row_bytes; /* transformed row size in bytes */
 	
 	yabmp_transform_fn transform_fn;

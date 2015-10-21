@@ -180,7 +180,7 @@ int main(int argc, char* argv[])
 	const char* use_custom_malloc = NULL;
 	const char* use_memory_stream = NULL;
 	int result = EXIT_SUCCESS;
-	yabmpconvert_parameters params;
+	yabmpconvert_parameters parameters;
 	struct optparse optparse;
 	int option;
 	void* input_data = NULL;
@@ -202,38 +202,38 @@ int main(int argc, char* argv[])
 		}
 	}
 	
-	memset(&params, 0, sizeof(params));
+	memset(&parameters, 0, sizeof(parameters));
 	if (use_custom_malloc != NULL) {
-		params.malloc = custom_malloc;
-		params.free = custom_free;
+		parameters.malloc = custom_malloc;
+		parameters.free = custom_free;
 	}
 	
 	optparse_init(&optparse, argv);
 	while ((option = optparse_long(&optparse, options, NULL)) != -1) {
 		switch (option) {
 			case 'i':
-				params.input_file = optparse.optarg;
+				parameters.input_file = optparse.optarg;
 				break;
 			case 'o':
-				params.output_file = optparse.optarg;
+				parameters.output_file = optparse.optarg;
 				break;
 			case 'e':
-				params.expand_palette = 1;
+				parameters.expand_palette = 1;
 				break;
 			case 'k':
-				params.keep_gray_palette = 1;
+				parameters.keep_gray_palette = 1;
 				break;
 			case 'v':
-				params.version = 1;
+				parameters.version = 1;
 				break;
 			case 'h':
-				params.help = 1;
+				parameters.help = 1;
 				break;
 			case 'q':
-				params.quiet = 1;
+				parameters.quiet = 1;
 				break;
 			case 'n':
-				params.no_seek_fn = 1;
+				parameters.no_seek_fn = 1;
 				break;
 			case '?':
 				fprintf(stderr, "%s: %s\n", argv[0], optparse.errmsg);
@@ -243,25 +243,25 @@ int main(int argc, char* argv[])
 		}
 	}
 	
-	if (params.version) {
+	if (parameters.version) {
 		FILE* stream = stdout;
 		
-		if (!params.help && (params.output_file != NULL) && (strcmp(params.output_file, "-") == 0)) {
+		if (!parameters.help && (parameters.output_file != NULL) && (strcmp(parameters.output_file, "-") == 0)) {
 			stream = stderr;
 		}
 		fprintf(stream, "%s %s\n", argv[0], yabmp_get_version_string());
 	}
-	if (params.help) {
+	if (parameters.help) {
 		print_usage(stdout, argv[0]);
 		goto BADEND;
 	}
 	
-	if ((params.output_file == NULL) || (params.input_file == NULL) ) {
-		if (params.version) {
+	if ((parameters.output_file == NULL) || (parameters.input_file == NULL) ) {
+		if (parameters.version) {
 			goto BADEND;
 		}
 		else {
-			if (!params.quiet) {
+			if (!parameters.quiet) {
 				fprintf(stderr, "%s: missing input or output file\n", argv[0]);
 				print_usage(stderr, argv[0]);
 			}
@@ -270,10 +270,10 @@ int main(int argc, char* argv[])
 		}
 	}
 	
-	if ((use_custom_malloc != NULL) && !params.quiet) {
+	if ((use_custom_malloc != NULL) && !parameters.quiet) {
 		fprintf(stderr, "Using custom allocation\n");
 	}
-	if ((use_memory_stream != NULL) && !params.quiet) {
+	if ((use_memory_stream != NULL) && !parameters.quiet) {
 		fprintf(stderr, "Using memory stream\n");
 	}
 	
@@ -284,17 +284,17 @@ int main(int argc, char* argv[])
 		
 		if (use_memory_stream != NULL) {
 			FILE* l_file = NULL;
-			if ((params.input_file[0] == '-') && (params.input_file[1] == '\0')) {
-				if (!params.quiet) {
+			if ((parameters.input_file[0] == '-') && (parameters.input_file[1] == '\0')) {
+				if (!parameters.quiet) {
 					fprintf(stderr, "Can't use memory stream with stdin\n");
 				}
 				result = EXIT_FAILURE;
 				goto BADEND;
 			}
-			l_file = fopen(params.input_file, "rb");
+			l_file = fopen(parameters.input_file, "rb");
 			if (l_file == NULL) {
-				if (!params.quiet) {
-					fprintf(stderr, "Can't open file '%s'\n", params.input_file);
+				if (!parameters.quiet) {
+					fprintf(stderr, "Can't open file '%s'\n", parameters.input_file);
 				}
 				result = EXIT_FAILURE;
 				goto BADEND;
@@ -324,15 +324,15 @@ int main(int argc, char* argv[])
 			}
 			fclose(l_file);
 			if (input_data == NULL) {
-				if (!params.quiet) {
-					fprintf(stderr, "Couldn't read file '%s'\n", params.input_file);
+				if (!parameters.quiet) {
+					fprintf(stderr, "Couldn't read file '%s'\n", parameters.input_file);
 				}
 				result = EXIT_FAILURE;
 				goto FREE_INSTANCE;
 			}
 		}
 		
-		if (yabmp_create_reader(&l_bmp_reader, NULL, params.quiet ? NULL : print_yabmp_error, params.quiet ? NULL : print_yabmp_warning, NULL, (use_custom_malloc != NULL) ? custom_malloc : NULL, (use_custom_malloc != NULL) ? custom_free : NULL) != YABMP_OK) {
+		if (yabmp_create_reader(&l_bmp_reader, NULL, parameters.quiet ? NULL : print_yabmp_error, parameters.quiet ? NULL : print_yabmp_warning, NULL, (use_custom_malloc != NULL) ? custom_malloc : NULL, (use_custom_malloc != NULL) ? custom_free : NULL) != YABMP_OK) {
 			result = EXIT_FAILURE;
 			goto FREE_INSTANCE;
 		}
@@ -346,12 +346,12 @@ int main(int argc, char* argv[])
 				goto FREE_INSTANCE;
 			}
 		}
-		else if ((params.input_file[0] == '-') && (params.input_file[1] == '\0')) {
-			stream_setmode_binary(stdin, params.quiet);
+		else if ((parameters.input_file[0] == '-') && (parameters.input_file[1] == '\0')) {
+			stream_setmode_binary(stdin, parameters.quiet);
 			/* This can't fail with proper arguments */
-			(void)yabmp_set_input_stream(l_bmp_reader, stdin, yabmp_file_read, params.no_seek_fn ? NULL : yabmp_file_seek, NULL);
+			(void)yabmp_set_input_stream(l_bmp_reader, stdin, yabmp_file_read, parameters.no_seek_fn ? NULL : yabmp_file_seek, NULL);
 		} else {
-			if (yabmp_set_input_file(l_bmp_reader, params.input_file) != YABMP_OK) {
+			if (yabmp_set_input_file(l_bmp_reader, parameters.input_file) != YABMP_OK) {
 				result = EXIT_FAILURE;
 				goto FREE_INSTANCE;
 			}
@@ -361,7 +361,7 @@ int main(int argc, char* argv[])
 			goto FREE_INSTANCE;
 		}
 		/* yabmp_printinfo(stdout, l_bmp_reader, 0); */
-		result = convert_topng(&params, l_bmp_reader, l_bmp_info);
+		result = convert_topng(&parameters, l_bmp_reader, l_bmp_info);
 FREE_INSTANCE:
 		yabmp_destroy_reader(&l_bmp_reader, &l_bmp_info);
 		if (input_data != NULL) {
@@ -377,7 +377,7 @@ FREE_INSTANCE:
 			}
 			allocation_max++;
 			if (allocation_max == 0xFFFFFFFFU) {
-				if (!params.quiet) {
+				if (!parameters.quiet) {
 					fprintf(stderr, "Reached maximum number of allocations\n");
 					break;
 				}

@@ -61,19 +61,19 @@ static void YABMP_PNGCBAPI print_png_warning(png_structp png_struct, png_const_c
 
 static png_voidp YABMP_PNGCBAPI custom_png_malloc(png_structp context, YABMP_PNG_ALLOC_SIZE_T size)
 {
-	const yabmpconvert_parameters* params = (const yabmpconvert_parameters*)png_get_mem_ptr(context);
+	const yabmpconvert_parameters* parameters = (const yabmpconvert_parameters*)png_get_mem_ptr(context);
 	
-	if (params->malloc) {
-		return params->malloc(NULL, size);
+	if (parameters->malloc) {
+		return parameters->malloc(NULL, size);
 	}
 	return malloc(size);
 }
 static void YABMP_PNGCBAPI custom_png_free(png_structp context, png_voidp ptr)
 {
-	const yabmpconvert_parameters* params = (const yabmpconvert_parameters*)png_get_mem_ptr(context);
+	const yabmpconvert_parameters* parameters = (const yabmpconvert_parameters*)png_get_mem_ptr(context);
 	
-	if (params->free) {
-		params->free(NULL, ptr);
+	if (parameters->free) {
+		parameters->free(NULL, ptr);
 	}
 	else {
 		free(ptr);
@@ -139,18 +139,15 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader, 
 		case YABMP_COLOR_TYPE_PALETTE:
 			if (parameters->expand_palette) {
 				yabmp_set_expand_to_bgrx(bmp_reader); /* expand to BGR(A) */
-			} else {
-				l_png_color_mask = PNG_COLOR_TYPE_PALETTE;
 			}
 			break;
 		case YABMP_COLOR_TYPE_GRAY_PALETTE:
 			if (parameters->expand_palette) {
 				yabmp_set_expand_to_bgrx(bmp_reader); /* always expand to BGR(A) */
 			} else if (parameters->keep_gray_palette) {
-				l_png_color_mask = PNG_COLOR_TYPE_PALETTE;
+				/* Nothing to do */
 			} else {
 				yabmp_set_expand_to_grayscale(bmp_reader); /* always expand to Y8 */
-				l_png_color_mask = PNG_COLOR_TYPE_GRAY;
 			}
 			break;
 		default:
