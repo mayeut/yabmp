@@ -417,6 +417,21 @@ YABMP_API(yabmp_status, yabmp_get_color_type, (const yabmp* instance, const yabm
  *   YABMP_COMPRESSION_RLE4
  */
 YABMP_API(yabmp_status, yabmp_get_compression_type, (const yabmp* instance, const yabmp_info* info, yabmp_uint32* compression));
+/**
+ * Gets image scan direction.
+ *
+ * @param[in]  instance       Pointer to the reader/writer object.
+ * @param[in]  info           Pointer to the info object.
+ * @param[out] scan_direction Image scan direction.
+ *
+ * @return
+ * #YABMP_OK on success.\n
+ * #YABMP_ERR_INVALID_ARGS when invalid arguments are provided.\n
+ *
+ * @see
+ *   YABMP_SCAN_BOTTOM_UP\n
+ *   YABMP_SCAN_TOP_DOWN
+ */
 YABMP_API(yabmp_status, yabmp_get_scan_direction, (const yabmp* instance, const yabmp_info* info, unsigned int* scan_direction));
 YABMP_API(yabmp_status, yabmp_get_bitfields, (const yabmp* instance, const yabmp_info* info, yabmp_uint32* blue_mask, yabmp_uint32* green_mask, yabmp_uint32 * red_mask, yabmp_uint32 * alpha_mask));
 YABMP_API(yabmp_status, yabmp_get_bits, (const yabmp* instance, const yabmp_info* info, unsigned int* blue_bits, unsigned int* green_bits, unsigned int * red_bits, unsigned int * alpha_bits));
