@@ -12,9 +12,14 @@ ENDIF(NOT PNG_FOUND)
 # Headers file are located here:
 include_directories(
   ${PNG_INCLUDE_DIRS}
+  ${CMAKE_CURRENT_BINARY_DIR}
   )
 
-add_executable(yabmpconvert "${CMAKE_CURRENT_SOURCE_DIR}/yabmpconvert.c" "${CMAKE_CURRENT_SOURCE_DIR}/yabmpconvert_topng.c" "${CMAKE_CURRENT_SOURCE_DIR}/../common/yabmp_printinfo.c")
+include(TestBigEndian)
+test_big_endian(YABMP_BIG_ENDIAN)
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/yabmpconvert_config.h.cmake.in" "${CMAKE_CURRENT_BINARY_DIR}/yabmpconvert_config.h")
+
+add_executable(yabmpconvert "${CMAKE_CURRENT_SOURCE_DIR}/yabmpconvert.c" "${CMAKE_CURRENT_SOURCE_DIR}/yabmpconvert.h" "${CMAKE_CURRENT_SOURCE_DIR}/yabmpconvert_topng.c" "${CMAKE_CURRENT_SOURCE_DIR}/../common/yabmp_printinfo.c" "${CMAKE_CURRENT_BINARY_DIR}/yabmpconvert_config.h")
 target_link_libraries(yabmpconvert ${YABMP_LIBRARY_NAME} ${PNG_LIBRARIES} optparse)
 
 if(YABMP_USE_DSYMUTIL)

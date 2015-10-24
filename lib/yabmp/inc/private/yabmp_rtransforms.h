@@ -28,6 +28,11 @@
 
 #include "yabmp_api.h"
 
+#if defined(YABMP_BIG_ENDIAN)
+YABMP_IAPI(void, yabmp_swap16u, (const yabmp* instance, yabmp_uint16* pSrcDst));
+YABMP_IAPI(void, yabmp_swap32u, (const yabmp* instance, yabmp_uint32* pSrcDst));
+#endif
+
 YABMP_IAPI(void, yabmp_bf16u_to_bgr24,  (const yabmp* instance, const yabmp_uint16* pSrc, yabmp_uint8*  pDst ));
 YABMP_IAPI(void, yabmp_bf16u_to_bgr48,  (const yabmp* instance, const yabmp_uint16* pSrc, yabmp_uint16* pDst ));
 YABMP_IAPI(void, yabmp_bf16u_to_bgra32, (const yabmp* instance, const yabmp_uint16* pSrc, yabmp_uint8*  pDst ));

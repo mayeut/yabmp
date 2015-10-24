@@ -53,7 +53,8 @@
 
 #include "../yabmp.h"
 
-/* This one will be needed by every source file */
+/* These ones will be needed by every source file */
 #include <assert.h>
+#include <yabmp_config.h>
 
 #endif /* YABMP_API_H */

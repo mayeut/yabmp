@@ -24,6 +24,38 @@
 
 #include "../inc/private/yabmp_rtransforms.h"
 #include "../inc/private/yabmp_struct.h"
+#include "../inc/private/yabmp_stream.h"
+
+#if defined(YABMP_BIG_ENDIAN)
+YABMP_IAPI(void, yabmp_swap16u, (const yabmp* instance, yabmp_uint16* pSrcDst))
+{
+	yabmp_uint32 x, l_width;
+	
+	assert(instance != NULL);
+	assert(pSrcDst != NULL);
+	
+	l_width      = (yabmp_uint32)instance->info2.width;
+	
+	for(x = 0U; x < l_width; ++x)
+	{
+		pSrcDst[x] = yabmp_bswap16(pSrcDst[x]);
+	}
+}
+YABMP_IAPI(void, yabmp_swap32u, (const yabmp* instance, yabmp_uint32* pSrcDst))
+{
+	yabmp_uint32 x, l_width;
+	
+	assert(instance != NULL);
+	assert(pSrcDst != NULL);
+	
+	l_width      = (yabmp_uint32)instance->info2.width;
+	
+	for(x = 0U; x < l_width; ++x)
+	{
+		pSrcDst[x] = yabmp_bswap32(pSrcDst[x]);
+	}
+}
+#endif
 
 YABMP_IAPI(void, yabmp_bitfield_get_shift_and_bits, (yabmp_uint32 mask, unsigned int* shift, unsigned int* bits))
 {

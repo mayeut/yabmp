@@ -23,27 +23,15 @@
  */
 
 /* Multiple inclusion protection */
-#ifndef YABMP_INTERNAL_H
-#define YABMP_INTERNAL_H
+#ifndef YABMPCONVERT_CONFIG_H
+#define YABMPCONVERT_CONFIG_H
 
-#include <string.h>
-
-#define YABMP_STRINGIFY(s) YABMP_STRINGIFY_IMPL(s)
-#define YABMP_STRINGIFY_IMPL(s) #s
-
-#if defined(__GNUC__)
-#	define YABMP_UNUSED __attribute__((unused))
-#	else
-# define YABMP_UNUSED
+#if defined(__BIG_ENDIAN__) || defined(__LITTLE_ENDIAN__)
+#	if defined(__BIG_ENDIAN__)
+#		define YABMP_BIG_ENDIAN
+#	endif 
+#else
+#cmakedefine YABMP_BIG_ENDIAN
 #endif
 
-#include "yabmp_api.h"
-#include "yabmp_struct.h"
-#include "yabmp_info.h"
-#include "yabmp_malloc.h"
-#include "yabmp_message.h"
-#include "yabmp_stream.h"
-#include "yabmp_checks.h"
-#include "yabmp_rtransforms.h"
-
-#endif /* YABMP_INTERNAL_H */
+#endif /* YABMPCONVERT_CONFIG_H */

@@ -32,6 +32,7 @@ YABMP_IAPI(yabmp_status, yabmp_stream_read, (yabmp* instance, yabmp_uint8* buffe
 YABMP_IAPI(yabmp_status, yabmp_stream_seek, (yabmp* reader, yabmp_uint32 offset)); /* max offset is on yabmp_uint32 for BMP */
 YABMP_IAPI(yabmp_status, yabmp_stream_skip, (yabmp* instance, yabmp_uint32 count));
 
+#if defined(YABMP_BIG_ENDIAN)
 YABMP_UNUSED
 static yabmp_uint16 yabmp_bswap16(yabmp_uint16 x)
 {
@@ -55,6 +56,7 @@ static yabmp_uint32 yabmp_bswap32(yabmp_uint32 x)
 		((x & 0x000000FFU) << 24);
 #endif
 }
+#endif
 
 YABMP_UNUSED
 static yabmp_status yabmp_stream_read_8u(yabmp* instance, yabmp_uint8* value)

@@ -296,9 +296,11 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader, 
 		default:
 			break;
 	}
+#if !defined(YABMP_BIG_ENDIAN)
 	if (l_bit_depth == 16U) {
 		png_set_swap(l_png_writer);
 	}
+#endif
 	
 	/* Now deal with the image */
 	l_buffer_size = png_get_rowbytes(l_png_writer, l_png_info);

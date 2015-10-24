@@ -26,6 +26,7 @@
 #define YABMPCONVERT_H
 
 #include <yabmp.h>
+#include <yabmpconvert_config.h>
 
 typedef struct
 {

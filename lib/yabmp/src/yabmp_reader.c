@@ -1063,6 +1063,15 @@ YABMP_API(yabmp_status, yabmp_read_row, (yabmp* reader, void* row, size_t row_si
 				break;
 		default:
 				YABMP_SIMPLE_CHECK(yabmp_stream_read(reader, reader->input_row, reader->input_step_bytes));
+#if defined(YABMP_BIG_ENDIAN)
+				if ((reader->info2.flags >> YABMP_COLOR_SHIFT) & YABMP_COLOR_MASK_BITFIELDS) {
+					if (reader->info2.bpp == 16U) {
+						yabmp_swap16u(reader, reader->input_row);
+					} else {
+						yabmp_swap32u(reader, reader->input_row);
+					}
+				}
+#endif
 				break;
 		}
 		reader->transform_fn(reader, reader->input_row, row);
@@ -1077,6 +1086,15 @@ YABMP_API(yabmp_status, yabmp_read_row, (yabmp* reader, void* row, size_t row_si
 				break;
 			default:
 				YABMP_SIMPLE_CHECK(yabmp_stream_read(reader, row, reader->input_row_bytes));
+#if defined(YABMP_BIG_ENDIAN)
+				if ((reader->info2.flags >> YABMP_COLOR_SHIFT) & YABMP_COLOR_MASK_BITFIELDS) {
+					if (reader->info2.bpp == 16U) {
+						yabmp_swap16u(reader, row);
+					} else {
+						yabmp_swap32u(reader, row);
+					}
+				}
+#endif
 				YABMP_SIMPLE_CHECK(yabmp_stream_skip(reader, (yabmp_uint32)(reader->input_step_bytes - reader->input_row_bytes)));
 				break;
 		}
