@@ -33,6 +33,30 @@ YABMP_IAPI(yabmp_status, yabmp_stream_seek, (yabmp* reader, yabmp_uint32 offset)
 YABMP_IAPI(yabmp_status, yabmp_stream_skip, (yabmp* instance, yabmp_uint32 count));
 
 YABMP_UNUSED
+static yabmp_uint16 yabmp_bswap16(yabmp_uint16 x)
+{
+#if defined(YABMP_HAVE_GCC_BYTESWAP_16)
+	return __builtin_bswap16(x);
+#else
+	return (x >> 8) | (x << 8);
+#endif
+}
+
+YABMP_UNUSED
+static yabmp_uint32 yabmp_bswap32(yabmp_uint32 x)
+{
+#if defined(YABMP_HAVE_GCC_BYTESWAP_32)
+	return __builtin_bswap32(x);
+#else
+	return
+		((x & 0xFF000000U) >> 24) |
+		((x & 0x00FF0000U) >>  8) |
+		((x & 0x0000FF00U) <<  8) |
+		((x & 0x000000FFU) << 24);
+#endif
+}
+
+YABMP_UNUSED
 static yabmp_status yabmp_stream_read_8u(yabmp* instance, yabmp_uint8* value)
 {
 	yabmp_status l_status = YABMP_OK;
@@ -64,6 +88,9 @@ static yabmp_status yabmp_stream_read_le_16u(yabmp* instance, yabmp_uint16* valu
 		l_status = YABMP_ERR_UNKNOW;
 	} else {
 		instance->stream_offset += 2U;
+#if defined(YABMP_BIG_ENDIAN)
+		*value = yabmp_bswap16(*value);
+#endif
 	}
 	return l_status;
 }
@@ -82,6 +109,9 @@ static yabmp_status yabmp_stream_read_le_32u(yabmp* instance, yabmp_uint32* valu
 		l_status = YABMP_ERR_UNKNOW;
 	} else {
 		instance->stream_offset += 4U;
+#if defined(YABMP_BIG_ENDIAN)
+		*value = yabmp_bswap32(*value);
+#endif
 	}
 	return l_status;
 }

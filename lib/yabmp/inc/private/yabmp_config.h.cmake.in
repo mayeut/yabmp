@@ -31,4 +31,15 @@
 #define YABMP_VERSION_MINOR @YABMP_VERSION_MINOR@
 #define YABMP_VERSION_PATCH @YABMP_VERSION_PATCH@
 
+#if defined(__BIG_ENDIAN__) || defined(__LITTLE_ENDIAN__)
+#	if defined(__BIG_ENDIAN__)
+#		define YABMP_BIG_ENDIAN
+#	endif 
+#else
+#cmakedefine YABMP_BIG_ENDIAN
+#endif
+
+#cmakedefine YABMP_HAVE_GCC_BYTESWAP_16
+#cmakedefine YABMP_HAVE_GCC_BYTESWAP_32
+
 #endif /* YABMP_CONFIG_H */

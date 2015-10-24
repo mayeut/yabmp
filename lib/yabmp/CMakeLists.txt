@@ -23,8 +23,24 @@ set(YABMP_SRCS
   "${CMAKE_CURRENT_SOURCE_DIR}/inc/private/yabmp_struct.h"
 )
 
+include(TestBigEndian)
+include(CheckCSourceCompiles)
+
+test_big_endian(YABMP_BIG_ENDIAN)
+
+check_c_source_compiles("
+  int main() {
+    return (int)__builtin_bswap16(0U);
+  }
+" YABMP_HAVE_GCC_BYTESWAP_16)
+
+check_c_source_compiles("
+  int main() {
+    return (int)__builtin_bswap32(0U);
+  }
+" YABMP_HAVE_GCC_BYTESWAP_32)
+
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/inc/private/yabmp_config.h.cmake.in" "${CMAKE_CURRENT_BINARY_DIR}/inc/private/yabmp_config.h")
-	
 
 # Build the library
 add_library(${YABMP_LIBRARY_NAME} ${YABMP_SRCS})
