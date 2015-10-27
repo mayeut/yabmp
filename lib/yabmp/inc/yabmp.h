@@ -437,6 +437,18 @@ YABMP_API(yabmp_status, yabmp_get_scan_direction, (const yabmp* instance, const 
 YABMP_API(yabmp_status, yabmp_get_bitfields, (const yabmp* instance, const yabmp_info* info, yabmp_uint32* blue_mask, yabmp_uint32* green_mask, yabmp_uint32 * red_mask, yabmp_uint32 * alpha_mask));
 YABMP_API(yabmp_status, yabmp_get_bits, (const yabmp* instance, const yabmp_info* info, unsigned int* blue_bits, unsigned int* green_bits, unsigned int * red_bits, unsigned int * alpha_bits));
 YABMP_API(yabmp_status, yabmp_get_palette, (const yabmp* instance, const yabmp_info* info, unsigned int * color_count, yabmp_color const** palette));
+/**
+ * Gets image row size in bytes.
+ *
+ * @param[in]  instance  Pointer to the reader/writer object.
+ * @param[in]  info      Pointer to the info object.
+ * @param[out] row_bytes Row size in bytes.
+ *
+ * @return
+ * #YABMP_OK on success.\n
+ * #YABMP_ERR_INVALID_ARGS when invalid arguments are provided.\n
+ *
+ */
 YABMP_API(yabmp_status, yabmp_get_rowbytes, (const yabmp* instance, const yabmp_info* info, size_t* row_bytes));
 YABMP_API(yabmp_status, yabmp_read_update_info, (const yabmp* reader, yabmp_info* info));
 		
