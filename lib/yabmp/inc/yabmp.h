@@ -434,6 +434,26 @@ YABMP_API(yabmp_status, yabmp_get_compression_type, (const yabmp* instance, cons
  *   YABMP_SCAN_TOP_DOWN
  */
 YABMP_API(yabmp_status, yabmp_get_scan_direction, (const yabmp* instance, const yabmp_info* info, unsigned int* scan_direction));
+		
+/**
+ * Gets channels' bit-mask.
+ *
+ * @param[in]  instance   Pointer to the reader/writer object.
+ * @param[in]  info       Pointer to the info object.
+ * @param[out] blue_mask  Blue channel bit-mask.
+ * @param[out] green_mask Green channel bit-mask.
+ * @param[out] red_mask   Red channel bit-mask.
+ * @param[out] alpha_mask Alpha channel bit-mask.
+ *
+ * @return
+ * #YABMP_OK on success.\n
+ * #YABMP_ERR_INVALID_ARGS when invalid arguments are provided.\n
+ * #YABMP_ERR_UNKNOW when image color type #YABMP_COLOR_MASK_BITFIELDS bit is not set.\n
+ *
+ * @see
+ *  yabmp_get_color_type
+ *
+ */
 YABMP_API(yabmp_status, yabmp_get_bitfields, (const yabmp* instance, const yabmp_info* info, yabmp_uint32* blue_mask, yabmp_uint32* green_mask, yabmp_uint32 * red_mask, yabmp_uint32 * alpha_mask));
 YABMP_API(yabmp_status, yabmp_get_bits, (const yabmp* instance, const yabmp_info* info, unsigned int* blue_bits, unsigned int* green_bits, unsigned int * red_bits, unsigned int * alpha_bits));
 YABMP_API(yabmp_status, yabmp_get_palette, (const yabmp* instance, const yabmp_info* info, unsigned int * color_count, yabmp_color const** palette));
