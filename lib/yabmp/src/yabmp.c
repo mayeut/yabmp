@@ -38,7 +38,6 @@ YABMP_API(void, yabmp_get_version, (yabmp_uint32 * major, yabmp_uint32 * minor, 
 }
 YABMP_API(const char*, yabmp_get_version_string, ())
 {
-	/* TODO VERSION */
 	static const char c_version_string[] = YABMP_STRINGIFY(YABMP_VERSION_MAJOR) "." YABMP_STRINGIFY(YABMP_VERSION_MINOR) "." YABMP_STRINGIFY(YABMP_VERSION_PATCH);
 	
 	return c_version_string;

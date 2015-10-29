@@ -63,7 +63,6 @@ static yabmp_status yabmp_stream_read_8u(yabmp* instance, yabmp_uint8* value)
 {
 	yabmp_status l_status = YABMP_OK;
 	
-	/* TODO memory interface ? */
 	assert(instance != NULL);
 	assert(value != NULL);
 	assert(instance->read_fn != NULL);
@@ -81,7 +80,6 @@ static yabmp_status yabmp_stream_read_le_16u(yabmp* instance, yabmp_uint16* valu
 {
 	yabmp_status l_status = YABMP_OK;
 	
-	/* TODO memory interface ? */
 	assert(instance != NULL);
 	assert(value != NULL);
 	assert(instance->read_fn != NULL);
@@ -102,7 +100,6 @@ static yabmp_status yabmp_stream_read_le_32u(yabmp* instance, yabmp_uint32* valu
 {
 	yabmp_status l_status = YABMP_OK;
 	
-	/* TODO memory interface ? */
 	assert(instance != NULL);
 	assert(value != NULL);
 	assert(instance->read_fn != NULL);

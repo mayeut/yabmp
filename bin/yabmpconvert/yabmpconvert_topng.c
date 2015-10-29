@@ -52,6 +52,7 @@ static void YABMP_PNGCBAPI print_png_error(png_structp png_struct, png_const_cha
 {
 	(void)png_struct;
 	fprintf(stderr, "PNG ERROR: %s\n", message);
+	/* png_longjmp(png_struct, 1); */ /* not available in 1.2.x */
 }
 static void YABMP_PNGCBAPI print_png_warning(png_structp png_struct, png_const_charp message)
 {
@@ -242,8 +243,15 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader, 
 	if (setjmp(png_jmpbuf(l_png_writer))) {
 		goto BADEND;
 	}
+	/* errors here will generate long jump */
 	png_init_io(l_png_writer, l_output);
-	l_png_info = png_create_info_struct(l_png_writer); /* errors here will generate long jump */
+	l_png_info = png_create_info_struct(l_png_writer);
+	if (l_png_info == NULL) {
+		if (!parameters->quiet) {
+			fprintf(stderr, "ERROR: can't create PNG info struct\n");
+		}
+		goto BADEND;
+	}
 		
 	png_set_IHDR(l_png_writer, l_png_info, l_width, l_height, (int)l_bit_depth, l_png_color_mask, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
 	

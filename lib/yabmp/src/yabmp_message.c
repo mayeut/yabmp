@@ -30,6 +30,7 @@
 #define YABMP_MAX_MSG_SIZE 256U
 
 static void yabmp_send_message(yabmp_message_cb message_fn, void* context, const char* format, va_list args);
+static int yabmp_vsnprintf(char * buffer, int buffer_size, const char * format, va_list args ); /* vsnprintf is C99 */
 
 YABMP_IAPI(void, yabmp_send_error,   (const yabmp* instance, const char* format, ...))
 {
@@ -64,9 +65,92 @@ static void yabmp_send_message(yabmp_message_cb message_fn, void* context, const
 #if !defined(NDEBUG)
 	int len =
 #endif
-	vsnprintf(message, sizeof(message), format, args); /* TODO this is not C90 */
+	yabmp_vsnprintf(message, sizeof(message), format, args);
 #if !defined(NDEBUG)
 	assert((len >= 0) && (len < (int)YABMP_MAX_MSG_SIZE)); /* if longer message are seen during debug, update YABMP_MAX_MSG_SIZE */
 #endif
 	message_fn(context, message);
+}
+
+#define PRINT_UINT(type) \
+type digits = 1U; \
+while (value/digits >= 10U) { \
+	digits *= 10U; \
+} \
+while ((digits != 0U) && (current < end)) { \
+	int digit = (int)(value / digits); \
+	value = value % digits; \
+	digits /= 10U; \
+	*current++ = (char)(digit + '0'); \
+}
+
+/* limited format support, no support for size only mode */
+/* error checking is minimal since it'll be used from inside the library only */
+/* this is not optimized at all */
+static int yabmp_vsnprintf(char * buffer, int buffer_size, const char * format, va_list args )
+{
+	char* end = buffer + buffer_size;
+	char* current = buffer;
+	int c;
+	
+	assert(buffer != NULL);
+	assert(buffer_size > 0);
+	assert(format != NULL);
+	
+	while (((c = *format++) != '\0') && (current < end)) {
+		if (c == '%') {
+			c = *format++;
+			switch (c) {
+				case '%':
+					*current++ = (char)c;
+					break;
+				case 's':
+					{
+						const char* ptr = va_arg(args, const char*);
+						if (ptr == NULL) {
+							ptr = "(null)";
+						}
+						while (((c = *ptr++) != '\0') && (current < end)) {
+							*current++ = (char)c;
+						}
+					}
+					break;
+				case 'z':
+					c = *format++;
+					assert(c == 'u');
+					{
+						size_t value = va_arg(args, size_t);
+						PRINT_UINT(size_t);
+					}
+					break;
+				case 'l':
+					c = *format++;
+					assert(c == 'u');
+					{
+						unsigned long value = va_arg(args, unsigned long);
+						PRINT_UINT(unsigned long);
+					}
+					break;
+				case 'u':
+					{
+						unsigned int value = va_arg(args, unsigned int);
+						PRINT_UINT(unsigned int);
+					}
+					break;
+				default:
+					assert(0);
+					current = end;
+					break;
+			}
+		} else {
+			*current++ = (char)c;
+		}
+	}
+	
+	if (current == end) {
+		current[-1] = '\0';
+	} else {
+		*current = '\0';
+	}
+	return (int)(current - buffer);
 }

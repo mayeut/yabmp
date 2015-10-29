@@ -42,7 +42,6 @@ YABMP_IAPI(void*, yabmp_malloc, (const yabmp* instance, size_t size))
 			l_result = malloc(size);
 		}
 		if (l_result == NULL) {
-			/* TODO replace zu (C99) */
 			yabmp_send_error(instance, "Allocation of size %zu failed.", size);
 		}
 	}

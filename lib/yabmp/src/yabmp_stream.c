@@ -140,7 +140,6 @@ YABMP_IAPI(yabmp_status, yabmp_stream_read, (yabmp* reader, yabmp_uint8* buffer,
 	assert(reader->kind == YABMP_KIND_READER);
 	
 	if (reader->read_fn(reader->stream_context, buffer, buffer_len) != buffer_len) {
-		/* TODO replace zu (C99) */
 		yabmp_send_error(reader, "Failed to read %zu bytes.", buffer_len);
 		l_status = YABMP_ERR_UNKNOW;
 	} else {
@@ -170,13 +169,12 @@ YABMP_IAPI(yabmp_status, yabmp_stream_skip, (yabmp* instance, yabmp_uint32 count
 	yabmp_status l_status = YABMP_OK;
 	yabmp_uint8 l_buffer[32];
 	
-	/* TODO memory interface ? */
 	assert(instance != NULL);
 	assert(instance->read_fn != NULL);
 	
 	if (count > 0U) {
 		if (instance->seek_fn != NULL) {
-			/* todo overflow check */
+			/* TODO overflow check */
 			l_status = yabmp_stream_seek(instance, instance->stream_offset + count);
 		}
 		else {
