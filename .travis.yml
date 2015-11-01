@@ -3,6 +3,10 @@ language: c
 matrix:
   include:
     - os: osx
+      osx_image: xcode7.1
+      compiler: clang
+      env: YABMP_BUILD_TYPE=Release CFLAGS="-arch x86_64"
+    - os: osx
       compiler: clang
       env: YABMP_BUILD_TYPE=Release CFLAGS="-arch x86_64"
     - os: osx
