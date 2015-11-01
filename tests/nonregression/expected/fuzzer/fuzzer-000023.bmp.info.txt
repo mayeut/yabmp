@@ -1,0 +1,7 @@
+Dimensions (WxH): 983071x32
+Pixels Per Meter (XxY): 2835x50331667
+Bit Depth: 8
+Bits Per Channel: B8.G8.R8.A0
+Color mask:  PALETTE COLOR
+Compression: RLE8
+Scan direction: BOTTOM-UP
