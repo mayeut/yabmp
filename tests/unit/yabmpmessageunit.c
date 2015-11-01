@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
 		size_t test_size = 0U;
 		unsigned int test_int = 0U;
 		unsigned long test_long = 0U;
-		yabmp_send_error(&l_instance, "test yabmp_vsnprintf %%");
+		yabmp_send_warning(&l_instance, "test yabmp_vsnprintf %%");
 		yabmp_send_error(&l_instance, "test yabmp_vsnprintf %s", "string");
 		yabmp_send_error(&l_instance, "test yabmp_vsnprintf %s", NULL);
 		yabmp_send_error(&l_instance, "test yabmp_vsnprintf %zu", test_size);
