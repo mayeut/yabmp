@@ -34,7 +34,7 @@ matrix:
       env: YABMP_BUILD_TYPE=Debug   CFLAGS="-m64 -O1 -g -fsanitize=address -fno-omit-frame-pointer"
 
 install:
-  - ./tools/travis-install.sh
+  - bash -x ./tools/travis-install.sh
   - export PATH=${HOME}/cmake-install/bin:$PATH
   - mkdir build && cd build
 
