@@ -25,13 +25,13 @@ if [ -d "${HOME}/cmake-install" ]; then
 else
 	echo "Retrieving CMake 3.3.2"
 	if [ "${TRAVIS_OS_NAME:-}" == "linux" ] || uname -s | grep -i Linux &> /dev/null; then
-		wget https://cmake.org/files/v3.3/cmake-3.3.2-Linux-x86_64.tar.gz
+		wget http://cmake.org/files/v3.3/cmake-3.3.2-Linux-x86_64.tar.gz
 		tar -xzf cmake-3.3.2-Linux-x86_64.tar.gz
 		#wget -qO - https://cmake.org/files/v3.3/cmake-3.3.2-Linux-x86_64.tar.gz | tar -xz
 		# copy to a directory that will not changed every version
 		mv cmake-3.3.2-Linux-x86_64 ${HOME}/cmake-install
 	elif [ "${TRAVIS_OS_NAME:-}" == "osx" ] || uname -s | grep -i Darwin &> /dev/null; then
-		wget -qO - https://cmake.org/files/v3.3/cmake-3.3.2-Darwin-x86_64.tar.gz | tar -xz
+		wget -qO - http://cmake.org/files/v3.3/cmake-3.3.2-Darwin-x86_64.tar.gz | tar -xz
 		# copy to a directory that will not changed every version
 		mv cmake-3.3.2-Darwin-universal/CMake.app/Contents ${HOME}/cmake-install
 	else
