@@ -167,7 +167,7 @@ YABMP_API(yabmp_status, yabmp_read_info, (yabmp* reader, yabmp_info* info))
 	YABMP_CHECK_READER(reader);
 	
 	if (info == NULL) {
-		yabmp_send_error(reader, "Stream already set.");
+		yabmp_send_error(reader, "NULL info.");
 		return YABMP_ERR_INVALID_ARGS;
 	}
 	YABMP_SIMPLE_CHECK(local_read_info_no_validation(reader));

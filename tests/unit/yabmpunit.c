@@ -150,6 +150,7 @@ int main(int argc, char* argv[])
 		result |= (yabmp_read_info(NULL, NULL) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
 		result |= (yabmp_read_info(l_reader, NULL) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
 		result |= (yabmp_read_info(NULL, l_info) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_read_info(l_reader, l_info) == YABMP_ERR_UNKNOW) ? EXIT_SUCCESS : EXIT_FAILURE;
 		result |= (yabmp_set_input_stream(l_reader, NULL, custom_read, NULL, NULL) == YABMP_OK) ? EXIT_SUCCESS : EXIT_FAILURE;
 		result |= (yabmp_read_info(l_reader, l_info) == YABMP_ERR_UNKNOW) ? EXIT_SUCCESS : EXIT_FAILURE;
 		
