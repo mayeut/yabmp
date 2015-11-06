@@ -224,8 +224,9 @@ int main(int argc, char* argv[])
 		
 		result |= (yabmp_create_reader(&l_reader, NULL, print_error, print_warning, NULL, NULL, NULL) == YABMP_OK) ? EXIT_SUCCESS : EXIT_FAILURE;
 		
+		result |= (yabmp_read_row(l_reader, l_row, 0U) == YABMP_ERR_UNKNOW) ? EXIT_SUCCESS : EXIT_FAILURE;
+		
 		/*
-		 TODO test before readinfo, shall fail
 		 result |= (yabmp_set_input_stream(l_reader, NULL, custom_read, NULL, NULL) == YABMP_OK) ? EXIT_SUCCESS : EXIT_FAILURE;
 		 result |= (yabmp_read_info(l_reader) == YABMP_ERR_UNKNOW) ? EXIT_SUCCESS : EXIT_FAILURE;
 		 */
