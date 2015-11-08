@@ -173,8 +173,12 @@ YABMP_IAPI(yabmp_status, yabmp_stream_skip, (yabmp* instance, yabmp_uint32 count
 	assert(instance->read_fn != NULL);
 	
 	if (count > 0U) {
+		if (instance->stream_offset > (0xFFFFFFFFU - count)) {
+			yabmp_send_error(instance, "Would overflow.");
+			l_status = YABMP_ERR_UNKNOW;
+			goto BADEND;
+		}
 		if (instance->seek_fn != NULL) {
-			/* TODO overflow check */
 			l_status = yabmp_stream_seek(instance, instance->stream_offset + count);
 		}
 		else {
