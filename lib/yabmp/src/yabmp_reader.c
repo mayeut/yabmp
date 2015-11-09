@@ -899,10 +899,23 @@ static yabmp_status local_setup_read(yabmp* reader)
 			break;
 	}
 	
-	/* TODO overflow check */
-	reader->input_row_bytes  = reader->info2.rowbytes;
-	reader->transformed_row_bytes = reader->info2.rowbytes; /* no transforms */
-	reader->input_step_bytes = (reader->info2.rowbytes * l_rle4_factor + 3U) & ~(yabmp_uint32)3U;
+	if ((sizeof(size_t) > sizeof(yabmp_uint32)) && (reader->info2.rowbytes > 0xFFFFFFFFU)) {
+		yabmp_send_error(reader, "Would overflow.");
+		return YABMP_ERR_UNKNOW;
+	}
+	reader->input_row_bytes  = (yabmp_uint32)reader->info2.rowbytes;
+	reader->transformed_row_bytes = reader->input_row_bytes; /* no transforms */
+	
+	if (reader->input_row_bytes & ((l_rle4_factor - 1U) << 31U)) { /* l_rle4_factor is 1 or 2 */
+		yabmp_send_error(reader, "Would overflow.");
+		return YABMP_ERR_UNKNOW;
+	}
+	reader->input_step_bytes = reader->input_row_bytes * l_rle4_factor;
+	if (reader->input_step_bytes > (0xFFFFFFFFU - 3U)) {
+		yabmp_send_error(reader, "Would overflow.");
+		return YABMP_ERR_UNKNOW;
+	}
+	reader->input_step_bytes = (reader->input_step_bytes + 3U) & ~(yabmp_uint32)3U;
 	
 	if (reader->transforms & YABMP_TRANSFORM_SCAN_ORDER) {
 		YABMP_SIMPLE_CHECK(yabmp_stream_skip(reader, reader->input_step_bytes * (yabmp_uint32)(reader->info2.height - 1U)));
