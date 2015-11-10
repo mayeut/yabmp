@@ -942,14 +942,18 @@ static yabmp_status local_setup_read(yabmp* reader)
 		
 		if (reader->transforms & YABMP_TRANSFORM_EXPAND) {
 			/* BGR or BGR(A) */
-			/* TODO Check overflow */
 			/* TODO 32bpp */
 			yabmp_uint32 l_Bpc = reader->info2.expanded_bps / 8U;
 			if ((reader->info2.flags >> YABMP_COLOR_SHIFT) & YABMP_COLOR_MASK_ALPHA) {
-				reader->transformed_row_bytes = 4U * reader->info2.width * l_Bpc;
+				l_Bpc *= 4U;
 			} else {
-				reader->transformed_row_bytes = 3U * reader->info2.width * l_Bpc;
+				l_Bpc *= 3U;
 			}
+			if (reader->info2.width > (0xFFFFFFFFU / l_Bpc)) {
+				yabmp_send_error(reader, "Would overflow.");
+				return YABMP_ERR_UNKNOW;
+			}
+			reader->transformed_row_bytes = reader->info2.width * l_Bpc;
 		}
 		else if (reader->transforms & YABMP_TRANSFORM_GRAYSCALE) {
 			reader->transformed_row_bytes = reader->info2.width;
