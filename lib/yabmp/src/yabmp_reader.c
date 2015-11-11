@@ -961,7 +961,7 @@ static yabmp_status local_setup_read(yabmp* reader)
 	}
 	else if (reader->info2.compression == YABMP_COMPRESSION_RLE4) {
 		/* we need an intermediate buffer */
-		/* TODO check overflow */
+		/* Overflow check already done for reader->input_step_bytes */
 		reader->rle_row = yabmp_malloc(reader, reader->input_row_bytes * 2U);
 		if (reader->rle_row == NULL) {
 			return YABMP_ERR_ALLOCATION;
