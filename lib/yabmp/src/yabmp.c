@@ -42,3 +42,10 @@ YABMP_API(const char*, yabmp_get_version_string, ())
 	
 	return c_version_string;
 }
+
+YABMP_IAPI(void, yabmp_init_version, (yabmp* instance))
+{
+	static const char c_version_string[] = "yabmp version " YABMP_STRINGIFY(YABMP_VERSION_MAJOR) "." YABMP_STRINGIFY(YABMP_VERSION_MINOR) "." YABMP_STRINGIFY(YABMP_VERSION_PATCH);
+	
+	instance->version = c_version_string;
+}

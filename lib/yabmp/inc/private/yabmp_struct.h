@@ -47,6 +47,9 @@ struct yabmp_struct
 {
 	yabmp_uint32        kind; /* YABMP_KIND_READER or YABMP_KIND_WRITER */
 	
+	/* version (do not strip version string) */
+	const char* version;
+	
 	/* allocation management */
 	void* alloc_context; /* context passed to allocation functions */
 	yabmp_malloc_cb malloc_fn; /* user provided malloc function */
@@ -85,5 +88,7 @@ struct yabmp_struct
 	unsigned int rle_skip_x;
 	unsigned int rle_skip_y;
 };
+
+YABMP_IAPI(void, yabmp_init_version, (yabmp* instance));
 
 #endif /* YABMP_STRUCT_H */

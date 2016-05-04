@@ -77,6 +77,7 @@ YABMP_API(yabmp_status, yabmp_create_reader, (
 	memcpy(l_reader, &l_interimInstance, sizeof(l_interimInstance));
 	
 	yabmp_init_info(&(l_reader->info2));
+	yabmp_init_version(l_reader);
 	*reader = l_reader;
 	return l_status;
 }
