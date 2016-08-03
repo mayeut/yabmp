@@ -216,7 +216,10 @@ yabmp_add_info_test("bmpsuite/q/rgba32-81284.bmp")
 yabmp_add_test("bmpsuite/q/rgba32-81284.bmp")
 yabmp_add_info_test("bmpsuite/q/rgba32abf.bmp")
 yabmp_add_test("bmpsuite/q/rgba32abf.bmp")
-
+yabmp_add_info_test("bmpsuite/q/rgba16-5551.bmp")
+yabmp_add_test("bmpsuite/q/rgba16-5551.bmp")
+yabmp_add_info_test("bmpsuite/q/rgba32-1010102.bmp")
+yabmp_add_test("bmpsuite/q/rgba32-1010102.bmp")
 
 # bmpsuite bad tests
 yabmp_add_info_test("bmpsuite/b/badbitcount.bmp" FAILS)

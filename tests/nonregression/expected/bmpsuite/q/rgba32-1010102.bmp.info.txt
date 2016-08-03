@@ -1,0 +1,8 @@
+Dimensions (WxH): 127x64
+Pixels Per Meter (XxY): 2835x2835
+Bit Depth: 32
+Bits Per Channel: B10.G10.R10.A2
+Color mask:  BITFIELDS COLOR ALPHA
+Bitfields: B:0x000003FF G:0x000FFC00 R:0x3FF00000 A:0xC0000000
+Compression: NONE
+Scan direction: BOTTOM-UP
