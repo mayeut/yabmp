@@ -1,51 +1,20 @@
 language: c
+env:
+  global:
+   - secure: "nPmH3Cfx4ybMlPBVOlY6e42NuRikYWPhUxKSqn2d8QanDAc8QXnhgALff/GJ2pLfEKIpr8RewFGrR5wVsCB0ZY9PHi2MbprI3t1QbxbZs2RQDkBYXLMq13OYU/nYv5ATdsLguH+kcsYKJVqHJnZpF7XHA6RiPNQkkLvykUWwfg81QBchk0YWIT5G043LuLuoQNKwsk8ph9LvTOcFkRQFXksyNKrFA+lwH3Y4J1dx0zhZhXs4b+KjVkv3gxml0vh5wmc/M/j+j1QMM7cDoB5e0bkRP71HeL06X3Z45dBST5qoRp9blWqhu865SfCL8dbz42hi5qBL4t+FOsuIVJ3QBquQsi6i+D4EQ/oFll2tuN+IIQYSlMXEQTGcmentwa8iFcrtBgbV7tRooSSvS3NNDQtzowpoVWTMYeRS+BNtz4a8prb7nuS3zBDEJBoRon/8ntiQOc5lupVdSoXSFpdZDjPNvAINgvy5QQ6CSJV0ZswIq41FsGGK/XeQ8l7yOnE0Kg1pAA5TMw+VTINY3hOgfVJC5CRsbmdDKFA+NadfQAiZOzpjrKo7dBxZw+HpEh61KVtaq4Y9fOb7liIvzxkuJ+Wz2D5IqP38gherTl4IDV1ekwQBKR9Il4EsmT0JOPgZcpUwPJSlphlFUjtuvQc+OZiEJAMLqJFfSl+J08x6S3c="
 
-matrix:
-  include:
-    - os: osx
-      osx_image: xcode7.1
-      compiler: clang
-      env: YABMP_BUILD_TYPE=Release CFLAGS="-arch x86_64"
-    - os: osx
-      compiler: clang
-      env: YABMP_BUILD_TYPE=Release CFLAGS="-arch x86_64"
-    - os: osx
-      compiler: clang
-      env: YABMP_BUILD_TYPE=Release CFLAGS="-arch i386"
-    - os: linux
-      compiler: gcc
-      env: YABMP_BUILD_TYPE=Release CFLAGS="-m64"
-    - os: linux
-      compiler: gcc
-      env: YABMP_BUILD_TYPE=Release CFLAGS="-m32 -march=i386"
-      addons:
-        apt:
-          packages:
-            - gcc-multilib
-            - zlib1g-dev:i386
-    - os: linux
-      compiler: gcc
-      env: YABMP_BUILD_TYPE=Debug CFLAGS="-m64 -O0 -g -coverage" LDFLAGS="-coverage"
-    - os: linux
-      compiler: clang
-      env: YABMP_BUILD_TYPE=Release CFLAGS="-m64"
-    - os: linux
-      compiler: clang
-      env: YABMP_BUILD_TYPE=Debug   CFLAGS="-m64 -O1 -g -fsanitize=address -fno-omit-frame-pointer"
+addons:
+  coverity_scan:
+    project:
+      name: "mayeut/yabmp"
+      description: "Build submitted via Travis CI"
+    notification_email: m.darbois@gmail.com
+    build_command_prepend: "./tools/travis-install.sh && mkdir build && cd build && ${HOME}/cmake-install/bin/cmake -G 'Unix Makefiles' -DYABMP_BUILD_PNG:BOOL=YES .."
+    build_command:   "make -j 4"
+    branch_pattern: coverity_scan
 
 install:
-  - bash ./tools/travis-install.sh
-  - export PATH=${HOME}/cmake-install/bin:$PATH
-  - mkdir build && cd build
+  - echo "Coverity scan build"
 
 script:
-  - cmake -G "Unix Makefiles" -DYABMP_BUILD_PNG:BOOL=YES -DCMAKE_BUILD_TYPE=${YABMP_BUILD_TYPE} ..
-  - make
-  - ctest --output-on-failure
-  - YABMP_USE_CUSTOM_MALLOC=1 ctest --output-on-failure
-  - YABMP_USE_MEMORY_STREAM=1 ctest --output-on-failure
-  - YABMP_USE_CUSTOM_MALLOC=1 YABMP_USE_MEMORY_STREAM=1 ctest --output-on-failure
-  
-after_success:
-  - if [ "${LDFLAGS}" == "-coverage" ]; then ../tools/travis-coverage.sh ; fi
-
+  - echo "Coverity scan build"
