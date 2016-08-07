@@ -6,10 +6,10 @@ YABMP_0.1 {
 		yabmp_get_bit_depth;
 		yabmp_get_bitfields;
 		yabmp_get_bits;
-		yabmp_get_color_profile_calibration
-		yabmp_get_color_profile_icc_data
-		yabmp_get_color_profile_intent
-		yabmp_get_color_profile_type
+		yabmp_get_color_profile_calibration;
+		yabmp_get_color_profile_icc_data;
+		yabmp_get_color_profile_intent;
+		yabmp_get_color_profile_type;
 		yabmp_get_color_type;
 		yabmp_get_compression_type;
 		yabmp_get_dimensions;
