@@ -247,7 +247,7 @@ YABMP_API(yabmp_status, yabmp_get_color_profile_intent, (const yabmp* instance, 
 	*color_profile_intent = info->cp_intent;
 	return YABMP_OK;
 }
-YABMP_API(yabmp_status, yabmp_get_icc_profile, (const yabmp* instance, const yabmp_info* info, yabmp_uint8 const** icc_profile, yabmp_uint32* icc_profile_len))
+YABMP_API(yabmp_status, yabmp_get_color_profile_icc_data, (const yabmp* instance, const yabmp_info* info, yabmp_uint8 const** icc_profile, yabmp_uint32* icc_profile_len))
 {
 	YABMP_CHECK_INSTANCE(instance);
 	

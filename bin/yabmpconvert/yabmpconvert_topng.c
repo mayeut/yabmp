@@ -303,7 +303,7 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader, 
 			{
 				yabmp_uint8 const* l_icc_profile = NULL;
 				yabmp_uint32 l_icc_profile_len;
-				(void)yabmp_get_icc_profile(bmp_reader, bmp_info, &l_icc_profile, &l_icc_profile_len);
+				(void)yabmp_get_color_profile_icc_data(bmp_reader, bmp_info, &l_icc_profile, &l_icc_profile_len);
 				png_set_iCCP(l_png_writer, l_png_info, "bmpiccprofile", 0, l_icc_profile, l_icc_profile_len);
 			}
 			break;

@@ -505,7 +505,7 @@ YABMP_API(yabmp_status, yabmp_get_palette, (const yabmp* instance, const yabmp_i
 YABMP_API(yabmp_status, yabmp_get_color_profile_type, (const yabmp* instance, const yabmp_info* info, unsigned int * color_profile_type));
 YABMP_API(yabmp_status, yabmp_get_color_profile_intent, (const yabmp* instance, const yabmp_info* info, unsigned int * color_profile_intent));
 
-YABMP_API(yabmp_status, yabmp_get_icc_profile, (const yabmp* instance, const yabmp_info* info, yabmp_uint8 const** icc_profile, yabmp_uint32* icc_profile_len));
+YABMP_API(yabmp_status, yabmp_get_color_profile_icc_data, (const yabmp* instance, const yabmp_info* info, yabmp_uint8 const** icc_profile, yabmp_uint32* icc_profile_len));
 YABMP_API(yabmp_status, yabmp_get_color_profile_calibration, (const yabmp* instance, const yabmp_info* info, yabmp_cie_xyz* r, yabmp_cie_xyz* g, yabmp_cie_xyz* b, yabmp_q16d16* gamma_r, yabmp_q16d16* gamma_g, yabmp_q16d16* gamma_b));
 
 		
