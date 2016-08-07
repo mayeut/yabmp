@@ -111,6 +111,7 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader, 
 	yabmp_uint32 l_png_color_mask;
 	int l_png_has_sBIT = 0;
 	unsigned int blue_bits, green_bits, red_bits, alpha_bits;
+	unsigned int l_color_profile_type, l_color_profile_intent;
 	int l_need_full_image = 0;
 		
 	png_structp l_png_writer = NULL;
@@ -125,6 +126,8 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader, 
 	(void)yabmp_get_color_type(bmp_reader, bmp_info, &l_color_type);
 	(void)yabmp_get_compression_type(bmp_reader, bmp_info, &l_compression_type);
 	(void)yabmp_get_scan_direction(bmp_reader, bmp_info, &l_scan_direction);
+	(void)yabmp_get_color_profile_type(bmp_reader, bmp_info, &l_color_profile_type);
+	(void)yabmp_get_color_profile_intent(bmp_reader, bmp_info, &l_color_profile_intent);
 	
 	/* Check transforms needed */
 	switch (l_color_type)
@@ -294,6 +297,58 @@ int convert_topng(const yabmpconvert_parameters* parameters, yabmp* bmp_reader, 
 			png_set_shift(l_png_writer, &l_sBIT);
 		}
 	}
+	
+	switch (l_color_profile_type) {
+		case YABMP_COLOR_PROFILE_ICC_EMBEDDED:
+			{
+				yabmp_uint8 const* l_icc_profile = NULL;
+				yabmp_uint32 l_icc_profile_len;
+				(void)yabmp_get_icc_profile(bmp_reader, bmp_info, &l_icc_profile, &l_icc_profile_len);
+				png_set_iCCP(l_png_writer, l_png_info, "bmpiccprofile", 0, l_icc_profile, l_icc_profile_len);
+			}
+			break;
+		case YABMP_COLOR_PROFILE_sRGB:
+			{
+				int srgb_intent;
+				switch (l_color_profile_intent) {
+					case YABMP_COLOR_PROFILE_INTENT_NONE:
+					case YABMP_COLOR_PROFILE_INTENT_PERCEPTUAL:
+						srgb_intent = 0;
+						break;
+					case YABMP_COLOR_PROFILE_INTENT_RELCOL:
+						srgb_intent = 1;
+						break;
+					case YABMP_COLOR_PROFILE_INTENT_SATURATION:
+						srgb_intent = 2;
+						break;
+					case YABMP_COLOR_PROFILE_INTENT_ABSCOL:
+						srgb_intent = 3;
+						break;
+					default:
+						if (!parameters->quiet) {
+							fprintf(stderr, "ERROR: invalid intent\n");
+						}
+						goto BADEND;
+						break;
+				}
+				png_set_sRGB(l_png_writer, l_png_info, srgb_intent);
+			}
+			break;
+		case YABMP_COLOR_PROFILE_CALIBRATED_RGB:
+			{
+				yabmp_cie_xyz r, g, b;
+				yabmp_q16d16 gr, gg, gb;
+				(void)yabmp_get_color_profile_calibration(bmp_reader, bmp_info, &r, &g, &b, &gr, &gg, &gb);
+				png_set_cHRM_XYZ(l_png_writer, l_png_info, r.x * (1.0 / 1073741823.0), r.y * (1.0 / 1073741823.0), r.z * (1.0 / 1073741823.0), g.x * (1.0 / 1073741823.0), g.y * (1.0 / 1073741823.0), g.z * (1.0 / 1073741823.0), b.x * (1.0 / 1073741823.0), b.y * (1.0 / 1073741823.0), b.z * (1.0 / 1073741823.0));
+				/* how to handle per channel gamma ? */
+				/* let's just average for now... */
+				png_set_gAMA(l_png_writer, l_png_info, (gr + gg + gb) * (1.0 / (3.0 * 65536.0)));
+			}
+			break;
+		default:
+			break;
+	}
+	
 	png_write_info(l_png_writer, l_png_info);
 		
 	switch (l_png_color_mask) {

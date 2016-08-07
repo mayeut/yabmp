@@ -56,9 +56,21 @@
 #define YABMP_COLOR_TYPE_BITFIELDS       (YABMP_COLOR_MASK_COLOR | YABMP_COLOR_MASK_BITFIELDS) /**< Bitfield color image type. */
 #define YABMP_COLOR_TYPE_BITFIELDS_ALPHA (YABMP_COLOR_MASK_COLOR | YABMP_COLOR_MASK_BITFIELDS | YABMP_COLOR_MASK_ALPHA) /**< Bitfield color with alpha image type. */
 		
-#define YABMP_COMPRESSION_NONE      0U /**< Image data is not compressed. */
-#define YABMP_COMPRESSION_RLE8      1U /**< Image data is compressed using RLE8 algorithm. */
-#define YABMP_COMPRESSION_RLE4      2U /**< Image data is compressed using RLE4 algorithm. */
+#define YABMP_COMPRESSION_NONE 0U /**< Image data is not compressed. */
+#define YABMP_COMPRESSION_RLE8 1U /**< Image data is compressed using RLE8 algorithm. */
+#define YABMP_COMPRESSION_RLE4 2U /**< Image data is compressed using RLE4 algorithm. */
+
+#define YABMP_COLOR_PROFILE_NONE           0U /**< Image has no color profile. */
+#define YABMP_COLOR_PROFILE_sRGB           1U /**< Image has sRGB color profile. */
+#define YABMP_COLOR_PROFILE_ICC_LINKED     2U /**< Image has a linked ICC profile. */
+#define YABMP_COLOR_PROFILE_ICC_EMBEDDED   3U /**< Image has an embedded ICC profile. */
+#define YABMP_COLOR_PROFILE_CALIBRATED_RGB 4U /**< Image has a calibrated RGB color profile. */
+
+#define YABMP_COLOR_PROFILE_INTENT_NONE       0U /**< Image doesn't specify intent for color profile. */
+#define YABMP_COLOR_PROFILE_INTENT_PERCEPTUAL 1U /**< Perceptual intent is for images preferring good adaptation to the output device gamut at the expense of colorimetric accuracy, like photographs. */
+#define YABMP_COLOR_PROFILE_INTENT_RELCOL     2U /**< Relative colorimetric intent is for images requiring color appearance matching (relative to the output device white point), like logos. */
+#define YABMP_COLOR_PROFILE_INTENT_SATURATION 3U /**< Saturation intent is for images preferring preservation of saturation at the expense of hue and lightness, like charts and graphs. */
+#define YABMP_COLOR_PROFILE_INTENT_ABSCOL     4U /**< Absolute colorimetric intent is for images requiring preservation of absolute colorimetry, like proofs (previews of images destined for a different output device). */
 
 /**
  * Return codes
@@ -89,6 +101,16 @@ typedef struct yabmp_color_struct
    yabmp_uint8 green; /**< Green component of the color */
    yabmp_uint8 blue;  /**< Blue component of the color */
 } yabmp_color;
+		
+typedef yabmp_uint32 yabmp_q2d30;  /**< fixed point Q2.30  */
+typedef yabmp_uint32 yabmp_q16d16; /**< fixed point Q16.16 */
+		
+typedef struct yabmp_cie_xyz_struct
+{
+	yabmp_q2d30 x;
+	yabmp_q2d30 y;
+	yabmp_q2d30 z;
+} yabmp_cie_xyz;
 		
 /**
  * Callback function prototype for messages
@@ -479,6 +501,14 @@ YABMP_API(yabmp_status, yabmp_get_bitfields, (const yabmp* instance, const yabmp
  */
 YABMP_API(yabmp_status, yabmp_get_bits, (const yabmp* instance, const yabmp_info* info, unsigned int* blue_bits, unsigned int* green_bits, unsigned int * red_bits, unsigned int * alpha_bits));
 YABMP_API(yabmp_status, yabmp_get_palette, (const yabmp* instance, const yabmp_info* info, unsigned int * color_count, yabmp_color const** palette));
+
+YABMP_API(yabmp_status, yabmp_get_color_profile_type, (const yabmp* instance, const yabmp_info* info, unsigned int * color_profile_type));
+YABMP_API(yabmp_status, yabmp_get_color_profile_intent, (const yabmp* instance, const yabmp_info* info, unsigned int * color_profile_intent));
+
+YABMP_API(yabmp_status, yabmp_get_icc_profile, (const yabmp* instance, const yabmp_info* info, yabmp_uint8 const** icc_profile, yabmp_uint32* icc_profile_len));
+YABMP_API(yabmp_status, yabmp_get_color_profile_calibration, (const yabmp* instance, const yabmp_info* info, yabmp_cie_xyz* r, yabmp_cie_xyz* g, yabmp_cie_xyz* b, yabmp_q16d16* gamma_r, yabmp_q16d16* gamma_g, yabmp_q16d16* gamma_b));
+
+		
 /**
  * Gets image row size in bytes.
  *

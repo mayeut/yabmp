@@ -6,3 +6,5 @@ Color mask:  BITFIELDS COLOR ALPHA
 Bitfields: B:0x000000FF G:0x0000FF00 R:0xFF000000 A:0x00FF0000
 Compression: NONE
 Scan direction: BOTTOM-UP
+Color profile type: NONE
+Color profile intent: NONE

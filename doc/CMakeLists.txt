@@ -13,7 +13,7 @@ if(DOXYGEN_FOUND)
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/html/index.html
     COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
-            ${CMAKE_CURRENT_BINARY_DIR}/mainpage.h
+            ${CMAKE_SOURCE_DIR}/README.md
             ${YABMP_HEADERS}
   )
   add_custom_target(doc ALL

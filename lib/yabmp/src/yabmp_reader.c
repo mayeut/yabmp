@@ -24,6 +24,17 @@
 
 #include "../inc/private/yabmp_internal.h"
 
+#define YABMP_LCS_CALIBRATED_RGB      0x00000000U
+#define YABMP_LCS_sRGB                0x73524742U
+#define YABMP_LCS_WINDOWS_COLOR_SPACE 0x57696E20U
+#define YABMP_LCS_PROFILE_LINKED      0x4C494E4BU
+#define YABMP_LCS_PROFILE_EMBEDDED    0x4D424544U
+
+#define YABMP_LCS_GM_ABS_COLORIMETRIC 0x00000008U
+#define YABMP_LCS_GM_BUSINESS         0x00000001U
+#define YABMP_LCS_GM_GRAPHICS         0x00000002U
+#define YABMP_LCS_GM_IMAGES           0x00000004U
+
 static yabmp_status local_read_info_no_validation(yabmp* reader);
 static yabmp_status local_valid_info(yabmp* reader);
 
@@ -109,12 +120,9 @@ YABMP_API(void, yabmp_destroy_reader, (yabmp** reader, yabmp_info** info))
 		l_interimInstance.free_fn = l_reader->free_fn;
 		
 		/* free content */
-		if (l_reader->rle_row != NULL) {
-			yabmp_free(l_reader, l_reader->rle_row);
-		}
-		if (l_reader->input_row != NULL) {
-			yabmp_free(l_reader, l_reader->input_row);
-		}
+		yabmp_free(l_reader, l_reader->rle_row);
+		yabmp_free(l_reader, l_reader->input_row);
+		yabmp_free(l_reader, l_reader->info2.icc_profile);
 		
 		if (l_reader->close_fn != NULL) {
 			l_reader->close_fn(l_reader->stream_context);
@@ -203,6 +211,15 @@ YABMP_API(yabmp_status, yabmp_read_info, (yabmp* reader, yabmp_info* info))
 	}
 	
 	memcpy(info, &(reader->info2), sizeof(struct yabmp_info_struct));
+	/* let's recreate icc profile */
+	info->icc_profile = NULL;
+	if (reader->info2.icc_profile != NULL) {
+		info->icc_profile = yabmp_malloc(reader, reader->info2.icc_profile_size);
+		if (info->icc_profile == NULL) {
+			return YABMP_ERR_ALLOCATION;
+		}
+		memcpy(info->icc_profile, reader->info2.icc_profile, reader->info2.icc_profile_size);
+	}
 	
 	return YABMP_OK;
 }
@@ -210,15 +227,13 @@ YABMP_API(yabmp_status, yabmp_read_info, (yabmp* reader, yabmp_info* info))
 static yabmp_status local_read_info_no_validation(yabmp* reader)
 {
 	yabmp_status   l_status = YABMP_OK;
-	yabmp_bmpinfo* l_info = NULL;
 	yabmp_uint16   l_data16u;
 	yabmp_uint32   l_header_size;
+	yabmp_uint32   l_bmpheader_offset;
 	yabmp_uint32   l_palette_color_count = 0U;
 	int l_is_os2 = 0;
 	
 	YABMP_CHECK_READER(reader);
-	
-	l_info = &(reader->info);
 	
 	if ((reader->status & YABMP_STATUS_HAS_STREAM) == 0U) {
 		yabmp_send_error(reader, "Stream not set.");
@@ -250,6 +265,7 @@ static yabmp_status local_read_info_no_validation(yabmp* reader)
 		yabmp_send_warning(reader, "Found invalid reserved value in stream.");
 	}
 	YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(reader->data_offset)));
+	l_bmpheader_offset = reader->stream_offset;
 	
 	/* read core info */
 	YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &l_header_size)); /* header size */
@@ -399,21 +415,101 @@ static yabmp_status local_read_info_no_validation(yabmp* reader)
 		
 		if (l_header_size >= 108U)
 		{
+			yabmp_uint32 l_colorspace_type;
 			/* let's just ignore for now... */
-			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(l_info->v4.colorSpaceType)));
-			YABMP_SIMPLE_CHECK(yabmp_stream_read(reader, l_info->v4.colorSpaceEP, sizeof(l_info->v4.colorSpaceEP)));
-			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(l_info->v4.redGamma)));
-			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(l_info->v4.greenGamma)));
-			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(l_info->v4.blueGamma)));
+			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &l_colorspace_type));
+			
+			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &reader->info2.cie_r.x));
+			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &reader->info2.cie_r.y));
+			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &reader->info2.cie_r.z));
+			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &reader->info2.cie_g.x));
+			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &reader->info2.cie_g.y));
+			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &reader->info2.cie_g.z));
+			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &reader->info2.cie_b.x));
+			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &reader->info2.cie_b.y));
+			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &reader->info2.cie_b.z));
+			
+			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &reader->info2.gamma_r));
+			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &reader->info2.gamma_g));
+			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &reader->info2.gamma_b));
+			
+			switch (l_colorspace_type) {
+				case YABMP_LCS_CALIBRATED_RGB:
+					reader->info2.cp_type = YABMP_COLOR_PROFILE_CALIBRATED_RGB;
+					break;
+				case YABMP_LCS_sRGB:
+					reader->info2.cp_type = YABMP_COLOR_PROFILE_sRGB;
+					break;
+				case YABMP_LCS_WINDOWS_COLOR_SPACE: /* not sure what to use here... */
+					reader->info2.cp_type = YABMP_COLOR_PROFILE_sRGB;
+					break;
+				case YABMP_LCS_PROFILE_EMBEDDED:
+					reader->info2.cp_type = YABMP_COLOR_PROFILE_ICC_EMBEDDED;
+					break;
+				case YABMP_LCS_PROFILE_LINKED:
+					reader->info2.cp_type = YABMP_COLOR_PROFILE_ICC_LINKED;
+					break;
+				default:
+					/* ignore for now */
+					break;
+			}
+			
 		}
 		
 		if (l_header_size >= 124U)
 		{
-			/* let's just ignore for now... */
-			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(l_info->v5.intent)));
-			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(l_info->v5.iccProfileData)));
-			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(l_info->v5.iccProfileSize)));
-			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &(l_info->v5.reserved)));
+			yabmp_uint32 l_intent, l_data_offset, l_data_size, l_reserved;
+			
+			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &l_intent));
+			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &l_data_offset));
+			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &l_data_size));
+			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &l_reserved));
+			
+			switch (l_intent)
+			{
+				case YABMP_LCS_GM_ABS_COLORIMETRIC:
+					reader->info2.cp_intent = YABMP_COLOR_PROFILE_INTENT_ABSCOL;
+					break;
+				case YABMP_LCS_GM_GRAPHICS:
+					reader->info2.cp_intent = YABMP_COLOR_PROFILE_INTENT_RELCOL;
+					break;
+				case YABMP_LCS_GM_IMAGES:
+					reader->info2.cp_intent = YABMP_COLOR_PROFILE_INTENT_PERCEPTUAL;
+					break;
+				case YABMP_LCS_GM_BUSINESS:
+					reader->info2.cp_intent = YABMP_COLOR_PROFILE_INTENT_SATURATION;
+					break;
+				default:
+					reader->info2.cp_intent = 255U; /* valid info shall fail */
+					break;
+			}
+			
+			switch (reader->info2.cp_type) {
+				case YABMP_COLOR_PROFILE_ICC_EMBEDDED:
+				case YABMP_COLOR_PROFILE_ICC_LINKED:
+					if (reader->seek_fn != NULL) {
+						yabmp_uint32 l_offset = reader->stream_offset;
+						reader->info2.icc_profile_size = l_data_size;
+						reader->info2.icc_profile = yabmp_malloc(reader, reader->info2.icc_profile_size);
+						if (reader->info2.icc_profile == NULL) {
+							return YABMP_ERR_ALLOCATION;
+						}
+						if ((YABMP_UINT32_MAX - l_bmpheader_offset) < l_data_offset) {
+							yabmp_send_error(reader, "Would overflow.");
+							return YABMP_ERR_UNKNOW;
+						}
+						YABMP_SIMPLE_CHECK(yabmp_stream_seek(reader, l_bmpheader_offset + l_data_offset));
+						YABMP_SIMPLE_CHECK(yabmp_stream_read(reader, reader->info2.icc_profile, reader->info2.icc_profile_size));
+						YABMP_SIMPLE_CHECK(yabmp_stream_seek(reader, l_offset));
+					}
+					else {
+						yabmp_send_warning(reader, "No seek function provided. ICC profile will be ignored.");
+						reader->info2.cp_type = YABMP_COLOR_PROFILE_NONE;
+					}
+					break;
+				default:
+					break;
+			}
 		}
 	}
 	
@@ -536,8 +632,8 @@ static yabmp_status local_read_info_no_validation(yabmp* reader)
 		else if ((l_blue_bits > 8) || (l_green_bits > 8) || (l_red_bits > 8) || (l_alpha_bits > 8)) {
 			reader->info2.expanded_bps = 16U;
 		}
-		
 	}
+	
 	reader->status |= YABMP_STATUS_HAS_INFO;
 	return l_status;
 }
@@ -648,6 +744,23 @@ static yabmp_status local_valid_info(yabmp* reader)
 		default:
 			yabmp_send_error(reader, "compression %" YABMP_PRIu32 " not supported.", reader->info2.compression);
 			return YABMP_ERR_UNKNOW;
+	}
+	
+	if (reader->info2.cp_intent == 255U) {
+		yabmp_send_error(reader, "Unknown color profile intent.");
+		return YABMP_ERR_UNKNOW;
+
+	}
+	switch (reader->info2.cp_type) {
+		case YABMP_COLOR_PROFILE_ICC_EMBEDDED:
+		case YABMP_COLOR_PROFILE_ICC_LINKED:
+			if (reader->info2.icc_profile == NULL) {
+				yabmp_send_error(reader, "No ICC profile read (probably ICC specified with v4 BMP header).");
+				return YABMP_ERR_UNKNOW;
+			}
+			break;
+		default:
+			break;
 	}
 	
 	reader->status |= YABMP_STATUS_HAS_VALID_INFO;

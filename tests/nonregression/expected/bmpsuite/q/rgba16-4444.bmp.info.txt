@@ -6,3 +6,5 @@ Color mask:  BITFIELDS COLOR ALPHA
 Bitfields: B:0x0000000F G:0x000000F0 R:0x00000F00 A:0x0000F000
 Compression: NONE
 Scan direction: BOTTOM-UP
+Color profile type: sRGB
+Color profile intent: PERCEPTUAL

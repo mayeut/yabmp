@@ -30,6 +30,7 @@ void yabmp_printinfo(FILE* outstream, yabmp* bmp_reader, const yabmp_info* info)
 	yabmp_uint32 l_width, l_height, l_compression_type, l_res_x, l_res_y;
 	unsigned int l_bit_depth, l_scan_direction, l_color_type;
 	unsigned int l_blue_bits, l_green_bits, l_red_bits, l_alpha_bits;
+	unsigned int l_color_profile_type, l_color_profile_intent;
 	
 	assert(outstream != NULL);
 	assert(bmp_reader != NULL);
@@ -43,7 +44,9 @@ void yabmp_printinfo(FILE* outstream, yabmp* bmp_reader, const yabmp_info* info)
 	(void)yabmp_get_compression_type(bmp_reader, info, &l_compression_type);
 	(void)yabmp_get_scan_direction(bmp_reader, info, &l_scan_direction);
 	(void)yabmp_get_bits(bmp_reader, info, &l_blue_bits, &l_green_bits, &l_red_bits, &l_alpha_bits);
-		
+	(void)yabmp_get_color_profile_type(bmp_reader, info, &l_color_profile_type);
+	(void)yabmp_get_color_profile_intent(bmp_reader, info, &l_color_profile_intent);
+	
 	fprintf(outstream, "Dimensions (WxH): %" YABMP_PRIu32 "x%" YABMP_PRIu32 "\n", l_width, l_height);
 	if ((l_res_x != 0U) || (l_res_y != 0U)) {
 		fprintf(outstream, "Pixels Per Meter (XxY): %" YABMP_PRIu32 "x%" YABMP_PRIu32 "\n", l_res_x, l_res_y);
@@ -94,6 +97,46 @@ void yabmp_printinfo(FILE* outstream, yabmp* bmp_reader, const yabmp_info* info)
 			break;
 		default:
 			fputs("Scan direction: UNKNOWN\n", outstream);
+			break;
+	}
+	switch (l_color_profile_type) {
+		case YABMP_COLOR_PROFILE_NONE:
+			fputs("Color profile type: NONE\n", outstream);
+			break;
+		case YABMP_COLOR_PROFILE_sRGB:
+			fputs("Color profile type: sRGB\n", outstream);
+			break;
+		case YABMP_COLOR_PROFILE_CALIBRATED_RGB:
+			fputs("Color profile type: CALIBRATED RGB\n", outstream);
+			break;
+		case YABMP_COLOR_PROFILE_ICC_EMBEDDED:
+			fputs("Color profile type: ICC EMBEDDED\n", outstream);
+			break;
+		case YABMP_COLOR_PROFILE_ICC_LINKED:
+			fputs("Color profile type: ICC LINKED\n", outstream);
+			break;
+		default:
+			fputs("Color profile type: UNKNOWN\n", outstream);
+			break;
+	}
+	switch (l_color_profile_intent) {
+		case YABMP_COLOR_PROFILE_INTENT_NONE:
+			fputs("Color profile intent: NONE\n", outstream);
+			break;
+		case YABMP_COLOR_PROFILE_INTENT_PERCEPTUAL:
+			fputs("Color profile intent: PERCEPTUAL\n", outstream);
+			break;
+		case YABMP_COLOR_PROFILE_INTENT_RELCOL:
+			fputs("Color profile intent: RELATIVE COLORIMETRIC\n", outstream);
+			break;
+		case YABMP_COLOR_PROFILE_INTENT_SATURATION:
+			fputs("Color profile intent: SATURATION\n", outstream);
+			break;
+		case YABMP_COLOR_PROFILE_INTENT_ABSCOL:
+			fputs("Color profile intent: ABSOLUTE COLORIMETRIC\n", outstream);
+			break;
+		default:
+			fputs("Color profile intent: UNKNOWN\n", outstream);
 			break;
 	}
 }

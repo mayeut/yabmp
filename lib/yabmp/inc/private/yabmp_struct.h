@@ -74,8 +74,7 @@ struct yabmp_struct
 	/* file info */
 	yabmp_uint32 data_offset; /* Image data offset in bytes */
 	
-	yabmp_bmpinfo info; /* info that get's read/written from/to bmp. User get's different info depending on transformation */ 
-	struct yabmp_info_struct info2;
+	struct yabmp_info_struct info2; /* info that get's read/written from/to bmp. User get's different info depending on transformation */
 	
 	yabmp_uint32 input_row_bytes;  /* input row size in bytes */
 	yabmp_uint32 input_step_bytes; /* input step size in bytes */

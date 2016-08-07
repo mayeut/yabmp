@@ -5,3 +5,5 @@ Bits Per Channel: B8.G8.R8.A0
 Color mask:  PALETTE COLOR
 Compression: RLE8
 Scan direction: TOP-DOWN
+Color profile type: NONE
+Color profile intent: NONE

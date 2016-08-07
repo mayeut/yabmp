@@ -49,6 +49,7 @@ YABMP_IAPI(void, yabmp_destroy_info, (yabmp* instance, yabmp_info** info))
 		return;
 	}
 	
+	yabmp_free(instance, (*info)->icc_profile);
 	yabmp_free(instance, *info);
 	*info = NULL;
 }
@@ -218,6 +219,84 @@ YABMP_API(yabmp_status, yabmp_get_palette, (const yabmp* instance, const yabmp_i
 
 	*color_count = info->num_palette;
 	*palette     = info->palette;
+	
+	return YABMP_OK;
+}
+
+YABMP_API(yabmp_status, yabmp_get_color_profile_type, (const yabmp* instance, const yabmp_info* info, unsigned int * color_profile_type))
+{
+	YABMP_CHECK_INSTANCE(instance);
+	
+	if ((info == NULL) || (color_profile_type == NULL)) {
+		yabmp_send_error(instance, "NULL info or NULL color_profile_type.");
+		return YABMP_ERR_INVALID_ARGS;
+	}
+	
+	*color_profile_type = info->cp_type;
+	return YABMP_OK;
+}
+YABMP_API(yabmp_status, yabmp_get_color_profile_intent, (const yabmp* instance, const yabmp_info* info, unsigned int * color_profile_intent))
+{
+	YABMP_CHECK_INSTANCE(instance);
+	
+	if ((info == NULL) || (color_profile_intent == NULL)) {
+		yabmp_send_error(instance, "NULL info or NULL color_profile_intent.");
+		return YABMP_ERR_INVALID_ARGS;
+	}
+	
+	*color_profile_intent = info->cp_intent;
+	return YABMP_OK;
+}
+YABMP_API(yabmp_status, yabmp_get_icc_profile, (const yabmp* instance, const yabmp_info* info, yabmp_uint8 const** icc_profile, yabmp_uint32* icc_profile_len))
+{
+	YABMP_CHECK_INSTANCE(instance);
+	
+	if ((info == NULL) || (icc_profile == NULL) || (icc_profile_len == NULL)) {
+		yabmp_send_error(instance, "NULL info or NULL icc_profile or NULL icc_profile_len.");
+		return YABMP_ERR_INVALID_ARGS;
+	}
+	
+	switch (info->cp_type)
+	{
+		case YABMP_COLOR_PROFILE_ICC_EMBEDDED:
+		case YABMP_COLOR_PROFILE_ICC_LINKED:
+			break;
+		default:
+			yabmp_send_error(instance, "Color profile has no data.");
+			return YABMP_ERR_UNKNOW;
+	}
+	
+	*icc_profile     = info->icc_profile;
+	*icc_profile_len = info->icc_profile_size;
+	
+	return YABMP_OK;
+}
+
+YABMP_API(yabmp_status, yabmp_get_color_profile_calibration, (const yabmp* instance, const yabmp_info* info, yabmp_cie_xyz* r, yabmp_cie_xyz* g, yabmp_cie_xyz* b, yabmp_q16d16* gamma_r, yabmp_q16d16* gamma_g, yabmp_q16d16* gamma_b))
+{
+	YABMP_CHECK_INSTANCE(instance);
+	
+	if ((info == NULL) || (r == NULL) || (g == NULL) || (b == NULL) || (gamma_r == NULL) || (gamma_g == NULL) || (gamma_b == NULL)) {
+		yabmp_send_error(instance, "NULL info or NULL r or NULL g or NULL b or NULL gamma_r or NULL gamma_g or NULL gamma_b.");
+		return YABMP_ERR_INVALID_ARGS;
+	}
+	
+	switch (info->cp_type)
+	{
+		case YABMP_COLOR_PROFILE_CALIBRATED_RGB:
+			break;
+		default:
+			yabmp_send_error(instance, "Color profile has no calibration data.");
+			return YABMP_ERR_UNKNOW;
+	}
+	
+	*r = info->cie_r;
+	*g = info->cie_g;
+	*b = info->cie_b;
+	
+	*gamma_r = info->gamma_r;
+	*gamma_g = info->gamma_g;
+	*gamma_b = info->gamma_b;
 	
 	return YABMP_OK;
 }

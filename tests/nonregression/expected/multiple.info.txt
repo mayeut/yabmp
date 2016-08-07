@@ -6,6 +6,8 @@ Bits Per Channel: B8.G8.R8.A0
 Color mask:  PALETTE
 Compression: NONE
 Scan direction: BOTTOM-UP
+Color profile type: NONE
+Color profile intent: NONE
 
 pal4.bmp:
 Dimensions (WxH): 127x64
@@ -15,3 +17,5 @@ Bits Per Channel: B8.G8.R8.A0
 Color mask:  PALETTE COLOR
 Compression: NONE
 Scan direction: BOTTOM-UP
+Color profile type: NONE
+Color profile intent: NONE

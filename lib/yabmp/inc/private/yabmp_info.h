@@ -36,50 +36,37 @@
 #define YABMP_SCAN_SHIFT 4
 #define YABMP_SCAN_MASK  (YABMP_SCAN_TOP_DOWN)
 
-typedef struct {
-	yabmp_uint32 colorSpaceType;   /* Color space type */
-	yabmp_uint8  colorSpaceEP[36]; /* Color space end points */
-	yabmp_uint32 redGamma;         /* Red channel gamma */
-	yabmp_uint32 greenGamma;       /* Green channel gamma */
-	yabmp_uint32 blueGamma;        /* Blue channel gamma */
-} yabmp_dib_v4_info;
-
-typedef struct {
-	yabmp_uint32 intent;           /* Intent */
-	yabmp_uint32 iccProfileData;   /* ICC profile data */
-	yabmp_uint32 iccProfileSize;   /* ICC profile size */
-	yabmp_uint32 reserved;         /* Reserved */
-} yabmp_dib_v5_info;
-
-
-typedef struct
-{
-	/* FILE cache */
-	yabmp_dib_v4_info   v4;
-	yabmp_dib_v5_info   v5;
-} yabmp_bmpinfo;
-
 struct yabmp_info_struct
 {
-	size_t       rowbytes;     /* Number of bytes needed for 1 line */
-	yabmp_uint32 width;        /* Width of the image in pixels  */
-	yabmp_uint32 height;       /* Height of the image in pixels */
-	yabmp_uint32 res_ppm_x;    /* Horizontal resolution in pixels/meter */
-	yabmp_uint32 res_ppm_y;    /* Vertical resolution in pixels/meter */
-	yabmp_uint32 compression;  /* Compression method */
-	yabmp_uint32 mask_blue;    /* blue-channel bit mask */
-	yabmp_uint32 mask_green;   /* green-channel bit mask */
-	yabmp_uint32 mask_red;     /* red-channel bit mask */
-	yabmp_uint32 mask_alpha;   /* alpha-channel bit mask */
-	unsigned int num_palette;  /* Number of colors in the palette */
-	yabmp_uint8  bpp;          /* Number of bits per pixel */
-	yabmp_uint8  bpc_blue;     /* blue-channel bpp */
-	yabmp_uint8  bpc_green;    /* green-channel bpp */
-	yabmp_uint8  bpc_red;      /* red-channel bpp */
-	yabmp_uint8  bpc_alpha;    /* alpha-channel bpp */
-	yabmp_uint8  flags;        /* color mask, top-down */
-	yabmp_color  palette[256]; /* palette */
-	yabmp_uint8  expanded_bps; /* maximum bit count for one color when expanded (8, 16 or 32) */
+	size_t        rowbytes;         /* Number of bytes needed for 1 line */
+	yabmp_uint8*  icc_profile;      /* ICC profile */
+	yabmp_uint32  icc_profile_size; /* ICC profile size */
+	yabmp_uint32  width;            /* Width of the image in pixels  */
+	yabmp_uint32  height;           /* Height of the image in pixels */
+	yabmp_uint32  res_ppm_x;        /* Horizontal resolution in pixels/meter */
+	yabmp_uint32  res_ppm_y;        /* Vertical resolution in pixels/meter */
+	yabmp_uint32  compression;      /* Compression method */
+	yabmp_uint32  mask_blue;        /* blue-channel bit mask */
+	yabmp_uint32  mask_green;       /* green-channel bit mask */
+	yabmp_uint32  mask_red;         /* red-channel bit mask */
+	yabmp_uint32  mask_alpha;       /* alpha-channel bit mask */
+	yabmp_cie_xyz cie_r;            /* CIE XYZ for R */
+	yabmp_cie_xyz cie_g;            /* CIE XYZ for G */
+	yabmp_cie_xyz cie_b;            /* CIE XYZ for B */
+	yabmp_q16d16  gamma_r;          /* gamma for red channel */
+	yabmp_q16d16  gamma_g;          /* gamma for green channel */
+	yabmp_q16d16  gamma_b;          /* gamma for blue channel */
+	unsigned int  num_palette;      /* Number of colors in the palette */
+	yabmp_uint8   bpp;              /* Number of bits per pixel */
+	yabmp_uint8   bpc_blue;         /* blue-channel bpp */
+	yabmp_uint8   bpc_green;        /* green-channel bpp */
+	yabmp_uint8   bpc_red;          /* red-channel bpp */
+	yabmp_uint8   bpc_alpha;        /* alpha-channel bpp */
+	yabmp_uint8   cp_type;          /* color profile type */
+	yabmp_uint8   cp_intent;        /* color profile intent */
+	yabmp_uint8   flags;            /* color mask, top-down */
+	yabmp_color   palette[256];     /* palette */
+	yabmp_uint8   expanded_bps;     /* maximum bit count for one color when expanded (8, 16 or 32) */
 };
 
 YABMP_IAPI(void, yabmp_init_info, (yabmp_info* info));
