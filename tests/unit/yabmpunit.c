@@ -162,8 +162,12 @@ int main(int argc, char* argv[])
 		yabmp* l_reader = NULL;
 		yabmp_uint32 l_v0, l_v1, l_v2, l_v3;
 		unsigned int l_v4, l_v5, l_v6, l_v7;
+		yabmp_cie_xyz r, g, b;
+		yabmp_q16d16 gr, gg, gb;
+		yabmp_uint8 const* l_data;
 		size_t l_v8;
 		yabmp_color const *l_lut;
+		yabmp_info* l_info = (yabmp_info*)&l_data;
 		
 		result |= (yabmp_create_reader(&l_reader, NULL, print_error, print_warning, NULL, NULL, NULL) == YABMP_OK) ? EXIT_SUCCESS : EXIT_FAILURE;
 		
@@ -173,43 +177,75 @@ int main(int argc, char* argv[])
 		result |= (yabmp_read_info(l_reader) == YABMP_ERR_UNKNOW) ? EXIT_SUCCESS : EXIT_FAILURE;
 		*/
 		
-		result |= (yabmp_get_dimensions(NULL, NULL, &l_v0, &l_v1) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
-		result |= (yabmp_get_dimensions(l_reader, NULL, NULL, NULL) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_dimensions(NULL, l_info, &l_v0, &l_v1) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_dimensions(l_reader, NULL, &l_v0, &l_v1) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_dimensions(l_reader, l_info, NULL, NULL) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
 		
-		result |= (yabmp_get_pixels_per_meter(NULL, NULL, &l_v0, &l_v1) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
-		result |= (yabmp_get_pixels_per_meter(l_reader, NULL, NULL, NULL) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_pixels_per_meter(NULL, l_info, &l_v0, &l_v1) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_pixels_per_meter(l_reader, NULL, &l_v0, &l_v1) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_pixels_per_meter(l_reader, l_info, NULL, NULL) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
 		
-		result |= (yabmp_get_bit_depth(NULL, NULL, &l_v4) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
-		result |= (yabmp_get_bit_depth(l_reader, NULL, NULL) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_bit_depth(NULL, l_info, &l_v4) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_bit_depth(l_reader, NULL, &l_v4) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_bit_depth(l_reader, l_info, NULL) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
 		
-		result |= (yabmp_get_color_type(NULL, NULL, &l_v4) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
-		result |= (yabmp_get_color_type(l_reader, NULL, NULL) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_color_type(NULL, l_info, &l_v4) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_color_type(l_reader, NULL, &l_v4) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_color_type(l_reader, l_info, NULL) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
 		
-		result |= (yabmp_get_compression_type(NULL, NULL, &l_v0) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
-		result |= (yabmp_get_compression_type(l_reader, NULL, NULL) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_compression_type(NULL, l_info, &l_v0) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_compression_type(l_reader, NULL, &l_v0) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_compression_type(l_reader, l_info, NULL) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
 		
-		result |= (yabmp_get_scan_direction(NULL, NULL, &l_v4) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
-		result |= (yabmp_get_scan_direction(l_reader, NULL, NULL) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_scan_direction(NULL, l_info, &l_v4) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_scan_direction(l_reader, NULL, &l_v4) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_scan_direction(l_reader, l_info, NULL) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
 		
-		result |= (yabmp_get_bitfields(NULL, NULL, &l_v0, &l_v1, &l_v2, &l_v3) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
-		result |= (yabmp_get_bitfields(l_reader, NULL, NULL, &l_v1, &l_v2, &l_v3) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
-		result |= (yabmp_get_bitfields(l_reader, NULL, &l_v0, NULL, &l_v2, &l_v3) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
-		result |= (yabmp_get_bitfields(l_reader, NULL, &l_v0, &l_v1, NULL, &l_v3) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
-		result |= (yabmp_get_bitfields(l_reader, NULL, &l_v0, &l_v1, &l_v2, NULL) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
 		
-		result |= (yabmp_get_bits(NULL, NULL, &l_v4, &l_v5, &l_v6, &l_v7) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
-		result |= (yabmp_get_bits(l_reader, NULL, NULL, &l_v5, &l_v6, &l_v7) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
-		result |= (yabmp_get_bits(l_reader, NULL, &l_v4, NULL, &l_v6, &l_v7) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
-		result |= (yabmp_get_bits(l_reader, NULL, &l_v4, &l_v5, NULL, &l_v7) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
-		result |= (yabmp_get_bits(l_reader, NULL, &l_v4, &l_v5, &l_v6, NULL) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_bitfields(NULL, l_info, &l_v0, &l_v1, &l_v2, &l_v3) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_bitfields(l_reader, NULL, &l_v0, &l_v1, &l_v2, &l_v3) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_bitfields(l_reader, l_info, NULL, &l_v1, &l_v2, &l_v3) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_bitfields(l_reader, l_info, &l_v0, NULL, &l_v2, &l_v3) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_bitfields(l_reader, l_info, &l_v0, &l_v1, NULL, &l_v3) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_bitfields(l_reader, l_info, &l_v0, &l_v1, &l_v2, NULL) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
 		
-		result |= (yabmp_get_palette(NULL, NULL, &l_v4, &l_lut) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
-		result |= (yabmp_get_palette(l_reader, NULL, NULL, &l_lut) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
-		result |= (yabmp_get_palette(l_reader, NULL, &l_v4, NULL) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_bits(NULL, l_info, &l_v4, &l_v5, &l_v6, &l_v7) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_bits(l_reader, NULL, &l_v4, &l_v5, &l_v6, &l_v7) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_bits(l_reader, l_info, NULL, &l_v5, &l_v6, &l_v7) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_bits(l_reader, l_info, &l_v4, NULL, &l_v6, &l_v7) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_bits(l_reader, l_info, &l_v4, &l_v5, NULL, &l_v7) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_bits(l_reader, l_info, &l_v4, &l_v5, &l_v6, NULL) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
 		
-		result |= (yabmp_get_rowbytes(NULL, NULL, &l_v8) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
-		result |= (yabmp_get_rowbytes(l_reader, NULL, NULL) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_palette(NULL, l_info, &l_v4, &l_lut) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_palette(l_reader, NULL, &l_v4, &l_lut) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_palette(l_reader, l_info, NULL, &l_lut) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_palette(l_reader, l_info, &l_v4, NULL) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		
+		result |= (yabmp_get_rowbytes(NULL, l_info, &l_v8) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
 		result |= (yabmp_get_rowbytes(l_reader, NULL, &l_v8) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_rowbytes(l_reader, l_info, NULL) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		
+		result |= (yabmp_get_color_profile_type(NULL, l_info, &l_v4) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_color_profile_type(l_reader, NULL, &l_v4) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_color_profile_type(l_reader, l_info, NULL) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		
+		result |= (yabmp_get_color_profile_intent(NULL, l_info, &l_v4) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_color_profile_intent(l_reader, NULL, &l_v4) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_color_profile_intent(l_reader, l_info, NULL) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		
+		result |= (yabmp_get_color_profile_icc_data(NULL, l_info, &l_data, &l_v1) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_color_profile_icc_data(l_reader, NULL, &l_data, &l_v1) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_color_profile_icc_data(l_reader, l_info, NULL, &l_v1) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_color_profile_icc_data(l_reader, l_info, &l_data, NULL) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		
+		result |= (yabmp_get_color_profile_calibration(NULL, l_info, &r, &g, &b, &gr, &gg, &gb) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_color_profile_calibration(l_reader, NULL, &r, &g, &b, &gr, &gg, &gb) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_color_profile_calibration(l_reader, l_info, NULL, &g, &b, &gr, &gg, &gb) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_color_profile_calibration(l_reader, l_info, &r, NULL, &b, &gr, &gg, &gb) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_color_profile_calibration(l_reader, l_info, &r, &g, NULL, &gr, &gg, &gb) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_color_profile_calibration(l_reader, l_info, &r, &g, &b, NULL, &gg, &gb) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_color_profile_calibration(l_reader, l_info, &r, &g, &b, &gr, NULL, &gb) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
+		result |= (yabmp_get_color_profile_calibration(l_reader, l_info, &r, &g, &b, &gr, &gg, NULL) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
 		
 		result |= (yabmp_read_update_info(l_reader, NULL) == YABMP_ERR_INVALID_ARGS) ? EXIT_SUCCESS : EXIT_FAILURE;
 		
