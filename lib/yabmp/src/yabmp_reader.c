@@ -416,7 +416,7 @@ static yabmp_status local_read_info_no_validation(yabmp* reader)
 		if (l_header_size >= 108U)
 		{
 			yabmp_uint32 l_colorspace_type;
-			/* let's just ignore for now... */
+			
 			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &l_colorspace_type));
 			
 			YABMP_SIMPLE_CHECK(yabmp_stream_read_le_32u(reader, &reader->info2.cie_r.x));
