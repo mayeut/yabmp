@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- 
+
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- 
+
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -27,6 +27,12 @@
 #define YABMP_MALLOC_H
 
 #include "yabmp_api.h"
+
+YABMP_IAPI(void,  yabmp_setup_allocator, (
+	yabmp* instance,
+	void* alloc_context,
+	yabmp_malloc_cb malloc_fn,
+	yabmp_free_cb free_fn));
 
 YABMP_IAPI(void*, yabmp_malloc, (const yabmp* instance, size_t size));
 YABMP_IAPI(void,  yabmp_free,   (const yabmp* instance, void* ptr));

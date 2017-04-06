@@ -29,36 +29,62 @@
 #include "../inc/private/yabmp_message.h"
 #include "../inc/private/yabmp_struct.h"
 
+/* libc alloactors */
+static void* L_yabmp_libc_malloc(void* context, size_t size)
+{
+	(void)context; /* unused argument */
+	return malloc(size);
+}
+
+static void L_yabmp_libc_free(void* context, void* ptr)
+{
+	(void)context; /* unused argument */
+	free(ptr);
+}
+
+YABMP_IAPI(void,  yabmp_setup_allocator, (
+	yabmp* instance,
+	void* alloc_context,
+	yabmp_malloc_cb malloc_fn,
+	yabmp_free_cb free_fn))
+{
+	assert(instance != NULL);
+
+	if ((malloc_fn == NULL) || (free_fn == NULL)) {
+		instance->alloc_context = NULL;
+		instance->malloc_fn = L_yabmp_libc_malloc;
+		instance->free_fn = L_yabmp_libc_free;
+	}
+	else {
+		instance->alloc_context = alloc_context;
+		instance->malloc_fn = malloc_fn;
+		instance->free_fn = free_fn;
+	}
+}
+
 YABMP_IAPI(void*, yabmp_malloc, (const yabmp* instance, size_t size))
 {
 	void* l_result = NULL;
-	
+
 	assert(instance != NULL);
-	
+	assert(instance->malloc_fn != NULL);
+
 	if (size != 0U) {
-		if (instance->malloc_fn != NULL) {
-			l_result = instance->malloc_fn(instance->alloc_context, size);
-		} else {
-			l_result = malloc(size);
-		}
+		l_result = instance->malloc_fn(instance->alloc_context, size);
 		if (l_result == NULL) {
 			yabmp_send_error(instance, "Allocation of size %zu failed.", size);
 		}
 	}
-	
+
 	return l_result;
 }
 
 YABMP_IAPI(void,  yabmp_free,   (const yabmp* instance, void* ptr))
 {
 	assert(instance != NULL);
-	
-	if (ptr != NULL)
-	{
-		if (instance->free_fn != NULL) {
-			instance->free_fn(instance->alloc_context, ptr);
-		} else {
-			free(ptr);
-		}
+	assert(instance->free_fn != NULL);
+
+	if (ptr != NULL) {
+		instance->free_fn(instance->alloc_context, ptr);
 	}
 }

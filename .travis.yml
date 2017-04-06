@@ -11,7 +11,7 @@ addons:
     notification_email: m.darbois@gmail.com
     build_command_prepend: "./tools/travis-install.sh && mkdir build && cd build && ${HOME}/cmake-install/bin/cmake -G 'Unix Makefiles' -DYABMP_BUILD_PNG:BOOL=YES .."
     build_command:   "make -j 4"
-    branch_pattern: coverity_scan
+    branch_pattern: coverity_scan_model
 
 install:
   - echo "Coverity scan build"
