@@ -10,7 +10,7 @@ set -o pipefail  ## Fail on error in pipe
 function exit_handler ()
 {
 	local exit_code="$?"
-	
+
 	test ${exit_code} == 0 && return;
 
 	echo -e "\nPrepare coverage failed !!!\nLast command at line ${BASH_LINENO}: ${BASH_COMMAND}";
@@ -38,4 +38,4 @@ for FILE in ${FILES}; do
 	fi
 done
 
-bash <(curl -s https://codecov.io/bash)
+pipx run codecov

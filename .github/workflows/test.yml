@@ -1,0 +1,90 @@
+name: Test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    name: ${{ matrix.runner }}-${{ matrix.build_type }} ${{ matrix.compiler }} ${{ matrix.cflags }} ${{ matrix.cmake_flags }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: "macos-11"
+            compiler: "clang"
+            cflags: "-arch x86_64"
+            build_type: "Release"
+            cmake_flags: "-G 'Unix Makefiles' -DCMAKE_BUILD_TYPE=Release"
+          - runner: "ubuntu-20.04"
+            compiler: "gcc"
+            cflags: "-m64"
+            build_type: "Release"
+            cmake_flags: "-G 'Unix Makefiles' -DCMAKE_BUILD_TYPE=Release"
+          - runner: "ubuntu-20.04"
+            compiler: "gcc"
+            cflags: "-m32 -march=i386"
+            build_type: "Release"
+            cmake_flags: "-G 'Unix Makefiles' -DCMAKE_BUILD_TYPE=Release"
+          - runner: "ubuntu-20.04"
+            compiler: "gcc"
+            cflags: "-m64 -O0 -g -coverage"
+            ldflags: "-coverage"
+            build_type: "Debug"
+            cmake_flags: "-G 'Unix Makefiles' -DCMAKE_BUILD_TYPE=Debug"
+          - runner: "ubuntu-20.04"
+            compiler: "clang"
+            cflags: "-m64"
+            build_type: "Release"
+            cmake_flags: "-G 'Unix Makefiles' -DCMAKE_BUILD_TYPE=Release"
+          - runner: "ubuntu-20.04"
+            compiler: "clang"
+            cflags: "-m64 -O1 -g -fsanitize=address -fno-omit-frame-pointer"
+            build_type: "Debug"
+            cmake_flags: "-G 'Unix Makefiles' -DCMAKE_BUILD_TYPE=Debug"
+          - runner: "windows-2019"
+            build_type: "Release"
+            cmake_flags: "-G 'Visual Studio 16 2019' -A Win32 -DCMAKE_BUILD_TYPE=Release -DYABMP_BUILD_ZLIB:BOOL=YES"
+          - runner: "windows-2019"
+            build_type: "Release"
+            cmake_flags: "-G 'Visual Studio 16 2019' -A x64 -DCMAKE_BUILD_TYPE=Release -DYABMP_BUILD_ZLIB:BOOL=YES"
+
+    env:
+      CC: ${{ matrix.compiler }}
+      CFLAGS: ${{ matrix.cflags }}
+      LDFLAGS: ${{ matrix.ldflags }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+      - name: Install Linux 32-bit dependencies
+        if: runner.os == 'Linux' && contains(matrix.cflags, '-m32')
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends gcc-multilib zlib1g-dev:i386
+      - name: Configure
+        run: |
+          mkdir build
+          cd build
+          cmake ${{ matrix.cmake_flags }} -DYABMP_BUILD_PNG:BOOL=YES ..
+      - name: Build
+        run: cmake --build ./build --config ${{ matrix.build_type }}
+      - name: Tests
+        run: |
+          cd build
+          ctest --output-on-failure -C ${{ matrix.build_type }}
+      - name: Tests (Linux only)
+        if: runner.os == 'Linux'
+        run: |
+          cd build
+          YABMP_USE_CUSTOM_MALLOC=1 ctest --output-on-failure
+          YABMP_USE_MEMORY_STREAM=1 ctest --output-on-failure
+          YABMP_USE_CUSTOM_MALLOC=1 YABMP_USE_MEMORY_STREAM=1 ctest --output-on-failure
+      - name: Upload coverage
+        if: runner.os == 'Linux' && contains(matrix.cflags, '-coverage')
+        run: ./tools/travis-coverage.sh
+
